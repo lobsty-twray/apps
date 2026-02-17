@@ -2,26 +2,46 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Todo - twray.dev</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f0f0f; color: #e0e0e0; min-height: 100vh; display: flex; justify-content: center; padding: 40px 20px; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f0f0f; color: #e0e0e0; min-height: 100vh; min-height: 100dvh; display: flex; justify-content: center; padding: 40px 20px; -webkit-tap-highlight-color: transparent; }
   .container { max-width: 500px; width: 100%; }
   h1 { font-size: 2rem; margin-bottom: 24px; color: #fff; }
   .input-row { display: flex; gap: 8px; margin-bottom: 24px; }
-  input[type="text"] { flex: 1; padding: 12px 16px; border: 1px solid #333; border-radius: 8px; background: #1a1a1a; color: #fff; font-size: 1rem; outline: none; }
+  input[type="text"] { flex: 1; padding: 14px 16px; border: 1px solid #333; border-radius: 8px; background: #1a1a1a; color: #fff; font-size: 16px; outline: none; -webkit-appearance: none; }
   input[type="text"]:focus { border-color: #646cff; }
-  button { padding: 12px 20px; border: none; border-radius: 8px; background: #646cff; color: #fff; font-size: 1rem; cursor: pointer; }
+  button { padding: 14px 20px; border: none; border-radius: 8px; background: #646cff; color: #fff; font-size: 16px; cursor: pointer; min-width: 44px; min-height: 44px; touch-action: manipulation; }
   button:hover { background: #535bf2; }
+  button:active { background: #4349d6; transform: scale(0.97); }
   .todo-list { list-style: none; }
-  .todo-item { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: #1a1a1a; border-radius: 8px; margin-bottom: 8px; }
+  .todo-item { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: #1a1a1a; border-radius: 8px; margin-bottom: 8px; position: relative; overflow: hidden; transition: transform 0.2s ease, opacity 0.2s ease; }
+  .todo-item.swiping { transition: none; }
+  .todo-item.removing { transform: translateX(-100%); opacity: 0; }
   .todo-item.done .todo-text { text-decoration: line-through; opacity: 0.5; }
-  .todo-text { flex: 1; font-size: 1rem; }
-  .todo-check { width: 20px; height: 20px; cursor: pointer; accent-color: #646cff; }
-  .todo-delete { background: none; border: none; color: #666; font-size: 1.2rem; cursor: pointer; padding: 4px 8px; }
-  .todo-delete:hover { color: #ff4444; }
-  .empty { text-align: center; color: #555; padding: 40px; }
+  .todo-text { flex: 1; font-size: 16px; line-height: 1.4; word-break: break-word; }
+  .todo-check { width: 24px; height: 24px; min-width: 24px; cursor: pointer; accent-color: #646cff; touch-action: manipulation; }
+  .todo-delete { background: none; border: none; color: #666; font-size: 1.2rem; cursor: pointer; padding: 10px 12px; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 6px; touch-action: manipulation; }
+  .todo-delete:hover { color: #ff4444; background: rgba(255,68,68,0.1); }
+  .todo-delete:active { color: #ff4444; background: rgba(255,68,68,0.15); }
+  .swipe-hint { position: absolute; right: 0; top: 0; bottom: 0; display: flex; align-items: center; padding: 0 16px; background: #ff4444; color: #fff; font-size: 14px; font-weight: 500; opacity: 0; transition: opacity 0.15s; pointer-events: none; }
+  .todo-item.swiping .swipe-hint { opacity: 1; }
+  .empty { text-align: center; color: #555; padding: 40px 20px; font-size: 16px; }
+  .filter-row { display: flex; gap: 4px; margin-bottom: 16px; }
+  .filter-btn { padding: 8px 16px; border: 1px solid #333; border-radius: 20px; background: transparent; color: #888; font-size: 14px; cursor: pointer; min-height: 44px; touch-action: manipulation; transition: all 0.15s; }
+  .filter-btn.active { border-color: #646cff; color: #646cff; background: rgba(100,108,255,0.1); }
+  .todo-count { color: #555; font-size: 14px; text-align: center; padding: 16px 0 0; }
+
+  @media (max-width: 480px) {
+    body { padding: 24px 16px; }
+    h1 { font-size: 1.75rem; margin-bottom: 20px; }
+    .input-row { gap: 6px; }
+    input[type="text"] { padding: 12px 14px; }
+    button { padding: 12px 16px; }
+    .filter-row { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .filter-row::-webkit-scrollbar { display: none; }
+  }
 </style>
 </head>
 <body>
@@ -31,30 +51,93 @@
     <input type="text" id="input" placeholder="Add a task..." autofocus>
     <button onclick="addTodo()">Add</button>
   </div>
+  <div class="filter-row">
+    <button class="filter-btn active" onclick="setFilter('all')">All</button>
+    <button class="filter-btn" onclick="setFilter('active')">Active</button>
+    <button class="filter-btn" onclick="setFilter('done')">Done</button>
+  </div>
   <ul class="todo-list" id="list"></ul>
   <div class="empty" id="empty">No tasks yet. Add one above!</div>
+  <div class="todo-count" id="count"></div>
 </div>
 <script>
   let todos = JSON.parse(localStorage.getItem('todos') || '[]');
+  let filter = 'all';
   const list = document.getElementById('list');
   const empty = document.getElementById('empty');
   const input = document.getElementById('input');
+  const count = document.getElementById('count');
   input.addEventListener('keydown', e => { if (e.key === 'Enter') addTodo(); });
+
   function save() { localStorage.setItem('todos', JSON.stringify(todos)); }
+
+  function setFilter(f) {
+    filter = f;
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.textContent.toLowerCase() === f);
+    });
+    render();
+  }
+
+  function getFiltered() {
+    if (filter === 'active') return todos.map((t, i) => ({...t, idx: i})).filter(t => !t.done);
+    if (filter === 'done') return todos.map((t, i) => ({...t, idx: i})).filter(t => t.done);
+    return todos.map((t, i) => ({...t, idx: i}));
+  }
+
   function render() {
+    const filtered = getFiltered();
     list.innerHTML = '';
-    empty.style.display = todos.length ? 'none' : 'block';
-    todos.forEach((t, i) => {
+    empty.style.display = filtered.length ? 'none' : 'block';
+    const active = todos.filter(t => !t.done).length;
+    count.textContent = todos.length ? `${active} task${active !== 1 ? 's' : ''} remaining` : '';
+    filtered.forEach(t => {
       const li = document.createElement('li');
       li.className = 'todo-item' + (t.done ? ' done' : '');
-      li.innerHTML = '<input type="checkbox" class="todo-check" '+(t.done?'checked':'')+' onchange="toggle('+i+')"><span class="todo-text">'+esc(t.text)+'</span><button class="todo-delete" onclick="remove('+i+')">✕</button>';
+      li.dataset.index = t.idx;
+      li.innerHTML = '<input type="checkbox" class="todo-check" '+(t.done?'checked':'')+' onchange="toggle('+t.idx+')"><span class="todo-text">'+esc(t.text)+'</span><button class="todo-delete" onclick="remove('+t.idx+')" aria-label="Delete task">✕</button><div class="swipe-hint">Delete</div>';
+      setupSwipe(li, t.idx);
       list.appendChild(li);
     });
   }
+
   function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
   function addTodo() { const v = input.value.trim(); if (!v) return; todos.unshift({text: v, done: false}); input.value = ''; save(); render(); }
   function toggle(i) { todos[i].done = !todos[i].done; save(); render(); }
   function remove(i) { todos.splice(i, 1); save(); render(); }
+
+  function setupSwipe(el, idx) {
+    let startX = 0, currentX = 0, swiping = false;
+    el.addEventListener('touchstart', e => {
+      startX = e.touches[0].clientX;
+      swiping = false;
+    }, {passive: true});
+    el.addEventListener('touchmove', e => {
+      currentX = e.touches[0].clientX;
+      const diff = startX - currentX;
+      if (diff > 10) {
+        swiping = true;
+        el.classList.add('swiping');
+        const move = Math.min(diff, 120);
+        el.style.transform = `translateX(-${move}px)`;
+      } else {
+        el.style.transform = '';
+        el.classList.remove('swiping');
+      }
+    }, {passive: true});
+    el.addEventListener('touchend', () => {
+      const diff = startX - currentX;
+      if (diff > 80) {
+        el.classList.remove('swiping');
+        el.classList.add('removing');
+        setTimeout(() => remove(idx), 200);
+      } else {
+        el.style.transform = '';
+        el.classList.remove('swiping');
+      }
+    }, {passive: true});
+  }
+
   render();
 </script>
 </body>
