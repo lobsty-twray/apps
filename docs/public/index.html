@@ -488,6 +488,110 @@ body {
 
 .format-bar button:hover { background: var(--bg-hover); }
 
+/* ==================== Share Modal ==================== */
+.modal-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.4); z-index: 200; display: none;
+  align-items: center; justify-content: center;
+}
+
+.modal-overlay.active { display: flex; }
+
+.share-modal {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 12px; padding: 24px; width: 420px; max-width: 90vw;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.16); max-height: 80vh; overflow-y: auto;
+}
+
+.share-modal h2 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+
+.share-form { display: flex; gap: 8px; margin-bottom: 16px; }
+
+.share-form input[type="email"] {
+  flex: 1; padding: 8px 12px; border: 1px solid var(--border);
+  border-radius: var(--radius); font-size: 13px; background: var(--bg);
+  color: var(--text); outline: none;
+}
+
+.share-form input[type="email"]:focus { border-color: var(--accent); }
+
+.share-form select {
+  padding: 8px 10px; border: 1px solid var(--border);
+  border-radius: var(--radius); font-size: 13px; background: var(--bg);
+  color: var(--text); outline: none; cursor: pointer;
+}
+
+.share-form button {
+  padding: 8px 16px; border: none; border-radius: var(--radius);
+  background: var(--accent); color: white; font-size: 13px;
+  font-weight: 600; cursor: pointer; white-space: nowrap;
+}
+
+.share-form button:hover { opacity: 0.9; }
+
+.share-list { margin-top: 8px; }
+
+.share-item {
+  display: flex; align-items: center; gap: 10px; padding: 8px 0;
+  border-bottom: 1px solid var(--border); font-size: 13px;
+}
+
+.share-item:last-child { border-bottom: none; }
+
+.share-item .share-info { flex: 1; min-width: 0; }
+.share-item .share-name { font-weight: 500; }
+.share-item .share-email { color: var(--text-secondary); font-size: 12px; }
+
+.share-item .share-perm {
+  color: var(--text-secondary); font-size: 12px; background: var(--bg-secondary);
+  padding: 2px 8px; border-radius: 10px;
+}
+
+.share-item .share-remove {
+  border: none; background: none; color: var(--text-tertiary);
+  cursor: pointer; font-size: 16px; padding: 4px;
+}
+
+.share-item .share-remove:hover { color: var(--danger); }
+
+.share-error {
+  color: var(--danger); font-size: 12px; margin-bottom: 8px; display: none;
+}
+
+.share-modal .close-btn {
+  position: absolute; top: 12px; right: 12px; border: none; background: none;
+  font-size: 18px; color: var(--text-secondary); cursor: pointer; padding: 4px;
+}
+
+/* Shared badge */
+.shared-badge {
+  font-size: 10px; background: var(--accent-bg); color: var(--accent);
+  padding: 1px 6px; border-radius: 8px; font-weight: 500; flex-shrink: 0;
+  margin-left: 4px;
+}
+
+/* Shared section in sidebar */
+.sidebar-section-label {
+  font-size: 11px; font-weight: 600; color: var(--text-secondary);
+  text-transform: uppercase; letter-spacing: 0.5px; padding: 12px 14px 4px;
+}
+
+/* Share button in topbar */
+.share-btn {
+  padding: 4px 12px; border: 1px solid var(--border); border-radius: var(--radius);
+  background: none; color: var(--text); font-size: 12px; font-weight: 500;
+  cursor: pointer; display: none; align-items: center; gap: 4px;
+  transition: background 0.1s;
+}
+
+.share-btn:hover { background: var(--bg-hover); }
+
+/* Read-only indicator */
+.readonly-badge {
+  font-size: 11px; color: var(--text-secondary); background: var(--bg-secondary);
+  padding: 2px 8px; border-radius: 10px; display: none;
+}
+
 .app-wrap { display: none; width: 100%; height: 100vh; }
 
 /* Mobile sidebar overlay */
@@ -593,6 +697,12 @@ body {
   .format-bar button { width: 40px; height: 40px; font-size: 16px; }
 
   .breadcrumb { font-size: 14px; }
+
+  .share-modal { width: 100%; margin: 16px; padding: 20px; }
+  .share-form { flex-wrap: wrap; }
+  .share-form input[type="email"] { min-width: 100%; }
+  .share-form select, .share-form button { flex: 1; min-height: 44px; font-size: 14px; }
+  .share-btn { min-height: 36px; font-size: 13px; }
 }
 
 @media (max-width: 480px) {
@@ -601,6 +711,7 @@ body {
   .icon-grid { grid-template-columns: repeat(6, 1fr); }
 }
 </style>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
@@ -683,6 +794,8 @@ body {
     <div class="topbar">
       <button class="icon-btn" id="menuBtn" onclick="toggleSidebar()" title="Open sidebar" style="display:none;">&#9776;</button>
       <div class="breadcrumb" id="breadcrumb"></div>
+      <span class="readonly-badge" id="readonlyBadge">View only</span>
+      <button class="share-btn" id="shareBtn" onclick="openShareModal()">&#128279; Share</button>
       <button class="icon-btn" onclick="toggleDark()" title="Toggle theme">&#9789;</button>
     </div>
     <div class="editor-wrap" id="editorWrap">
@@ -710,6 +823,23 @@ body {
   <button onclick="fmt('strikeThrough')" title="Strikethrough"><s>S</s></button>
   <button onclick="fmt('createLink')" title="Link">&#128279;</button>
   <button onclick="fmt('removeFormat')" title="Clear">&#10005;</button>
+</div>
+
+<!-- ==================== Share Modal ==================== -->
+<div class="modal-overlay" id="shareOverlay" onclick="if(event.target===this)closeShareModal()">
+  <div class="share-modal">
+    <h2 id="shareModalTitle">Share document</h2>
+    <div class="share-error" id="shareError"></div>
+    <form class="share-form" id="shareForm" onsubmit="handleShare(event)">
+      <input type="email" id="shareEmail" placeholder="Enter email address" required>
+      <select id="sharePerm">
+        <option value="viewer">Viewer</option>
+        <option value="editor">Editor</option>
+      </select>
+      <button type="submit">Share</button>
+    </form>
+    <div class="share-list" id="shareList"></div>
+  </div>
 </div>
 
 <script>
@@ -807,7 +937,50 @@ async function handleRegister(e) {
 }
 
 async function googleSignIn() {
-  showAuthError('Google OAuth requires GOOGLE_CLIENT_ID configuration. Use email/password login instead.');
+  try {
+    const cfgRes = await fetch('/api/auth/config');
+    const cfg = await cfgRes.json();
+    if (!cfg.googleClientId) {
+      showAuthError('Google OAuth is not configured on this server.');
+      return;
+    }
+    if (typeof google === 'undefined' || !google.accounts) {
+      showAuthError('Google Sign-In library failed to load. Please refresh and try again.');
+      return;
+    }
+    google.accounts.id.initialize({
+      client_id: cfg.googleClientId,
+      callback: async (response) => {
+        try {
+          const res = await fetch('/api/auth/google', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ credential: response.credential })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Google sign-in failed');
+          authToken = data.token;
+          currentUser = data.user;
+          localStorage.setItem('docs_token', authToken);
+          enterApp();
+        } catch (err) {
+          showAuthError(err.message);
+        }
+      }
+    });
+    google.accounts.id.prompt((notification) => {
+      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+        // One Tap not available, fall back to button popup
+        google.accounts.id.renderButton(
+          document.getElementById('googleSignInBtn'),
+          { theme: 'outline', size: 'large', width: document.getElementById('googleSignInBtn').offsetWidth }
+        );
+        document.getElementById('googleSignInBtn').click();
+      }
+    });
+  } catch (err) {
+    showAuthError(err.message || 'Google sign-in failed');
+  }
 }
 
 function logout() {
@@ -817,6 +990,7 @@ function logout() {
   state.docs = {};
   state.order = [];
   state.activeId = null;
+  sharedDocs = {};
   document.getElementById('authPage').style.display = 'flex';
   document.getElementById('appWrap').style.display = 'none';
 }
@@ -831,6 +1005,7 @@ async function enterApp() {
     document.getElementById('menuBtn').style.display = 'flex';
   }
   await loadDocs();
+  await loadSharedDocs();
   renderTree();
   if (state.activeId && state.docs[state.activeId]) {
     selectDoc(state.activeId);
@@ -1006,7 +1181,13 @@ async function duplicateDoc(id) {
 
 function scheduleSave() {
   if (saveTimer) clearTimeout(saveTimer);
-  saveTimer = setTimeout(saveCurrentDoc, 800);
+  saveTimer = setTimeout(() => {
+    if (String(state.activeId).startsWith('shared-')) {
+      saveSharedDoc();
+    } else {
+      saveCurrentDoc();
+    }
+  }, 800);
 }
 
 async function saveCurrentDoc() {
@@ -1038,6 +1219,7 @@ function renderTree(filter) {
   tree.innerHTML = '';
   const roots = filter ? getFilteredIds(filter) : state.order;
   roots.forEach(id => tree.appendChild(renderTreeNode(id, filter)));
+  renderSharedSection();
 }
 
 function getFilteredIds(q) {
@@ -1151,6 +1333,12 @@ function selectDoc(id) {
   document.getElementById('editor').innerHTML = doc.content || '';
   document.getElementById('iconPicker').textContent = doc.icon || '📄';
 
+  // Reset to editable (own doc)
+  document.getElementById('editor').contentEditable = 'true';
+  document.getElementById('docTitle').readOnly = false;
+  document.getElementById('readonlyBadge').style.display = 'none';
+  document.getElementById('shareBtn').style.display = 'flex';
+
   updateBreadcrumb(id);
   renderTree(document.getElementById('searchInput').value);
   closeMobileSidebar();
@@ -1160,13 +1348,25 @@ function showEmpty() {
   document.getElementById('emptyState').style.display = 'flex';
   document.getElementById('editorContainer').style.display = 'none';
   document.getElementById('breadcrumb').innerHTML = '';
+  document.getElementById('shareBtn').style.display = 'none';
+  document.getElementById('readonlyBadge').style.display = 'none';
 }
 
 function onTitleChange() {
   if (!state.activeId) return;
-  state.docs[state.activeId].title = document.getElementById('docTitle').value;
+  const match = String(state.activeId).match(/^shared-(\d+)$/);
+  if (match) {
+    const id = match[1];
+    if (sharedDocs[id]) {
+      sharedDocs[id].title = document.getElementById('docTitle').value;
+      const bc = document.getElementById('breadcrumb');
+      bc.innerHTML = '<span style="color:var(--text-secondary)">' + esc(sharedDocs[id].ownerName) + '</span> / <span>' + esc(sharedDocs[id].title || 'Untitled') + '</span>';
+    }
+  } else {
+    state.docs[state.activeId].title = document.getElementById('docTitle').value;
+    updateBreadcrumb(state.activeId);
+  }
   renderTree(document.getElementById('searchInput').value);
-  updateBreadcrumb(state.activeId);
   scheduleSave();
 }
 
@@ -1533,6 +1733,216 @@ document.addEventListener('keydown', (e) => {
     toggleDark();
   }
 });
+
+// ====================== Sharing ======================
+let sharedDocs = {}; // id -> shared doc (with permission, owner info)
+
+async function loadSharedDocs() {
+  try {
+    const rows = await api('/docs/shared');
+    sharedDocs = {};
+    rows.forEach(r => {
+      sharedDocs[r.id] = {
+        id: r.id,
+        title: r.title || '',
+        content: r.content || '',
+        icon: r.icon || '📄',
+        parentId: r.parent_id,
+        permission: r.permission,
+        ownerName: r.owner_name,
+        ownerEmail: r.owner_email,
+        sharedAt: r.shared_at,
+        sort_order: r.sort_order || 0,
+        tags: r.tags || [],
+        isShared: true
+      };
+    });
+  } catch (err) {
+    console.error('Failed to load shared docs:', err);
+  }
+}
+
+function renderSharedSection() {
+  const tree = document.getElementById('docTree');
+  const ids = Object.keys(sharedDocs);
+  if (ids.length === 0) return;
+
+  const label = document.createElement('div');
+  label.className = 'sidebar-section-label';
+  label.textContent = 'Shared with me';
+  tree.appendChild(label);
+
+  const filter = document.getElementById('searchInput').value.toLowerCase();
+
+  ids.forEach(id => {
+    const doc = sharedDocs[id];
+    if (filter && !(doc.title || 'Untitled').toLowerCase().includes(filter) && !(doc.content || '').toLowerCase().includes(filter)) {
+      return;
+    }
+
+    const item = document.createElement('div');
+    item.className = 'tree-item' + (state.activeId === 'shared-' + id ? ' active' : '');
+    item.dataset.id = 'shared-' + id;
+
+    const spacer = document.createElement('span');
+    spacer.className = 'chevron hidden';
+    spacer.innerHTML = '&#9654;';
+
+    const icon = document.createElement('span');
+    icon.className = 'icon';
+    icon.textContent = doc.icon || '📄';
+
+    const labelEl = document.createElement('span');
+    labelEl.className = 'label';
+    labelEl.textContent = doc.title || 'Untitled';
+
+    const badge = document.createElement('span');
+    badge.className = 'shared-badge';
+    badge.textContent = doc.permission === 'editor' ? 'edit' : 'view';
+
+    item.appendChild(spacer);
+    item.appendChild(icon);
+    item.appendChild(labelEl);
+    item.appendChild(badge);
+    item.onclick = () => selectSharedDoc(id);
+
+    tree.appendChild(item);
+  });
+}
+
+function selectSharedDoc(id) {
+  // Save current doc first
+  if (state.activeId && state.docs[state.activeId]) {
+    saveCurrentDoc();
+  }
+
+  const doc = sharedDocs[id];
+  if (!doc) return;
+
+  state.activeId = 'shared-' + id;
+
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('editorContainer').style.display = 'block';
+
+  document.getElementById('docTitle').value = doc.title || '';
+  document.getElementById('editor').innerHTML = doc.content || '';
+  document.getElementById('iconPicker').textContent = doc.icon || '📄';
+
+  // Set readonly for viewers
+  const isEditor = doc.permission === 'editor';
+  document.getElementById('editor').contentEditable = isEditor ? 'true' : 'false';
+  document.getElementById('docTitle').readOnly = !isEditor;
+  document.getElementById('readonlyBadge').style.display = isEditor ? 'none' : 'inline';
+  document.getElementById('shareBtn').style.display = 'none'; // Only owners can share
+
+  // Breadcrumb
+  const bc = document.getElementById('breadcrumb');
+  bc.innerHTML = '<span style="color:var(--text-secondary)">' + esc(doc.ownerName) + '</span> / <span>' + esc(doc.title || 'Untitled') + '</span>';
+
+  renderTree(document.getElementById('searchInput').value);
+  closeMobileSidebar();
+}
+
+async function saveSharedDoc() {
+  const match = String(state.activeId).match(/^shared-(\d+)$/);
+  if (!match) return;
+  const id = match[1];
+  const doc = sharedDocs[id];
+  if (!doc || doc.permission !== 'editor') return;
+
+  doc.title = document.getElementById('docTitle').value;
+  doc.content = document.getElementById('editor').innerHTML;
+
+  try {
+    await api('/docs/' + id + '/shared', {
+      method: 'PUT',
+      body: JSON.stringify({
+        title: doc.title,
+        content: doc.content,
+        icon: doc.icon,
+        parent_id: doc.parentId || null,
+        sort_order: doc.sort_order || 0,
+        tags: doc.tags || []
+      })
+    });
+  } catch (err) {
+    console.error('Failed to save shared doc:', err);
+  }
+}
+
+function openShareModal() {
+  if (!state.activeId || String(state.activeId).startsWith('shared-')) return;
+  const doc = state.docs[state.activeId];
+  if (!doc) return;
+
+  document.getElementById('shareModalTitle').textContent = 'Share "' + (doc.title || 'Untitled') + '"';
+  document.getElementById('shareError').style.display = 'none';
+  document.getElementById('shareEmail').value = '';
+  document.getElementById('shareOverlay').classList.add('active');
+  loadShareList();
+}
+
+function closeShareModal() {
+  document.getElementById('shareOverlay').classList.remove('active');
+}
+
+async function loadShareList() {
+  if (!state.activeId || String(state.activeId).startsWith('shared-')) return;
+  const list = document.getElementById('shareList');
+  list.innerHTML = '<div style="color:var(--text-secondary);font-size:12px;padding:8px 0;">Loading...</div>';
+
+  try {
+    const shares = await api('/docs/' + state.activeId + '/shares');
+    list.innerHTML = '';
+    if (shares.length === 0) {
+      list.innerHTML = '<div style="color:var(--text-secondary);font-size:12px;padding:8px 0;">Not shared with anyone yet</div>';
+      return;
+    }
+    shares.forEach(s => {
+      const item = document.createElement('div');
+      item.className = 'share-item';
+      item.innerHTML =
+        '<div class="share-info"><div class="share-name">' + esc(s.name) + '</div><div class="share-email">' + esc(s.email) + '</div></div>' +
+        '<span class="share-perm">' + esc(s.permission) + '</span>' +
+        '<button class="share-remove" title="Remove" onclick="removeShare(' + state.activeId + ',' + s.user_id + ')">&#10005;</button>';
+      list.appendChild(item);
+    });
+  } catch (err) {
+    list.innerHTML = '<div style="color:var(--danger);font-size:12px;padding:8px 0;">Failed to load shares</div>';
+  }
+}
+
+async function handleShare(e) {
+  e.preventDefault();
+  if (!state.activeId) return;
+
+  const errEl = document.getElementById('shareError');
+  errEl.style.display = 'none';
+
+  const email = document.getElementById('shareEmail').value;
+  const permission = document.getElementById('sharePerm').value;
+
+  try {
+    await api('/docs/' + state.activeId + '/share', {
+      method: 'POST',
+      body: JSON.stringify({ email, permission })
+    });
+    document.getElementById('shareEmail').value = '';
+    loadShareList();
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.style.display = 'block';
+  }
+}
+
+async function removeShare(docId, userId) {
+  try {
+    await api('/docs/' + docId + '/share/' + userId, { method: 'DELETE' });
+    loadShareList();
+  } catch (err) {
+    console.error('Failed to remove share:', err);
+  }
+}
 
 // ====================== Init ======================
 (async function init() {

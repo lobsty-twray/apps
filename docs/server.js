@@ -71,6 +71,22 @@ async function initDatabase() {
     `);
     await client.query(`CREATE INDEX IF NOT EXISTS idx_docs_user_id ON docs(user_id)`);
     await client.query(`CREATE INDEX IF NOT EXISTS idx_docs_parent_id ON docs(parent_id)`);
+
+    // Shared docs table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS shared_docs (
+        id SERIAL PRIMARY KEY,
+        doc_id INTEGER NOT NULL REFERENCES docs(id) ON DELETE CASCADE,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        permission VARCHAR(20) NOT NULL DEFAULT 'viewer',
+        shared_by INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        shared_at TIMESTAMP DEFAULT NOW(),
+        UNIQUE(doc_id, user_id)
+      )
+    `);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_shared_docs_user_id ON shared_docs(user_id)`);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_shared_docs_doc_id ON shared_docs(doc_id)`);
+
     console.log('Database initialized');
   } finally {
     client.release();
@@ -157,6 +173,11 @@ app.post('/api/auth/login', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Login failed' });
   }
+});
+
+// Auth config (exposes client ID to frontend)
+app.get('/api/auth/config', (req, res) => {
+  res.json({ googleClientId: GOOGLE_CLIENT_ID || null });
 });
 
 // Google OAuth
@@ -253,6 +274,10 @@ app.post('/api/docs', authRequired, async (req, res) => {
        RETURNING *`,
       [req.userId, title || '', content || '', icon || '📄', parent_id || null, tags || '{}', sort_order || 0]
     );
+
+    // Auto-share if applicable
+    await autoShareDoc(result.rows[0].id, req.userId);
+
     res.status(201).json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: 'Failed to create doc' });
@@ -296,6 +321,194 @@ app.delete('/api/docs/:id', authRequired, async (req, res) => {
     res.status(204).send();
   } catch (err) {
     res.status(500).json({ error: 'Failed to delete doc' });
+  }
+});
+
+// ====================== Sharing Endpoints ======================
+
+// Auto-share config: Lobsty's docs auto-share with Ray
+const AUTO_SHARE_RULES = [
+  { ownerEmail: 'cynthiabgonzalez@gmail.com', shareWithEmail: 'rayovims@gmail.com', permission: 'editor' }
+];
+
+async function autoShareDoc(docId, ownerUserId) {
+  try {
+    const ownerResult = await pool.query('SELECT email FROM users WHERE id = $1', [ownerUserId]);
+    if (ownerResult.rows.length === 0) return;
+    const ownerEmail = ownerResult.rows[0].email;
+
+    for (const rule of AUTO_SHARE_RULES) {
+      if (ownerEmail === rule.ownerEmail) {
+        const targetUser = await pool.query('SELECT id FROM users WHERE email = $1', [rule.shareWithEmail]);
+        if (targetUser.rows.length > 0) {
+          const targetUserId = targetUser.rows[0].id;
+          await pool.query(
+            `INSERT INTO shared_docs (doc_id, user_id, permission, shared_by)
+             VALUES ($1, $2, $3, $4)
+             ON CONFLICT (doc_id, user_id) DO NOTHING`,
+            [docId, targetUserId, rule.permission, ownerUserId]
+          );
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Auto-share failed:', err.message);
+  }
+}
+
+// Lookup user by email (for sharing UI)
+app.get('/api/users/lookup', authRequired, async (req, res) => {
+  try {
+    const { email } = req.query;
+    if (!email) return res.status(400).json({ error: 'Email required' });
+    const result = await pool.query(
+      'SELECT id, email, name FROM users WHERE email = $1',
+      [email]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to lookup user' });
+  }
+});
+
+// Get docs shared with me
+app.get('/api/docs/shared', authRequired, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT d.*, sd.permission, sd.shared_by, sd.shared_at,
+              u.name as owner_name, u.email as owner_email
+       FROM shared_docs sd
+       JOIN docs d ON d.id = sd.doc_id
+       JOIN users u ON u.id = d.user_id
+       WHERE sd.user_id = $1
+       ORDER BY sd.shared_at DESC`,
+      [req.userId]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch shared docs' });
+  }
+});
+
+// Get shares for a specific doc (who it's shared with)
+app.get('/api/docs/:id/shares', authRequired, async (req, res) => {
+  try {
+    // Verify the requester owns the doc
+    const doc = await pool.query('SELECT id FROM docs WHERE id = $1 AND user_id = $2', [req.params.id, req.userId]);
+    if (doc.rows.length === 0) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+    const result = await pool.query(
+      `SELECT sd.id, sd.user_id, sd.permission, sd.shared_at,
+              u.name, u.email
+       FROM shared_docs sd
+       JOIN users u ON u.id = sd.user_id
+       WHERE sd.doc_id = $1
+       ORDER BY sd.shared_at`,
+      [req.params.id]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch shares' });
+  }
+});
+
+// Share a doc with a user
+app.post('/api/docs/:id/share', authRequired, async (req, res) => {
+  try {
+    const { email, permission } = req.body;
+    if (!email || !permission) {
+      return res.status(400).json({ error: 'Email and permission are required' });
+    }
+    if (!['viewer', 'editor'].includes(permission)) {
+      return res.status(400).json({ error: 'Permission must be viewer or editor' });
+    }
+
+    // Verify doc ownership
+    const doc = await pool.query('SELECT id FROM docs WHERE id = $1 AND user_id = $2', [req.params.id, req.userId]);
+    if (doc.rows.length === 0) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+
+    // Find target user
+    const targetUser = await pool.query('SELECT id, email, name FROM users WHERE email = $1', [email]);
+    if (targetUser.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found. They need to create an account first.' });
+    }
+
+    const targetUserId = targetUser.rows[0].id;
+    if (targetUserId === req.userId) {
+      return res.status(400).json({ error: 'Cannot share with yourself' });
+    }
+
+    const result = await pool.query(
+      `INSERT INTO shared_docs (doc_id, user_id, permission, shared_by)
+       VALUES ($1, $2, $3, $4)
+       ON CONFLICT (doc_id, user_id) DO UPDATE SET permission = $3
+       RETURNING *`,
+      [req.params.id, targetUserId, permission, req.userId]
+    );
+
+    res.status(201).json({
+      ...result.rows[0],
+      name: targetUser.rows[0].name,
+      email: targetUser.rows[0].email
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to share document' });
+  }
+});
+
+// Remove share
+app.delete('/api/docs/:id/share/:userId', authRequired, async (req, res) => {
+  try {
+    // Verify doc ownership
+    const doc = await pool.query('SELECT id FROM docs WHERE id = $1 AND user_id = $2', [req.params.id, req.userId]);
+    if (doc.rows.length === 0) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+
+    const result = await pool.query(
+      'DELETE FROM shared_docs WHERE doc_id = $1 AND user_id = $2',
+      [req.params.id, req.params.userId]
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Share not found' });
+    }
+    res.status(204).send();
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to remove share' });
+  }
+});
+
+// Allow editors to update shared docs
+app.put('/api/docs/:id/shared', authRequired, async (req, res) => {
+  try {
+    // Check if user has editor permission
+    const share = await pool.query(
+      "SELECT permission FROM shared_docs WHERE doc_id = $1 AND user_id = $2 AND permission = 'editor'",
+      [req.params.id, req.userId]
+    );
+    if (share.rows.length === 0) {
+      return res.status(403).json({ error: 'No editor access to this document' });
+    }
+
+    const { title, content, icon, parent_id, tags, sort_order } = req.body;
+    const result = await pool.query(
+      `UPDATE docs SET title = $1, content = $2, icon = $3, parent_id = $4, tags = $5, sort_order = $6, updated_at = NOW()
+       WHERE id = $7
+       RETURNING *`,
+      [title ?? '', content ?? '', icon ?? '📄', parent_id ?? null, tags ?? '{}', sort_order ?? 0, req.params.id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update shared doc' });
   }
 });
 
