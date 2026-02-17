@@ -5,3 +5,23 @@ services:
     restart: always
     ports:
       - "8090:80"
+
+  board:
+    build: ./board
+    container_name: lobsty-board
+    restart: always
+    ports:
+      - "8091:3000"
+    volumes:
+      - board-data:/app/data
+    environment:
+      - NODE_ENV=production
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/projects"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  board-data:
+    driver: local

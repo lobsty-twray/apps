@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦞 Lobsty Board</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="header">
+        <h1>🦞 Lobsty Board</h1>
+        <div class="header-actions">
+            <button id="new-project-btn" class="btn btn-primary">New Project</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            <h2>Projects</h2>
+            <div id="projects-list" class="projects-list">
+                <!-- Projects will be loaded here -->
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div id="project-header" class="project-header" style="display: none;">
+                <h2 id="project-title"></h2>
+                <p id="project-description"></p>
+                <div class="project-actions">
+                    <button id="new-task-btn" class="btn btn-primary">New Task</button>
+                    <button id="manage-labels-btn" class="btn btn-secondary">Manage Labels</button>
+                </div>
+            </div>
+
+            <div id="welcome-screen" class="welcome-screen">
+                <div class="welcome-content">
+                    <h2>Welcome to Lobsty Board</h2>
+                    <p>Create your first project to get started with task management.</p>
+                    <button id="welcome-new-project-btn" class="btn btn-primary">Create Project</button>
+                </div>
+            </div>
+
+            <div id="kanban-board" class="kanban-board" style="display: none;">
+                <div class="column" data-status="backlog">
+                    <h3 class="column-header">Backlog</h3>
+                    <div class="column-content" id="backlog-tasks"></div>
+                </div>
+                <div class="column" data-status="todo">
+                    <h3 class="column-header">Todo</h3>
+                    <div class="column-content" id="todo-tasks"></div>
+                </div>
+                <div class="column" data-status="in-progress">
+                    <h3 class="column-header">In Progress</h3>
+                    <div class="column-content" id="in-progress-tasks"></div>
+                </div>
+                <div class="column" data-status="review">
+                    <h3 class="column-header">Review</h3>
+                    <div class="column-content" id="review-tasks"></div>
+                </div>
+                <div class="column" data-status="done">
+                    <h3 class="column-header">Done</h3>
+                    <div class="column-content" id="done-tasks"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Project Modal -->
+    <div id="project-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="project-modal-title">New Project</h3>
+                <span class="close" id="project-modal-close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="project-form">
+                    <div class="form-group">
+                        <label for="project-name">Project Name</label>
+                        <input type="text" id="project-name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="project-desc">Description</label>
+                        <textarea id="project-desc" name="description" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="project-cancel-btn">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="project-save-btn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Modal -->
+    <div id="task-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="task-modal-title">New Task</h3>
+                <span class="close" id="task-modal-close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="task-form">
+                    <div class="form-group">
+                        <label for="task-title">Task Title</label>
+                        <input type="text" id="task-title" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="task-desc">Description</label>
+                        <textarea id="task-desc" name="description" rows="4"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="task-priority">Priority</label>
+                            <select id="task-priority" name="priority">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="task-status">Status</label>
+                            <select id="task-status" name="status">
+                                <option value="backlog" selected>Backlog</option>
+                                <option value="todo">Todo</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="review">Review</option>
+                                <option value="done">Done</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="task-labels">Labels</label>
+                        <div id="task-labels" class="labels-container">
+                            <!-- Labels will be loaded here -->
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" id="task-delete-btn" style="display: none;">Delete</button>
+                <button type="button" class="btn btn-secondary" id="task-cancel-btn">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="task-save-btn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Labels Modal -->
+    <div id="labels-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Manage Labels</h3>
+                <span class="close" id="labels-modal-close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="label-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="label-name">Label Name</label>
+                            <input type="text" id="label-name" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="label-color">Color</label>
+                            <input type="color" id="label-color" name="color" value="#646cff">
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">Add Label</button>
+                        </div>
+                    </div>
+                </form>
+                <div id="labels-list" class="labels-list">
+                    <!-- Existing labels will be listed here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="labels-close-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
