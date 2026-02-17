@@ -1,0 +1,7 @@
+services:
+  todo:
+    build: ./todo
+    container_name: todo-app
+    restart: always
+    ports:
+      - "8090:80"
