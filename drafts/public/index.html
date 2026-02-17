@@ -1,0 +1,1499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drafts Hub</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-secondary: #f7f7f5;
+      --bg-tertiary: #f0f0ee;
+      --border: #e8e8e5;
+      --text: #37352f;
+      --text-secondary: #787774;
+      --text-tertiary: #b4b4b0;
+      --accent: #6366f1;
+      --accent-light: #eef2ff;
+      --green: #16a34a;
+      --green-light: #dcfce7;
+      --red: #dc2626;
+      --red-light: #fee2e2;
+      --orange: #ea580c;
+      --orange-light: #fff7ed;
+      --blue: #2563eb;
+      --blue-light: #dbeafe;
+      --purple: #7c3aed;
+      --purple-light: #f3e8ff;
+      --yellow: #ca8a04;
+      --yellow-light: #fefce8;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08);
+      --shadow-lg: 0 4px 12px rgba(0,0,0,0.1);
+      --radius: 8px;
+      --radius-sm: 6px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-secondary);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    /* ─── Login ─────────────────────────── */
+    .login-screen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .login-card {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 40px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .login-card h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .login-card p {
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+      font-size: 14px;
+    }
+
+    .login-card .quick-login {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .quick-login button {
+      flex: 1;
+      padding: 10px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+
+    .quick-login button:hover {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    .quick-login .lobsty-btn { color: #8b5cf6; }
+    .quick-login .ray-btn { color: #3b82f6; }
+
+    .divider {
+      text-align: center;
+      color: var(--text-tertiary);
+      font-size: 12px;
+      margin: 16px 0;
+      position: relative;
+    }
+
+    .divider::before, .divider::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 40%;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .divider::before { left: 0; }
+    .divider::after { right: 0; }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+      background: var(--bg);
+    }
+
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-light);
+    }
+
+    .form-group textarea { resize: vertical; min-height: 100px; }
+
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover { background: #4f46e5; }
+
+    .btn-full { width: 100%; padding: 10px; }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover { background: var(--bg-secondary); }
+
+    .btn-green { background: var(--green); color: white; }
+    .btn-green:hover { background: #15803d; }
+
+    .btn-red { background: var(--red); color: white; }
+    .btn-red:hover { background: #b91c1c; }
+
+    .btn-sm { padding: 4px 10px; font-size: 13px; }
+
+    .login-error {
+      color: var(--red);
+      font-size: 13px;
+      margin-bottom: 10px;
+      display: none;
+    }
+
+    /* ─── Layout ────────────────────────── */
+    .app { display: none; min-height: 100vh; }
+
+    .topbar {
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .topbar-left h1 {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .topbar-left .app-badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: var(--accent-light);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 4px 8px;
+      color: var(--text);
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 12px 4px 4px;
+      border-radius: 20px;
+      background: var(--bg-secondary);
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .logout-btn {
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .logout-btn:hover { color: var(--red); }
+
+    .main-layout {
+      display: flex;
+      min-height: calc(100vh - 52px);
+    }
+
+    /* ─── Sidebar ───────────────────────── */
+    .sidebar {
+      width: 240px;
+      background: var(--bg);
+      border-right: 1px solid var(--border);
+      padding: 16px 0;
+      flex-shrink: 0;
+      overflow-y: auto;
+    }
+
+    .sidebar-section {
+      padding: 0 12px;
+      margin-bottom: 20px;
+    }
+
+    .sidebar-section h3 {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-tertiary);
+      padding: 4px 8px;
+      margin-bottom: 4px;
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--text-secondary);
+      transition: all 0.1s;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+    }
+
+    .sidebar-item:hover { background: var(--bg-secondary); color: var(--text); }
+    .sidebar-item.active { background: var(--accent-light); color: var(--accent); font-weight: 500; }
+
+    .sidebar-item .count {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--text-tertiary);
+      background: var(--bg-secondary);
+      padding: 1px 6px;
+      border-radius: 10px;
+      min-width: 20px;
+      text-align: center;
+    }
+
+    .sidebar-item.active .count {
+      background: white;
+      color: var(--accent);
+    }
+
+    .sidebar-item .icon { font-size: 16px; width: 20px; text-align: center; }
+
+    /* ─── Content ───────────────────────── */
+    .content {
+      flex: 1;
+      padding: 24px;
+      max-width: 1000px;
+      min-width: 0;
+    }
+
+    .content-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .content-header h2 {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .search-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 200px;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      outline: none;
+      background: var(--bg);
+    }
+
+    .search-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-light);
+    }
+
+    .filter-select {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      outline: none;
+      background: var(--bg);
+      cursor: pointer;
+    }
+
+    /* ─── Draft Cards ───────────────────── */
+    .draft-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .draft-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .draft-card:hover {
+      border-color: var(--accent);
+      box-shadow: var(--shadow);
+    }
+
+    .draft-card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .draft-card-title {
+      font-size: 15px;
+      font-weight: 600;
+      flex: 1;
+    }
+
+    .draft-card-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .badge-draft { background: var(--bg-tertiary); color: var(--text-secondary); }
+    .badge-review { background: var(--orange-light); color: var(--orange); }
+    .badge-approved { background: var(--green-light); color: var(--green); }
+    .badge-done { background: var(--blue-light); color: var(--blue); }
+    .badge-rejected { background: var(--red-light); color: var(--red); }
+
+    .badge-email { background: var(--blue-light); color: var(--blue); }
+    .badge-todo { background: var(--green-light); color: var(--green); }
+    .badge-idea { background: var(--yellow-light); color: var(--yellow); }
+    .badge-note { background: var(--purple-light); color: var(--purple); }
+    .badge-script { background: var(--bg-tertiary); color: var(--text-secondary); }
+
+    .badge-low { background: var(--bg-tertiary); color: var(--text-secondary); }
+    .badge-medium { background: var(--blue-light); color: var(--blue); }
+    .badge-high { background: var(--orange-light); color: var(--orange); }
+    .badge-urgent { background: var(--red-light); color: var(--red); }
+
+    .draft-card-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-tertiary);
+    }
+
+    .draft-card-tags {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      background: var(--bg-secondary);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .comment-count {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    /* ─── Empty State ───────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-tertiary);
+    }
+
+    .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+    .empty-state h3 { font-size: 16px; color: var(--text-secondary); margin-bottom: 4px; }
+    .empty-state p { font-size: 14px; }
+
+    /* ─── Modal ─────────────────────────── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 200;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 40px 20px;
+      overflow-y: auto;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--bg);
+      border-radius: 12px;
+      width: 100%;
+      max-width: 640px;
+      box-shadow: var(--shadow-lg);
+      animation: modalIn 0.2s ease;
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-header h3 { font-size: 16px; font-weight: 600; }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--text-tertiary);
+      padding: 4px;
+    }
+
+    .modal-close:hover { color: var(--text); }
+
+    .modal-body { padding: 20px; }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ─── Detail View ───────────────────── */
+    .detail-view { display: none; }
+
+    .detail-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      margin-bottom: 16px;
+      background: none;
+      border: none;
+      font-family: inherit;
+    }
+
+    .detail-back:hover { color: var(--accent); }
+
+    .detail-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .detail-title {
+      font-size: 24px;
+      font-weight: 700;
+      flex: 1;
+    }
+
+    .detail-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .detail-meta {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .detail-content {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 24px;
+      white-space: pre-wrap;
+      font-size: 14px;
+      line-height: 1.7;
+      min-height: 120px;
+    }
+
+    .detail-section {
+      margin-bottom: 24px;
+    }
+
+    .detail-section h3 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .comment-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .comment-item {
+      display: flex;
+      gap: 10px;
+      padding: 10px;
+      background: var(--bg-secondary);
+      border-radius: var(--radius-sm);
+    }
+
+    .comment-item .avatar { width: 30px; height: 30px; font-size: 11px; flex-shrink: 0; }
+
+    .comment-body { flex: 1; min-width: 0; }
+
+    .comment-author {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .comment-time {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      margin-left: 8px;
+      font-weight: 400;
+    }
+
+    .comment-text {
+      font-size: 14px;
+      margin-top: 2px;
+      word-wrap: break-word;
+    }
+
+    .comment-form {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .comment-form input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .comment-form input:focus {
+      border-color: var(--accent);
+    }
+
+    .history-list { display: flex; flex-direction: column; gap: 6px; }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      padding: 6px 0;
+      border-bottom: 1px solid var(--bg-secondary);
+    }
+
+    .history-item .avatar { width: 22px; height: 22px; font-size: 10px; }
+
+    .history-action { flex: 1; }
+    .history-time { font-size: 11px; color: var(--text-tertiary); white-space: nowrap; }
+
+    .detail-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .export-hint {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .export-hint button {
+      padding: 6px 12px;
+      font-size: 12px;
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg);
+      cursor: pointer;
+      color: var(--text-secondary);
+      font-family: inherit;
+    }
+
+    .export-hint button:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ─── Responsive ────────────────────── */
+    @media (max-width: 768px) {
+      .menu-toggle { display: block; }
+
+      .sidebar {
+        position: fixed;
+        top: 52px;
+        left: 0;
+        bottom: 0;
+        z-index: 90;
+        transform: translateX(-100%);
+        transition: transform 0.2s ease;
+        box-shadow: var(--shadow-lg);
+      }
+
+      .sidebar.open { transform: translateX(0); }
+
+      .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        top: 52px;
+        background: rgba(0,0,0,0.3);
+        z-index: 89;
+      }
+
+      .sidebar-overlay.open { display: block; }
+
+      .content { padding: 16px; }
+
+      .content-header { flex-direction: column; align-items: stretch; }
+
+      .search-bar { flex-direction: column; }
+
+      .detail-header { flex-direction: column; }
+
+      .modal { margin: 20px; }
+
+      .topbar { padding: 0 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <h1>Drafts Hub</h1>
+    <p>Sign in to manage drafts, ideas, and more</p>
+    <div class="quick-login">
+      <button class="lobsty-btn" onclick="quickLogin('lobsty', '***REMOVED***')">Sign in as Lobsty</button>
+      <button class="ray-btn" onclick="quickLogin('ray', 'ray2026')">Sign in as Ray</button>
+    </div>
+    <div class="divider">or</div>
+    <div class="login-error" id="loginError"></div>
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="loginUsername" placeholder="Username">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="loginPassword" placeholder="Password" onkeydown="if(event.key==='Enter') doLogin()">
+    </div>
+    <button class="btn btn-primary btn-full" onclick="doLogin()" style="margin-top:8px">Sign In</button>
+  </div>
+</div>
+
+<!-- App -->
+<div class="app" id="app">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="menu-toggle" onclick="toggleSidebar()">&#9776;</button>
+      <h1>Drafts Hub</h1>
+      <span class="app-badge">v1.0</span>
+    </div>
+    <div class="topbar-right">
+      <div class="user-pill" id="userPill">
+        <div class="avatar" id="userAvatar"></div>
+        <span id="userName"></span>
+      </div>
+      <button class="logout-btn" onclick="logout()">Sign out</button>
+    </div>
+  </div>
+
+  <div class="main-layout">
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-section">
+        <h3>Dashboard</h3>
+        <button class="sidebar-item active" data-view="all" onclick="setView('all')">
+          <span class="icon">&#128196;</span> All Drafts <span class="count" id="countAll">0</span>
+        </button>
+        <button class="sidebar-item" data-view="review" onclick="setView('review')">
+          <span class="icon">&#128065;</span> Needs Review <span class="count" id="countReview">0</span>
+        </button>
+        <button class="sidebar-item" data-view="urgent" onclick="setView('urgent')">
+          <span class="icon">&#128293;</span> Urgent <span class="count" id="countUrgent">0</span>
+        </button>
+      </div>
+      <div class="sidebar-section">
+        <h3>By Status</h3>
+        <button class="sidebar-item" data-view="draft" onclick="setView('draft')">
+          <span class="icon">&#9998;</span> Drafts <span class="count" id="countDraft">0</span>
+        </button>
+        <button class="sidebar-item" data-view="approved" onclick="setView('approved')">
+          <span class="icon">&#10003;</span> Approved <span class="count" id="countApproved">0</span>
+        </button>
+        <button class="sidebar-item" data-view="done" onclick="setView('done')">
+          <span class="icon">&#9989;</span> Done <span class="count" id="countDone">0</span>
+        </button>
+        <button class="sidebar-item" data-view="rejected" onclick="setView('rejected')">
+          <span class="icon">&#10005;</span> Rejected <span class="count" id="countRejected">0</span>
+        </button>
+      </div>
+      <div class="sidebar-section">
+        <h3>By Type</h3>
+        <button class="sidebar-item" data-view="type-email" onclick="setView('type-email')">
+          <span class="icon">&#9993;</span> Emails
+        </button>
+        <button class="sidebar-item" data-view="type-todo" onclick="setView('type-todo')">
+          <span class="icon">&#9744;</span> Todos
+        </button>
+        <button class="sidebar-item" data-view="type-idea" onclick="setView('type-idea')">
+          <span class="icon">&#128161;</span> Ideas
+        </button>
+        <button class="sidebar-item" data-view="type-note" onclick="setView('type-note')">
+          <span class="icon">&#128221;</span> Notes
+        </button>
+        <button class="sidebar-item" data-view="type-script" onclick="setView('type-script')">
+          <span class="icon">&#128187;</span> Scripts
+        </button>
+      </div>
+    </aside>
+
+    <main class="content">
+      <!-- List View -->
+      <div id="listView">
+        <div class="content-header">
+          <h2 id="viewTitle">All Drafts</h2>
+          <button class="btn btn-primary" onclick="openCreateModal()">+ New Draft</button>
+        </div>
+        <div class="search-bar">
+          <input type="text" class="search-input" id="searchInput" placeholder="Search drafts..." oninput="debounceSearch()">
+          <select class="filter-select" id="filterPriority" onchange="loadDrafts()">
+            <option value="">All Priorities</option>
+            <option value="urgent">Urgent</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+          <select class="filter-select" id="filterSort" onchange="loadDrafts()">
+            <option value="created_at">Newest</option>
+            <option value="updated_at">Recently Updated</option>
+            <option value="priority">Priority</option>
+            <option value="title">Title</option>
+          </select>
+        </div>
+        <div class="draft-list" id="draftList"></div>
+      </div>
+
+      <!-- Detail View -->
+      <div class="detail-view" id="detailView">
+        <button class="detail-back" onclick="closeDetail()">&larr; Back to list</button>
+        <div class="detail-header">
+          <h2 class="detail-title" id="detailTitle"></h2>
+          <div class="detail-actions" id="detailActions"></div>
+        </div>
+        <div class="detail-meta" id="detailMeta"></div>
+        <div class="detail-tags" id="detailTags"></div>
+        <div class="detail-content" id="detailContent"></div>
+
+        <div class="export-hint" id="exportHint">
+          <button onclick="exportCopy()">Copy to clipboard</button>
+          <button onclick="exportText()">Download as .txt</button>
+        </div>
+
+        <div class="detail-section">
+          <h3>Comments</h3>
+          <div class="comment-list" id="commentList"></div>
+          <div class="comment-form">
+            <input type="text" id="commentInput" placeholder="Add a comment..." onkeydown="if(event.key==='Enter') addComment()">
+            <button class="btn btn-primary btn-sm" onclick="addComment()">Send</button>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h3>History</h3>
+          <div class="history-list" id="historyList"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Create/Edit Modal -->
+<div class="modal-overlay" id="draftModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">New Draft</h3>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Title *</label>
+        <input type="text" id="draftTitleInput" placeholder="Draft title">
+      </div>
+      <div style="display:flex;gap:10px">
+        <div class="form-group" style="flex:1">
+          <label>Type *</label>
+          <select id="draftTypeInput">
+            <option value="email">Email</option>
+            <option value="todo">Todo</option>
+            <option value="idea">Idea</option>
+            <option value="note" selected>Note</option>
+            <option value="script">Script</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex:1">
+          <label>Priority</label>
+          <select id="draftPriorityInput">
+            <option value="low">Low</option>
+            <option value="medium" selected>Medium</option>
+            <option value="high">High</option>
+            <option value="urgent">Urgent</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Category</label>
+        <input type="text" id="draftCategoryInput" placeholder="e.g. Work, Personal, Project">
+      </div>
+      <div class="form-group">
+        <label>Tags (comma-separated)</label>
+        <input type="text" id="draftTagsInput" placeholder="e.g. important, follow-up, client">
+      </div>
+      <div class="form-group">
+        <label>Content</label>
+        <textarea id="draftContentInput" rows="8" placeholder="Write your draft content here..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="modalSaveBtn" onclick="saveDraft()">Create Draft</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal-overlay" id="rejectModal">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <h3>Reject Draft</h3>
+      <button class="modal-close" onclick="closeRejectModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Reason (optional)</label>
+        <textarea id="rejectReason" rows="3" placeholder="Why is this being rejected?"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeRejectModal()">Cancel</button>
+      <button class="btn btn-red" onclick="confirmReject()">Reject</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── State ────────────────────────────────────────────────────────────────────
+let token = localStorage.getItem('drafts_token');
+let currentUser = null;
+let currentView = 'all';
+let currentDraft = null;
+let editingDraftId = null;
+let searchTimeout = null;
+let rejectingId = null;
+
+const API = '/api';
+
+// ─── API Helpers ──────────────────────────────────────────────────────────────
+async function api(path, opts = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(API + path, { ...opts, headers });
+  if (res.status === 401) { logout(); throw new Error('Unauthorized'); }
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+async function doLogin() {
+  const username = document.getElementById('loginUsername').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  if (!username || !password) {
+    showLoginError('Please enter username and password');
+    return;
+  }
+  try {
+    const data = await fetch(API + '/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    }).then(r => r.json());
+    if (data.error) throw new Error(data.error);
+    token = data.token;
+    currentUser = data.user;
+    localStorage.setItem('drafts_token', token);
+    showApp();
+  } catch (err) {
+    showLoginError(err.message);
+  }
+}
+
+async function quickLogin(username, password) {
+  document.getElementById('loginUsername').value = username;
+  document.getElementById('loginPassword').value = password;
+  await doLogin();
+}
+
+function showLoginError(msg) {
+  const el = document.getElementById('loginError');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function logout() {
+  token = null;
+  currentUser = null;
+  localStorage.removeItem('drafts_token');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+}
+
+// ─── App Init ─────────────────────────────────────────────────────────────────
+async function showApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+
+  if (!currentUser) {
+    try {
+      currentUser = await api('/auth/me');
+    } catch {
+      logout();
+      return;
+    }
+  }
+
+  document.getElementById('userName').textContent = currentUser.display_name;
+  const avatar = document.getElementById('userAvatar');
+  avatar.style.background = currentUser.avatar_color;
+  avatar.textContent = currentUser.display_name[0].toUpperCase();
+
+  await Promise.all([loadStats(), loadDrafts()]);
+}
+
+// ─── Stats ────────────────────────────────────────────────────────────────────
+async function loadStats() {
+  try {
+    const stats = await api('/stats');
+    document.getElementById('countAll').textContent = stats.total;
+    document.getElementById('countReview').textContent = stats.in_review;
+    document.getElementById('countUrgent').textContent = stats.urgent;
+    document.getElementById('countDraft').textContent = stats.drafts;
+    document.getElementById('countApproved').textContent = stats.approved;
+    document.getElementById('countDone').textContent = stats.done;
+    document.getElementById('countRejected').textContent = stats.rejected;
+  } catch (err) {
+    console.error('Stats error:', err);
+  }
+}
+
+// ─── Views ────────────────────────────────────────────────────────────────────
+function setView(view) {
+  currentView = view;
+  document.querySelectorAll('.sidebar-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.view === view);
+  });
+
+  const titles = {
+    all: 'All Drafts', review: 'Needs Review', urgent: 'Urgent',
+    draft: 'Drafts', approved: 'Approved', done: 'Done', rejected: 'Rejected',
+    'type-email': 'Emails', 'type-todo': 'Todos', 'type-idea': 'Ideas',
+    'type-note': 'Notes', 'type-script': 'Scripts'
+  };
+
+  document.getElementById('viewTitle').textContent = titles[view] || 'All Drafts';
+  document.getElementById('listView').style.display = 'block';
+  document.getElementById('detailView').style.display = 'none';
+
+  // Close sidebar on mobile
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+
+  loadDrafts();
+}
+
+// ─── Load Drafts ──────────────────────────────────────────────────────────────
+async function loadDrafts() {
+  const params = new URLSearchParams();
+  const search = document.getElementById('searchInput').value.trim();
+  const priority = document.getElementById('filterPriority').value;
+  const sort = document.getElementById('filterSort').value;
+
+  if (search) params.set('search', search);
+  if (priority) params.set('priority', priority);
+  params.set('sort', sort);
+
+  // Apply view filters
+  if (currentView === 'review') params.set('status', 'review');
+  else if (currentView === 'draft') params.set('status', 'draft');
+  else if (currentView === 'approved') params.set('status', 'approved');
+  else if (currentView === 'done') params.set('status', 'done');
+  else if (currentView === 'rejected') params.set('status', 'rejected');
+  else if (currentView === 'urgent') { params.set('priority', 'urgent'); }
+  else if (currentView.startsWith('type-')) params.set('type', currentView.replace('type-', ''));
+
+  try {
+    const data = await api('/drafts?' + params.toString());
+    renderDraftList(data.drafts);
+  } catch (err) {
+    console.error('Load drafts error:', err);
+  }
+}
+
+function renderDraftList(drafts) {
+  const container = document.getElementById('draftList');
+  if (drafts.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">&#128196;</div>
+        <h3>No drafts found</h3>
+        <p>Create a new draft to get started</p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = drafts.map(d => `
+    <div class="draft-card" onclick="openDraft(${d.id})">
+      <div class="draft-card-top">
+        <div class="draft-card-title">${esc(d.title)}</div>
+        <div class="draft-card-meta">
+          <span class="badge badge-${d.type}">${d.type}</span>
+          <span class="badge badge-${d.status}">${statusLabel(d.status)}</span>
+          <span class="badge badge-${d.priority}">${d.priority}</span>
+        </div>
+      </div>
+      <div class="draft-card-bottom">
+        <span>by ${esc(d.creator_name || 'Unknown')} &middot; ${timeAgo(d.created_at)}</span>
+        <span>
+          ${d.comment_count > 0 ? `<span class="comment-count">&#128172; ${d.comment_count}</span>` : ''}
+        </span>
+      </div>
+      ${d.tags && d.tags.length > 0 ? `<div class="draft-card-tags" style="margin-top:6px">${d.tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+// ─── Draft Detail ─────────────────────────────────────────────────────────────
+async function openDraft(id) {
+  document.getElementById('listView').style.display = 'none';
+  document.getElementById('detailView').style.display = 'block';
+
+  try {
+    const [draft, comments, history] = await Promise.all([
+      api(`/drafts/${id}`),
+      api(`/drafts/${id}/comments`),
+      api(`/drafts/${id}/history`)
+    ]);
+
+    currentDraft = draft;
+    document.getElementById('detailTitle').textContent = draft.title;
+    document.getElementById('detailContent').textContent = draft.content || '(No content)';
+
+    // Meta badges
+    document.getElementById('detailMeta').innerHTML = `
+      <span class="badge badge-${draft.type}">${draft.type}</span>
+      <span class="badge badge-${draft.status}">${statusLabel(draft.status)}</span>
+      <span class="badge badge-${draft.priority}">${draft.priority} priority</span>
+      ${draft.category ? `<span class="badge badge-draft">${esc(draft.category)}</span>` : ''}
+      <span style="font-size:12px;color:var(--text-tertiary)">
+        by ${esc(draft.creator_name || 'Unknown')} &middot; ${timeAgo(draft.created_at)}
+        ${draft.assignee_name ? ` &middot; assigned to ${esc(draft.assignee_name)}` : ''}
+      </span>
+    `;
+
+    // Tags
+    document.getElementById('detailTags').innerHTML = (draft.tags || [])
+      .map(t => `<span class="tag">${esc(t)}</span>`).join('');
+
+    // Action buttons
+    renderDetailActions(draft);
+
+    // Comments
+    renderComments(comments);
+
+    // History
+    renderHistory(history);
+  } catch (err) {
+    console.error('Open draft error:', err);
+  }
+}
+
+function renderDetailActions(draft) {
+  const el = document.getElementById('detailActions');
+  let html = '';
+
+  if (draft.status === 'draft') {
+    html += `<button class="btn btn-primary btn-sm" onclick="submitForReview(${draft.id})">Submit for Review</button>`;
+  }
+  if (draft.status === 'review') {
+    html += `<button class="btn btn-green btn-sm" onclick="approveDraft(${draft.id})">Approve</button>`;
+    html += `<button class="btn btn-red btn-sm" onclick="openRejectModal(${draft.id})">Reject</button>`;
+  }
+  if (draft.status === 'approved') {
+    html += `<button class="btn btn-primary btn-sm" onclick="markDone(${draft.id})">Mark Done</button>`;
+  }
+
+  html += `<button class="btn btn-ghost btn-sm" onclick="openEditModal(${draft.id})">Edit</button>`;
+  html += `<button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="deleteDraft(${draft.id})">Delete</button>`;
+
+  el.innerHTML = html;
+}
+
+function renderComments(comments) {
+  const el = document.getElementById('commentList');
+  if (comments.length === 0) {
+    el.innerHTML = '<div style="font-size:13px;color:var(--text-tertiary);padding:8px 0">No comments yet</div>';
+    return;
+  }
+  el.innerHTML = comments.map(c => `
+    <div class="comment-item">
+      <div class="avatar" style="background:${c.avatar_color}">${c.display_name[0].toUpperCase()}</div>
+      <div class="comment-body">
+        <span class="comment-author">${esc(c.display_name)}<span class="comment-time">${timeAgo(c.created_at)}</span></span>
+        <div class="comment-text">${esc(c.content)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderHistory(history) {
+  const el = document.getElementById('historyList');
+  if (history.length === 0) {
+    el.innerHTML = '<div style="font-size:13px;color:var(--text-tertiary)">No history</div>';
+    return;
+  }
+  el.innerHTML = history.map(h => `
+    <div class="history-item">
+      <div class="avatar" style="background:${h.avatar_color}">${h.display_name[0].toUpperCase()}</div>
+      <div class="history-action">${formatAction(h)}</div>
+      <div class="history-time">${timeAgo(h.created_at)}</div>
+    </div>
+  `).join('');
+}
+
+function formatAction(h) {
+  if (h.action === 'created') return `<strong>${esc(h.display_name)}</strong> created this draft`;
+  if (h.action === 'status_change') return `<strong>${esc(h.display_name)}</strong> changed status from <span class="badge badge-${h.old_value}">${statusLabel(h.old_value)}</span> to <span class="badge badge-${h.new_value}">${statusLabel(h.new_value)}</span>`;
+  if (h.action === 'title_change') return `<strong>${esc(h.display_name)}</strong> changed the title`;
+  if (h.action === 'content_edit') return `<strong>${esc(h.display_name)}</strong> edited the content`;
+  return `<strong>${esc(h.display_name)}</strong> ${h.action}`;
+}
+
+function closeDetail() {
+  document.getElementById('detailView').style.display = 'none';
+  document.getElementById('listView').style.display = 'block';
+  currentDraft = null;
+  loadDrafts();
+  loadStats();
+}
+
+// ─── Draft Actions ────────────────────────────────────────────────────────────
+async function submitForReview(id) {
+  await api(`/drafts/${id}/submit`, { method: 'POST' });
+  openDraft(id);
+  loadStats();
+}
+
+async function approveDraft(id) {
+  await api(`/drafts/${id}/approve`, { method: 'POST' });
+  openDraft(id);
+  loadStats();
+}
+
+async function markDone(id) {
+  await api(`/drafts/${id}/done`, { method: 'POST' });
+  openDraft(id);
+  loadStats();
+}
+
+function openRejectModal(id) {
+  rejectingId = id;
+  document.getElementById('rejectReason').value = '';
+  document.getElementById('rejectModal').classList.add('open');
+}
+
+function closeRejectModal() {
+  rejectingId = null;
+  document.getElementById('rejectModal').classList.remove('open');
+}
+
+async function confirmReject() {
+  if (!rejectingId) return;
+  const reason = document.getElementById('rejectReason').value.trim();
+  await api(`/drafts/${rejectingId}/reject`, { method: 'POST', body: JSON.stringify({ reason }) });
+  closeRejectModal();
+  openDraft(rejectingId);
+  loadStats();
+}
+
+async function deleteDraft(id) {
+  if (!confirm('Delete this draft permanently?')) return;
+  await api(`/drafts/${id}`, { method: 'DELETE' });
+  closeDetail();
+}
+
+// ─── Comments ─────────────────────────────────────────────────────────────────
+async function addComment() {
+  if (!currentDraft) return;
+  const input = document.getElementById('commentInput');
+  const content = input.value.trim();
+  if (!content) return;
+  try {
+    await api(`/drafts/${currentDraft.id}/comments`, { method: 'POST', body: JSON.stringify({ content }) });
+    input.value = '';
+    const comments = await api(`/drafts/${currentDraft.id}/comments`);
+    renderComments(comments);
+  } catch (err) {
+    console.error('Comment error:', err);
+  }
+}
+
+// ─── Create/Edit Modal ───────────────────────────────────────────────────────
+function openCreateModal() {
+  editingDraftId = null;
+  document.getElementById('modalTitle').textContent = 'New Draft';
+  document.getElementById('modalSaveBtn').textContent = 'Create Draft';
+  document.getElementById('draftTitleInput').value = '';
+  document.getElementById('draftTypeInput').value = 'note';
+  document.getElementById('draftPriorityInput').value = 'medium';
+  document.getElementById('draftCategoryInput').value = '';
+  document.getElementById('draftTagsInput').value = '';
+  document.getElementById('draftContentInput').value = '';
+  document.getElementById('draftModal').classList.add('open');
+}
+
+async function openEditModal(id) {
+  const draft = currentDraft || await api(`/drafts/${id}`);
+  editingDraftId = id;
+  document.getElementById('modalTitle').textContent = 'Edit Draft';
+  document.getElementById('modalSaveBtn').textContent = 'Save Changes';
+  document.getElementById('draftTitleInput').value = draft.title;
+  document.getElementById('draftTypeInput').value = draft.type;
+  document.getElementById('draftPriorityInput').value = draft.priority;
+  document.getElementById('draftCategoryInput').value = draft.category || '';
+  document.getElementById('draftTagsInput').value = (draft.tags || []).join(', ');
+  document.getElementById('draftContentInput').value = draft.content || '';
+  document.getElementById('draftModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('draftModal').classList.remove('open');
+  editingDraftId = null;
+}
+
+async function saveDraft() {
+  const title = document.getElementById('draftTitleInput').value.trim();
+  const type = document.getElementById('draftTypeInput').value;
+  const priority = document.getElementById('draftPriorityInput').value;
+  const category = document.getElementById('draftCategoryInput').value.trim();
+  const tagsRaw = document.getElementById('draftTagsInput').value.trim();
+  const content = document.getElementById('draftContentInput').value;
+
+  if (!title) { alert('Title is required'); return; }
+
+  const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
+
+  const body = { title, type, priority, category, tags, content };
+
+  try {
+    if (editingDraftId) {
+      await api(`/drafts/${editingDraftId}`, { method: 'PUT', body: JSON.stringify(body) });
+      closeModal();
+      openDraft(editingDraftId);
+    } else {
+      const draft = await api('/drafts', { method: 'POST', body: JSON.stringify(body) });
+      closeModal();
+      openDraft(draft.id);
+    }
+    loadStats();
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
+// ─── Export ────────────────────────────────────────────────────────────────────
+function exportCopy() {
+  if (!currentDraft) return;
+  const text = `${currentDraft.title}\n\n${currentDraft.content || ''}`;
+  navigator.clipboard.writeText(text).then(() => alert('Copied to clipboard!'));
+}
+
+function exportText() {
+  if (!currentDraft) return;
+  const text = `${currentDraft.title}\n\n${currentDraft.content || ''}`;
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${currentDraft.title.replace(/[^a-z0-9]/gi, '_')}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ─── Sidebar Toggle ───────────────────────────────────────────────────────────
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('open');
+}
+
+// ─── Search Debounce ──────────────────────────────────────────────────────────
+function debounceSearch() {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(loadDrafts, 300);
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function esc(s) {
+  if (!s) return '';
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+function statusLabel(s) {
+  const labels = { draft: 'Draft', review: 'In Review', approved: 'Approved', done: 'Done', rejected: 'Rejected' };
+  return labels[s] || s;
+}
+
+function timeAgo(dateStr) {
+  const now = Date.now();
+  const then = new Date(dateStr).getTime();
+  const diff = Math.floor((now - then) / 1000);
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+  if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
+  return new Date(dateStr).toLocaleDateString();
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+if (token) {
+  showApp();
+}
+</script>
+</body>
+</html>
