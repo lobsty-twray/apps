@@ -3,20 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🦞 Lobsty Board</title>
+    <title>Project Board</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <header class="header">
-        <h1>🦞 Lobsty Board</h1>
-        <div class="header-actions">
-            <button id="new-project-btn" class="btn btn-primary">New Project</button>
+        <div class="header-content">
+            <h1>Board</h1>
+            <div class="header-actions">
+                <button id="new-project-btn" class="btn btn-primary">
+                    <span class="btn-icon">+</span>
+                    New Project
+                </button>
+            </div>
         </div>
     </header>
 
     <div class="container">
         <aside class="sidebar">
-            <h2>Projects</h2>
+            <div class="sidebar-header">
+                <h2>Projects</h2>
+            </div>
             <div id="projects-list" class="projects-list">
                 <!-- Projects will be loaded here -->
             </div>
@@ -24,41 +31,67 @@
 
         <main class="main-content">
             <div id="project-header" class="project-header" style="display: none;">
-                <h2 id="project-title"></h2>
-                <p id="project-description"></p>
+                <div class="project-info">
+                    <h2 id="project-title"></h2>
+                    <p id="project-description"></p>
+                </div>
                 <div class="project-actions">
-                    <button id="new-task-btn" class="btn btn-primary">New Task</button>
-                    <button id="manage-labels-btn" class="btn btn-secondary">Manage Labels</button>
+                    <button id="new-task-btn" class="btn btn-primary">
+                        <span class="btn-icon">+</span>
+                        New Task
+                    </button>
+                    <button id="manage-labels-btn" class="btn btn-secondary">
+                        <span class="btn-icon">●</span>
+                        Manage Labels
+                    </button>
                 </div>
             </div>
 
             <div id="welcome-screen" class="welcome-screen">
                 <div class="welcome-content">
-                    <h2>Welcome to Lobsty Board</h2>
+                    <h2>Welcome to your Project Board</h2>
                     <p>Create your first project to get started with task management.</p>
-                    <button id="welcome-new-project-btn" class="btn btn-primary">Create Project</button>
+                    <button id="welcome-new-project-btn" class="btn btn-primary btn-large">
+                        <span class="btn-icon">+</span>
+                        Create Project
+                    </button>
                 </div>
             </div>
 
             <div id="kanban-board" class="kanban-board" style="display: none;">
                 <div class="column" data-status="backlog">
-                    <h3 class="column-header">Backlog</h3>
+                    <div class="column-header">
+                        <h3 class="column-title">Backlog</h3>
+                        <span class="task-count" id="backlog-count">0</span>
+                    </div>
                     <div class="column-content" id="backlog-tasks"></div>
                 </div>
                 <div class="column" data-status="todo">
-                    <h3 class="column-header">Todo</h3>
+                    <div class="column-header">
+                        <h3 class="column-title">To Do</h3>
+                        <span class="task-count" id="todo-count">0</span>
+                    </div>
                     <div class="column-content" id="todo-tasks"></div>
                 </div>
                 <div class="column" data-status="in-progress">
-                    <h3 class="column-header">In Progress</h3>
+                    <div class="column-header">
+                        <h3 class="column-title">In Progress</h3>
+                        <span class="task-count" id="in-progress-count">0</span>
+                    </div>
                     <div class="column-content" id="in-progress-tasks"></div>
                 </div>
                 <div class="column" data-status="review">
-                    <h3 class="column-header">Review</h3>
+                    <div class="column-header">
+                        <h3 class="column-title">Review</h3>
+                        <span class="task-count" id="review-count">0</span>
+                    </div>
                     <div class="column-content" id="review-tasks"></div>
                 </div>
                 <div class="column" data-status="done">
-                    <h3 class="column-header">Done</h3>
+                    <div class="column-header">
+                        <h3 class="column-title">Done</h3>
+                        <span class="task-count" id="done-count">0</span>
+                    </div>
                     <div class="column-content" id="done-tasks"></div>
                 </div>
             </div>
@@ -67,46 +100,48 @@
 
     <!-- Project Modal -->
     <div id="project-modal" class="modal" style="display: none;">
+        <div class="modal-backdrop"></div>
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="project-modal-title">New Project</h3>
-                <span class="close" id="project-modal-close">&times;</span>
+                <button class="modal-close" id="project-modal-close">×</button>
             </div>
             <div class="modal-body">
                 <form id="project-form">
                     <div class="form-group">
                         <label for="project-name">Project Name</label>
-                        <input type="text" id="project-name" name="name" required>
+                        <input type="text" id="project-name" name="name" required placeholder="Enter project name">
                     </div>
                     <div class="form-group">
                         <label for="project-desc">Description</label>
-                        <textarea id="project-desc" name="description" rows="3"></textarea>
+                        <textarea id="project-desc" name="description" rows="3" placeholder="Optional project description"></textarea>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" id="project-cancel-btn">Cancel</button>
-                <button type="button" class="btn btn-primary" id="project-save-btn" onclick="document.getElementById('project-form').requestSubmit()">Save</button>
+                <button type="button" class="btn btn-primary" id="project-save-btn" onclick="document.getElementById(project-form).requestSubmit()">Save</button>
             </div>
         </div>
     </div>
 
     <!-- Task Modal -->
     <div id="task-modal" class="modal" style="display: none;">
+        <div class="modal-backdrop"></div>
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="task-modal-title">New Task</h3>
-                <span class="close" id="task-modal-close">&times;</span>
+                <button class="modal-close" id="task-modal-close">×</button>
             </div>
             <div class="modal-body">
                 <form id="task-form">
                     <div class="form-group">
                         <label for="task-title">Task Title</label>
-                        <input type="text" id="task-title" name="title" required>
+                        <input type="text" id="task-title" name="title" required placeholder="Enter task title">
                     </div>
                     <div class="form-group">
                         <label for="task-desc">Description</label>
-                        <textarea id="task-desc" name="description" rows="4"></textarea>
+                        <textarea id="task-desc" name="description" rows="4" placeholder="Optional task description"></textarea>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
@@ -122,7 +157,7 @@
                             <label for="task-status">Status</label>
                             <select id="task-status" name="status">
                                 <option value="backlog" selected>Backlog</option>
-                                <option value="todo">Todo</option>
+                                <option value="todo">To Do</option>
                                 <option value="in-progress">In Progress</option>
                                 <option value="review">Review</option>
                                 <option value="done">Done</option>
@@ -139,31 +174,34 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-danger" id="task-delete-btn" style="display: none;">Delete</button>
-                <button type="button" class="btn btn-secondary" id="task-cancel-btn">Cancel</button>
-                <button type="button" class="btn btn-primary" id="task-save-btn" onclick="document.getElementById('task-form').requestSubmit()">Save</button>
+                <div class="modal-footer-right">
+                    <button type="button" class="btn btn-secondary" id="task-cancel-btn">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="task-save-btn" onclick="document.getElementById(task-form).requestSubmit()">Save</button>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Labels Modal -->
     <div id="labels-modal" class="modal" style="display: none;">
+        <div class="modal-backdrop"></div>
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Manage Labels</h3>
-                <span class="close" id="labels-modal-close">&times;</span>
+                <button class="modal-close" id="labels-modal-close">×</button>
             </div>
             <div class="modal-body">
                 <form id="label-form">
                     <div class="form-row">
-                        <div class="form-group">
+                        <div class="form-group form-group-flex">
                             <label for="label-name">Label Name</label>
-                            <input type="text" id="label-name" name="name" required>
+                            <input type="text" id="label-name" name="name" required placeholder="Enter label name">
                         </div>
-                        <div class="form-group">
+                        <div class="form-group form-group-color">
                             <label for="label-color">Color</label>
-                            <input type="color" id="label-color" name="color" value="#646cff">
+                            <input type="color" id="label-color" name="color" value="#2383e2">
                         </div>
-                        <div class="form-group">
+                        <div class="form-group form-group-button">
                             <button type="submit" class="btn btn-primary">Add Label</button>
                         </div>
                     </div>
