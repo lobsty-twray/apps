@@ -48,8 +48,8 @@ services:
       - NODE_ENV=production
       - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/docs
       - JWT_SECRET=***REMOVED***
-      - GOOGLE_CLIENT_ID=
-      - GOOGLE_CLIENT_SECRET=
+      - GOOGLE_CLIENT_ID=***REMOVED***
+      - GOOGLE_CLIENT_SECRET=***REMOVED***
     depends_on:
       postgres:
         condition: service_healthy
