@@ -9,16 +9,15 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
-      - name: Deploy to VM
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            cd ~/apps
-            git pull origin main
-            docker compose up --build -d docs
-            docker image prune -f
+      - name: Pull latest code
+        run: |
+          cd ~/apps
+          git pull origin main
+
+      - name: Build and deploy
+        run: |
+          cd ~/apps
+          docker compose up --build -d docs
+          docker image prune -f
