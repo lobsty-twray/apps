@@ -489,6 +489,117 @@ body {
 .format-bar button:hover { background: var(--bg-hover); }
 
 .app-wrap { display: none; width: 100%; height: 100vh; }
+
+/* Mobile sidebar overlay */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.4);
+  z-index: 9;
+}
+
+.sidebar-overlay.active { display: block; }
+
+/* ==================== Mobile Responsive ==================== */
+@media (max-width: 768px) {
+  body { overflow: auto; height: auto; min-height: 100vh; min-height: 100dvh; -webkit-tap-highlight-color: transparent; }
+
+  .auth-page { padding: 20px; }
+  .auth-card { width: 100%; max-width: 400px; padding: 24px 20px; }
+  .auth-card h1 { font-size: 22px; }
+  .auth-card input[type="text"],
+  .auth-card input[type="email"],
+  .auth-card input[type="password"] { font-size: 16px; padding: 12px; min-height: 44px; }
+  .auth-btn { min-height: 44px; font-size: 16px; padding: 12px; }
+  .google-btn { min-height: 44px; font-size: 16px; }
+
+  .app-wrap { flex-direction: column; height: 100vh; height: 100dvh; }
+
+  .sidebar {
+    position: fixed;
+    top: 0; left: 0;
+    width: 280px;
+    height: 100%;
+    z-index: 10;
+    margin-left: -280px;
+    transition: margin-left 0.3s ease;
+  }
+
+  .sidebar.mobile-open { margin-left: 0; }
+  .sidebar.collapsed { margin-left: -280px; }
+
+  .sidebar-header { min-height: 48px; }
+
+  .tree-item {
+    min-height: 44px;
+    padding: 8px 10px;
+    font-size: 15px;
+  }
+
+  .tree-item .item-actions { display: flex; }
+  .tree-item .item-btn { width: 36px; height: 36px; font-size: 18px; }
+
+  .search-input { font-size: 16px; padding: 10px 12px; min-height: 44px; }
+
+  .sidebar-footer button { min-height: 44px; font-size: 14px; padding: 10px; }
+  .user-bar .logout-btn { min-height: 44px; padding: 8px 12px; font-size: 14px; }
+
+  .main { height: 100vh; height: 100dvh; }
+
+  .topbar { min-height: 48px; padding: 0 12px; }
+
+  #menuBtn { display: flex !important; min-width: 44px; min-height: 44px; font-size: 20px; }
+
+  .icon-btn { width: 44px; height: 44px; font-size: 20px; }
+
+  .editor-container { padding: 20px 16px 80px; }
+
+  .doc-title { font-size: 24px; }
+
+  .editor { font-size: 16px; line-height: 1.6; }
+
+  .doc-icon-picker { width: 44px; height: 44px; font-size: 32px; }
+
+  /* Popups on mobile */
+  .slash-menu {
+    left: 8px !important;
+    right: 8px;
+    width: auto;
+    max-height: 50vh;
+    overflow-y: auto;
+  }
+
+  .slash-menu-item { min-height: 44px; padding: 10px 14px; }
+
+  .icon-popup {
+    left: 16px !important;
+    right: 16px;
+    width: auto;
+    max-height: 50vh;
+  }
+
+  .icon-option { width: 40px; height: 40px; font-size: 22px; }
+  .icon-grid { grid-template-columns: repeat(7, 1fr); }
+
+  .context-menu {
+    left: 16px !important;
+    right: 16px;
+    width: auto;
+  }
+
+  .context-menu-item { min-height: 44px; padding: 10px 14px; font-size: 15px; }
+
+  .format-bar button { width: 40px; height: 40px; font-size: 16px; }
+
+  .breadcrumb { font-size: 14px; }
+}
+
+@media (max-width: 480px) {
+  .editor-container { padding: 16px 12px 80px; }
+  .doc-title { font-size: 22px; }
+  .icon-grid { grid-template-columns: repeat(6, 1fr); }
+}
 </style>
 </head>
 <body>
@@ -546,6 +657,7 @@ body {
 
 <!-- ==================== App (hidden until auth) ==================== -->
 <div class="app-wrap" id="appWrap">
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <span class="sidebar-title">Docs</span>
@@ -713,6 +825,11 @@ async function enterApp() {
   document.getElementById('authPage').style.display = 'none';
   document.getElementById('appWrap').style.display = 'flex';
   document.getElementById('userName').textContent = currentUser ? currentUser.name : '';
+  // On mobile, start with sidebar collapsed and menu button visible
+  if (isMobile()) {
+    document.getElementById('sidebar').classList.remove('mobile-open');
+    document.getElementById('menuBtn').style.display = 'flex';
+  }
   await loadDocs();
   renderTree();
   if (state.activeId && state.docs[state.activeId]) {
@@ -1036,6 +1153,7 @@ function selectDoc(id) {
 
   updateBreadcrumb(id);
   renderTree(document.getElementById('searchInput').value);
+  closeMobileSidebar();
 }
 
 function showEmpty() {
@@ -1371,12 +1489,34 @@ function updateDarkBtn() {
 }
 
 // ====================== Sidebar Toggle ======================
+function isMobile() { return window.innerWidth <= 768; }
+
 function toggleSidebar() {
   const sb = document.getElementById('sidebar');
-  const mb = document.getElementById('menuBtn');
-  sb.classList.toggle('collapsed');
-  mb.style.display = sb.classList.contains('collapsed') ? 'flex' : 'none';
+  const overlay = document.getElementById('sidebarOverlay');
+  if (isMobile()) {
+    const isOpen = sb.classList.contains('mobile-open');
+    sb.classList.toggle('mobile-open', !isOpen);
+    sb.classList.remove('collapsed');
+    overlay.classList.toggle('active', !isOpen);
+  } else {
+    sb.classList.toggle('collapsed');
+    sb.classList.remove('mobile-open');
+    overlay.classList.remove('active');
+    const mb = document.getElementById('menuBtn');
+    mb.style.display = sb.classList.contains('collapsed') ? 'flex' : 'none';
+  }
 }
+
+function closeMobileSidebar() {
+  if (isMobile()) {
+    document.getElementById('sidebar').classList.remove('mobile-open');
+    document.getElementById('sidebarOverlay').classList.remove('active');
+  }
+}
+
+// Close sidebar overlay on tap
+document.getElementById('sidebarOverlay').addEventListener('click', closeMobileSidebar);
 
 // ====================== Keyboard Shortcuts ======================
 document.addEventListener('keydown', (e) => {
