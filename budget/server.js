@@ -1,0 +1,286 @@
+const express = require("express");
+const Database = require("better-sqlite3");
+const cors = require("cors");
+const path = require("path");
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Database setup
+const db = new Database("/app/data/budget.db");
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
+
+// Initialize database tables
+function initDatabase() {
+  // Create tables
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS categories (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL UNIQUE,
+      type TEXT NOT NULL CHECK(type IN ('income', 'expense', 'both')),
+      color TEXT NOT NULL,
+      icon TEXT NOT NULL,
+      is_default BOOLEAN DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS transactions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      type TEXT NOT NULL CHECK(type IN ('income', 'expense')),
+      amount REAL NOT NULL,
+      category_id INTEGER NOT NULL,
+      description TEXT,
+      date TEXT NOT NULL,
+      recurring BOOLEAN DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (category_id) REFERENCES categories(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS budgets (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      category_id INTEGER NOT NULL,
+      amount REAL NOT NULL,
+      month INTEGER NOT NULL,
+      year INTEGER NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (category_id) REFERENCES categories(id),
+      UNIQUE(category_id, month, year)
+    );
+  `);
+
+  // Seed default categories
+  const defaultCategories = [
+    { name: "Housing", type: "expense", color: "#ff6b6b", icon: "🏠" },
+    { name: "Food", type: "expense", color: "#4ecdc4", icon: "🍽️" },
+    { name: "Transport", type: "expense", color: "#45b7d1", icon: "🚗" },
+    { name: "Entertainment", type: "expense", color: "#f9ca24", icon: "🎬" },
+    { name: "Shopping", type: "expense", color: "#f0932b", icon: "🛍️" },
+    { name: "Subscriptions", type: "expense", color: "#eb4d4b", icon: "📱" },
+    { name: "Health", type: "expense", color: "#6c5ce7", icon: "🏥" },
+    { name: "Education", type: "expense", color: "#a29bfe", icon: "📚" },
+    { name: "Travel", type: "expense", color: "#fd79a8", icon: "✈️" },
+    { name: "Other", type: "both", color: "#636e72", icon: "📋" },
+    { name: "Salary", type: "income", color: "#00b894", icon: "💰" },
+    { name: "Freelance", type: "income", color: "#00cec9", icon: "💼" }
+  ];
+
+  const insertCategory = db.prepare(`
+    INSERT OR IGNORE INTO categories (name, type, color, icon, is_default) 
+    VALUES (?, ?, ?, ?, 1)
+  `);
+
+  for (const cat of defaultCategories) {
+    insertCategory.run(cat.name, cat.type, cat.color, cat.icon);
+  }
+}
+
+// API Routes
+
+// Dashboard
+app.get("/api/dashboard", (req, res) => {
+  const { month = new Date().getMonth() + 1, year = new Date().getFullYear() } = req.query;
+  
+  const income = db.prepare(`
+    SELECT SUM(amount) as total FROM transactions 
+    WHERE type = 'income' AND strftime('%m', date) = ? AND strftime('%Y', date) = ?
+  `).get(month.toString().padStart(2, "0"), year.toString()).total || 0;
+
+  const expenses = db.prepare(`
+    SELECT SUM(amount) as total FROM transactions 
+    WHERE type = 'expense' AND strftime('%m', date) = ? AND strftime('%Y', date) = ?
+  `).get(month.toString().padStart(2, "0"), year.toString()).total || 0;
+
+  const categoryBreakdown = db.prepare(`
+    SELECT c.name, c.color, SUM(t.amount) as total 
+    FROM transactions t
+    JOIN categories c ON t.category_id = c.id
+    WHERE t.type = 'expense' AND strftime('%m', t.date) = ? AND strftime('%Y', t.date) = ?
+    GROUP BY c.id, c.name, c.color
+    ORDER BY total DESC
+  `).all(month.toString().padStart(2, "0"), year.toString());
+
+  res.json({
+    income,
+    expenses,
+    netSavings: income - expenses,
+    categoryBreakdown
+  });
+});
+
+// Transactions
+app.get("/api/transactions", (req, res) => {
+  let query = `
+    SELECT t.*, c.name as category_name, c.color as category_color, c.icon as category_icon
+    FROM transactions t
+    JOIN categories c ON t.category_id = c.id
+    WHERE 1=1
+  `;
+  const params = [];
+
+  if (req.query.month) {
+    query += ` AND strftime('%m', t.date) = ?`;
+    params.push(req.query.month.toString().padStart(2, "0"));
+  }
+  if (req.query.year) {
+    query += ` AND strftime('%Y', t.date) = ?`;
+    params.push(req.query.year.toString());
+  }
+  if (req.query.category) {
+    query += ` AND t.category_id = ?`;
+    params.push(req.query.category);
+  }
+  if (req.query.type) {
+    query += ` AND t.type = ?`;
+    params.push(req.query.type);
+  }
+
+  query += ` ORDER BY t.date DESC, t.created_at DESC`;
+
+  const transactions = db.prepare(query).all(...params);
+  res.json(transactions);
+});
+
+app.post("/api/transactions", (req, res) => {
+  const { type, amount, category_id, description, date, recurring } = req.body;
+  
+  if (!type || !amount || !category_id || !date) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  const stmt = db.prepare(`
+    INSERT INTO transactions (type, amount, category_id, description, date, recurring)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `);
+
+  const result = stmt.run(type, amount, category_id, description, date, recurring ? 1 : 0);
+  res.json({ id: result.lastInsertRowid, success: true });
+});
+
+app.put("/api/transactions/:id", (req, res) => {
+  const { type, amount, category_id, description, date, recurring } = req.body;
+  const stmt = db.prepare(`
+    UPDATE transactions 
+    SET type = ?, amount = ?, category_id = ?, description = ?, date = ?, recurring = ?
+    WHERE id = ?
+  `);
+
+  const result = stmt.run(type, amount, category_id, description, date, recurring ? 1 : 0, req.params.id);
+  res.json({ success: result.changes > 0 });
+});
+
+app.delete("/api/transactions/:id", (req, res) => {
+  const stmt = db.prepare("DELETE FROM transactions WHERE id = ?");
+  const result = stmt.run(req.params.id);
+  res.json({ success: result.changes > 0 });
+});
+
+// Categories
+app.get("/api/categories", (req, res) => {
+  const categories = db.prepare("SELECT * FROM categories ORDER BY is_default DESC, name").all();
+  res.json(categories);
+});
+
+app.post("/api/categories", (req, res) => {
+  const { name, type, color, icon } = req.body;
+  
+  if (!name || !type || !color || !icon) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  const stmt = db.prepare(`
+    INSERT INTO categories (name, type, color, icon) 
+    VALUES (?, ?, ?, ?)
+  `);
+
+  try {
+    const result = stmt.run(name, type, color, icon);
+    res.json({ id: result.lastInsertRowid, success: true });
+  } catch (error) {
+    res.status(400).json({ error: "Category already exists" });
+  }
+});
+
+app.delete("/api/categories/:id", (req, res) => {
+  // Don't allow deletion of default categories
+  const category = db.prepare("SELECT is_default FROM categories WHERE id = ?").get(req.params.id);
+  if (category && category.is_default) {
+    return res.status(400).json({ error: "Cannot delete default category" });
+  }
+
+  const stmt = db.prepare("DELETE FROM categories WHERE id = ?");
+  const result = stmt.run(req.params.id);
+  res.json({ success: result.changes > 0 });
+});
+
+// Budgets
+app.get("/api/budgets", (req, res) => {
+  const { month = new Date().getMonth() + 1, year = new Date().getFullYear() } = req.query;
+  
+  const budgets = db.prepare(`
+    SELECT b.*, c.name as category_name, c.color as category_color,
+           COALESCE(spent.total, 0) as spent
+    FROM budgets b
+    JOIN categories c ON b.category_id = c.id
+    LEFT JOIN (
+      SELECT category_id, SUM(amount) as total
+      FROM transactions 
+      WHERE type = 'expense' AND strftime('%m', date) = ? AND strftime('%Y', date) = ?
+      GROUP BY category_id
+    ) spent ON b.category_id = spent.category_id
+    WHERE b.month = ? AND b.year = ?
+  `).all(month.toString().padStart(2, "0"), year.toString(), month, year);
+
+  res.json(budgets);
+});
+
+app.post("/api/budgets", (req, res) => {
+  const { category_id, amount, month, year } = req.body;
+  
+  const stmt = db.prepare(`
+    INSERT OR REPLACE INTO budgets (category_id, amount, month, year)
+    VALUES (?, ?, ?, ?)
+  `);
+
+  const result = stmt.run(category_id, amount, month, year);
+  res.json({ id: result.lastInsertRowid, success: true });
+});
+
+app.delete("/api/budgets/:id", (req, res) => {
+  const stmt = db.prepare("DELETE FROM budgets WHERE id = ?");
+  const result = stmt.run(req.params.id);
+  res.json({ success: result.changes > 0 });
+});
+
+// Trends
+app.get("/api/trends", (req, res) => {
+  const { months = 6 } = req.query;
+  
+  const trends = db.prepare(`
+    SELECT 
+      strftime('%Y-%m', date) as month,
+      SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) as income,
+      SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END) as expenses
+    FROM transactions
+    WHERE date >= date('now', '-' || ? || ' months')
+    GROUP BY strftime('%Y-%m', date)
+    ORDER BY month
+  `).all(months);
+
+  res.json(trends);
+});
+
+// Serve frontend
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+// Initialize database and start server
+initDatabase();
+
+app.listen(PORT, () => {
+  console.log(`Lobsty Budget server running on port ${PORT}`);
+});

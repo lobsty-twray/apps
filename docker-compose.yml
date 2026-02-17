@@ -22,6 +22,24 @@ services:
       timeout: 10s
       retries: 3
 
+  budget:
+    build: ./budget
+    container_name: lobsty-budget
+    restart: always
+    ports:
+      - "8092:3000"
+    volumes:
+      - budget-data:/app/data
+    environment:
+      - NODE_ENV=production
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/dashboard"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
 volumes:
   board-data:
+    driver: local
+  budget-data:
     driver: local
