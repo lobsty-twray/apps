@@ -25,10 +25,38 @@ class LobstyBoard {
         document.getElementById('new-task-btn').addEventListener('click', () => this.showTaskModal());
         document.getElementById('manage-labels-btn').addEventListener('click', () => this.showLabelsModal());
         this.bindModalEvents();
+        this.bindSidebarEvents();
         document.getElementById('project-form').addEventListener('submit', (e) => this.handleProjectSubmit(e));
         document.getElementById('task-form').addEventListener('submit', (e) => this.handleTaskSubmit(e));
         document.getElementById('label-form').addEventListener('submit', (e) => this.handleLabelSubmit(e));
         document.getElementById('task-delete-btn').addEventListener('click', () => this.deleteTask());
+        document.getElementById('doc-link-trigger').addEventListener('click', () => this.showDocInput());
+        document.getElementById('doc-add-btn').addEventListener('click', () => this.addDocLink());
+        document.getElementById('doc-cancel-btn').addEventListener('click', () => this.hideDocInput());
+        document.getElementById('doc-url-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); this.addDocLink(); }
+            if (e.key === 'Escape') this.hideDocInput();
+        });
+    }
+
+    bindSidebarEvents() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const toggle = document.getElementById('sidebar-toggle');
+        const close = document.getElementById('sidebar-close');
+
+        toggle.addEventListener('click', () => {
+            sidebar.classList.add('open');
+            overlay.classList.add('active');
+        });
+
+        const closeSidebar = () => {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+        };
+
+        close.addEventListener('click', closeSidebar);
+        overlay.addEventListener('click', closeSidebar);
     }
 
     bindModalEvents() {
@@ -157,9 +185,19 @@ class LobstyBoard {
         card.draggable = true;
         const labels = task.labels || [];
         const labelColors = task.label_colors || [];
+        const docs = task.docs || [];
         card.innerHTML = `
             <h4>${this.escapeHtml(task.title)}</h4>
             ${task.description ? `<p>${this.escapeHtml(task.description)}</p>` : ''}
+            ${docs.length > 0 ? `
+                <div class="card-docs">
+                    ${docs.map(doc => `
+                        <a href="${this.escapeHtml(doc.url)}" target="_blank" rel="noopener noreferrer" class="card-doc-badge" title="${this.escapeHtml(doc.url)}">
+                            <span class="card-doc-icon">📄</span>${this.escapeHtml(doc.title)}
+                        </a>
+                    `).join('')}
+                </div>
+            ` : ''}
             <div class="task-meta">
                 <span class="priority-badge priority-${task.priority}" title="${task.priority} priority"></span>
                 <div class="task-labels">
@@ -167,8 +205,17 @@ class LobstyBoard {
                         <span class="label-tag" style="background-color: ${labelColors[index] || '#2383e2'}">${this.escapeHtml(label)}</span>
                     `).join('')}
                 </div>
+                <button class="card-link-doc-btn" title="Link Doc">📄</button>
             </div>
         `;
+        card.querySelectorAll('.card-doc-badge').forEach(badge => {
+            badge.addEventListener('click', (e) => e.stopPropagation());
+        });
+        card.querySelector('.card-link-doc-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.showTaskModal(task);
+            setTimeout(() => this.showDocInput(), 150);
+        });
         card.addEventListener('dragstart', (e) => {
             this.draggedTask = task;
             card.classList.add('dragging');
@@ -210,6 +257,9 @@ class LobstyBoard {
         document.getElementById('project-title').textContent = this.currentProject.name;
         document.getElementById('project-description').textContent = this.currentProject.description || '';
         this.renderProjects();
+        // Close sidebar on mobile after selecting project
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('sidebar-overlay').classList.remove('active');
     }
 
     showWelcomeScreen() {
@@ -272,6 +322,10 @@ class LobstyBoard {
             delete deleteBtn.dataset.taskId;
         }
         this.renderTaskLabels(task);
+        this.renderTaskDocs(task);
+        this.hideDocInput();
+        // Hide link trigger for new tasks (no ID yet)
+        document.getElementById('doc-link-trigger').style.display = task ? 'inline-flex' : 'none';
         this.showModal('task-modal');
     }
 
@@ -297,6 +351,101 @@ class LobstyBoard {
             });
             container.appendChild(labelDiv);
         });
+    }
+
+    renderTaskDocs(task = null) {
+        const container = document.getElementById('task-docs-list');
+        container.innerHTML = '';
+        const docs = task ? task.docs || [] : [];
+        docs.forEach(doc => {
+            const chip = document.createElement('div');
+            chip.className = 'doc-chip';
+            chip.innerHTML = `
+                <a href="${this.escapeHtml(doc.url)}" target="_blank" rel="noopener noreferrer" class="doc-chip-link" title="${this.escapeHtml(doc.url)}">
+                    <span class="doc-chip-icon">📄</span>
+                    ${this.escapeHtml(doc.title)}
+                </a>
+                <button type="button" class="doc-chip-remove" data-doc-id="${doc.id}" title="Remove link">&times;</button>
+            `;
+            chip.querySelector('.doc-chip-link').addEventListener('click', (e) => e.stopPropagation());
+            chip.querySelector('.doc-chip-remove').addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.removeDocLink(doc.id);
+            });
+            container.appendChild(chip);
+        });
+    }
+
+    showDocInput() {
+        document.getElementById('doc-input-row').style.display = 'flex';
+        document.getElementById('doc-link-trigger').style.display = 'none';
+        document.getElementById('doc-url-input').value = '';
+        document.getElementById('doc-url-input').focus();
+    }
+
+    hideDocInput() {
+        document.getElementById('doc-input-row').style.display = 'none';
+        document.getElementById('doc-link-trigger').style.display = 'inline-flex';
+    }
+
+    extractDocTitle(url) {
+        try {
+            const parsed = new URL(url);
+            const path = parsed.pathname.replace(/^\/+|\/+$/g, '');
+            if (!path) return parsed.hostname;
+            const segments = path.split('/');
+            const last = segments[segments.length - 1];
+            return decodeURIComponent(last).replace(/[-_]/g, ' ');
+        } catch {
+            return url;
+        }
+    }
+
+    async addDocLink() {
+        const input = document.getElementById('doc-url-input');
+        const url = input.value.trim();
+        if (!url) return;
+
+        if (!url.includes('docs.twray.dev')) {
+            this.showError('Only docs.twray.dev URLs are allowed');
+            return;
+        }
+
+        const taskId = document.getElementById('task-delete-btn').dataset.taskId;
+        if (!taskId) {
+            // New task - store locally until saved
+            this.showError('Please save the task first, then add doc links');
+            return;
+        }
+
+        const title = this.extractDocTitle(url);
+        try {
+            await this.apiCall(`/api/tasks/${taskId}/docs`, {
+                method: 'POST',
+                body: JSON.stringify({ url, title })
+            });
+            // Refresh task data and re-render docs
+            const task = await this.apiCall(`/api/tasks/${taskId}`);
+            this.renderTaskDocs(task);
+            // Update the task in local array too
+            const idx = this.tasks.findIndex(t => t.id == taskId);
+            if (idx !== -1) this.tasks[idx] = task;
+            this.renderTasks();
+            this.hideDocInput();
+        } catch (error) {}
+    }
+
+    async removeDocLink(docId) {
+        const taskId = document.getElementById('task-delete-btn').dataset.taskId;
+        if (!taskId) return;
+        try {
+            await this.apiCall(`/api/tasks/${taskId}/docs/${docId}`, { method: 'DELETE' });
+            const task = await this.apiCall(`/api/tasks/${taskId}`);
+            this.renderTaskDocs(task);
+            const idx = this.tasks.findIndex(t => t.id == taskId);
+            if (idx !== -1) this.tasks[idx] = task;
+            this.renderTasks();
+        } catch (error) {}
     }
 
     showLabelsModal() {

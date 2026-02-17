@@ -9,6 +9,9 @@
 <body>
     <header class="header">
         <div class="header-content">
+            <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle sidebar">
+                <span class="hamburger-icon"></span>
+            </button>
             <h1>Board</h1>
             <div class="header-actions">
                 <button id="new-project-btn" class="btn btn-primary">
@@ -20,9 +23,11 @@
     </header>
 
     <div class="container">
-        <aside class="sidebar">
+        <div id="sidebar-overlay" class="sidebar-overlay"></div>
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <h2>Projects</h2>
+                <button id="sidebar-close" class="sidebar-close" aria-label="Close sidebar">&times;</button>
             </div>
             <div id="projects-list" class="projects-list">
                 <!-- Projects will be loaded here -->
@@ -169,6 +174,20 @@
                         <div id="task-labels" class="labels-container">
                             <!-- Labels will be loaded here -->
                         </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Linked Docs</label>
+                        <div id="task-docs-list" class="docs-list">
+                            <!-- Linked docs will be rendered here -->
+                        </div>
+                        <div class="doc-input-row" id="doc-input-row" style="display: none;">
+                            <input type="text" id="doc-url-input" placeholder="Paste docs.twray.dev URL" class="doc-url-input">
+                            <button type="button" class="btn btn-primary btn-sm" id="doc-add-btn">Add</button>
+                            <button type="button" class="btn btn-secondary btn-sm" id="doc-cancel-btn">Cancel</button>
+                        </div>
+                        <button type="button" class="btn btn-secondary btn-sm" id="doc-link-trigger">
+                            <span class="btn-icon">📄</span> Link Doc
+                        </button>
                     </div>
                 </form>
             </div>
