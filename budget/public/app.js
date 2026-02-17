@@ -20,13 +20,27 @@ class BudgetApp {
     }
 
     initEventListeners() {
-        // Navigation
+        // Navigation (sidebar)
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', (e) => {
                 const view = e.target.dataset.view;
                 this.switchView(view);
+                this.closeSidebar();
             });
         });
+
+        // Bottom navigation (mobile)
+        document.querySelectorAll('.bottom-nav-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                const btn = e.currentTarget;
+                const view = btn.dataset.view;
+                this.switchView(view);
+            });
+        });
+
+        // Sidebar toggle
+        document.getElementById('sidebar-toggle').addEventListener('click', () => this.toggleSidebar());
+        document.getElementById('sidebar-overlay').addEventListener('click', () => this.closeSidebar());
 
         // Date selectors
         document.getElementById('monthSelect').addEventListener('change', (e) => {
@@ -91,12 +105,27 @@ class BudgetApp {
         }
     }
 
+    toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('mobile-open');
+        document.getElementById('sidebar-overlay').classList.toggle('active');
+    }
+
+    closeSidebar() {
+        document.getElementById('sidebar').classList.remove('mobile-open');
+        document.getElementById('sidebar-overlay').classList.remove('active');
+    }
+
     async switchView(viewName) {
-        // Update navigation
+        // Update sidebar navigation
         document.querySelectorAll('.nav-item').forEach(item => {
             item.classList.remove('active');
         });
-        document.querySelector(`[data-view="${viewName}"]`).classList.add('active');
+        document.querySelector(`.sidebar [data-view="${viewName}"]`).classList.add('active');
+
+        // Update bottom navigation
+        document.querySelectorAll('.bottom-nav-item').forEach(item => {
+            item.classList.toggle('active', item.dataset.view === viewName);
+        });
 
         // Update views
         document.querySelectorAll('.view').forEach(view => {
@@ -179,11 +208,11 @@ class BudgetApp {
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        position: 'right',
+                        position: window.innerWidth <= 768 ? 'bottom' : 'right',
                         labels: {
                             color: '#ffffff',
                             font: {
-                                size: 14
+                                size: window.innerWidth <= 768 ? 12 : 14
                             },
                             generateLabels: function(chart) {
                                 const data = chart.data;
