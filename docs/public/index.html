@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Docs</title>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #ffffff;
+  --bg-secondary: #f7f7f5;
+  --bg-hover: #efefed;
+  --bg-active: #e8e8e6;
+  --text: #37352f;
+  --text-secondary: #9b9a97;
+  --text-tertiary: #b4b4b0;
+  --border: #e8e8e6;
+  --accent: #2eaadc;
+  --accent-bg: #e8f4f8;
+  --danger: #eb5757;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08);
+  --radius: 6px;
+  --sidebar-width: 260px;
+  --topbar-height: 44px;
+}
+
+.dark {
+  --bg: #191919;
+  --bg-secondary: #202020;
+  --bg-hover: #2c2c2c;
+  --bg-active: #363636;
+  --text: #e0e0e0;
+  --text-secondary: #7a7a7a;
+  --text-tertiary: #555;
+  --border: #2c2c2c;
+  --accent: #529cca;
+  --accent-bg: #1a3040;
+  --shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+
+/* ==================== Auth Page ==================== */
+.auth-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100vh;
+  background: var(--bg-secondary);
+}
+
+.auth-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 40px;
+  width: 380px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.auth-card h1 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  letter-spacing: -0.3px;
+}
+
+.auth-card .subtitle {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.auth-card .form-group {
+  margin-bottom: 14px;
+}
+
+.auth-card label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: var(--text-secondary);
+}
+
+.auth-card input[type="text"],
+.auth-card input[type="email"],
+.auth-card input[type="password"] {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 14px;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.auth-card input:focus {
+  border-color: var(--accent);
+}
+
+.auth-btn {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: opacity 0.15s;
+}
+
+.auth-btn:hover { opacity: 0.9; }
+.auth-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+  gap: 12px;
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.auth-divider::before, .auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.google-btn {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.15s;
+}
+
+.google-btn:hover { background: var(--bg-hover); }
+
+.google-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.auth-switch {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.auth-switch a {
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.auth-switch a:hover { text-decoration: underline; }
+
+.auth-error {
+  background: #fef2f2;
+  color: var(--danger);
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  margin-bottom: 12px;
+  display: none;
+}
+
+.dark .auth-error { background: #2d1b1b; }
+
+/* ==================== Sidebar ==================== */
+.sidebar {
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  transition: margin-left 0.2s;
+  z-index: 10;
+}
+
+.sidebar.collapsed { margin-left: calc(-1 * var(--sidebar-width)); }
+
+.sidebar-header {
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  min-height: var(--topbar-height);
+}
+
+.sidebar-title { font-weight: 600; font-size: 14px; letter-spacing: -0.2px; }
+
+.sidebar-actions { display: flex; gap: 2px; }
+
+.icon-btn {
+  width: 28px; height: 28px; border: none; background: none;
+  color: var(--text-secondary); border-radius: var(--radius);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 18px; transition: background 0.1s, color 0.1s;
+}
+
+.icon-btn:hover { background: var(--bg-hover); color: var(--text); }
+
+.search-box { padding: 8px 14px; }
+
+.search-input {
+  width: 100%; padding: 6px 10px; border: 1px solid var(--border);
+  border-radius: var(--radius); background: var(--bg); color: var(--text);
+  font-size: 13px; outline: none; transition: border-color 0.15s;
+}
+
+.search-input:focus { border-color: var(--accent); }
+.search-input::placeholder { color: var(--text-tertiary); }
+
+.doc-tree {
+  flex: 1; overflow-y: auto; padding: 4px 8px;
+}
+
+.doc-tree::-webkit-scrollbar { width: 4px; }
+.doc-tree::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.tree-item {
+  display: flex; align-items: center; padding: 4px 8px; border-radius: var(--radius);
+  cursor: pointer; font-size: 14px; color: var(--text); gap: 6px; user-select: none;
+  position: relative;
+}
+
+.tree-item:hover { background: var(--bg-hover); }
+.tree-item.active { background: var(--bg-active); font-weight: 500; }
+
+.tree-item .chevron {
+  width: 18px; height: 18px; display: flex; align-items: center;
+  justify-content: center; font-size: 10px; color: var(--text-secondary);
+  transition: transform 0.15s; flex-shrink: 0;
+}
+
+.tree-item .chevron.expanded { transform: rotate(90deg); }
+.tree-item .chevron.hidden { visibility: hidden; }
+
+.tree-item .icon { font-size: 15px; flex-shrink: 0; width: 20px; text-align: center; }
+.tree-item .label { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.tree-item .item-actions { display: none; gap: 0; }
+.tree-item:hover .item-actions { display: flex; }
+
+.tree-item .item-btn {
+  width: 22px; height: 22px; border: none; background: none;
+  color: var(--text-secondary); cursor: pointer; border-radius: 4px;
+  font-size: 14px; display: flex; align-items: center; justify-content: center;
+}
+
+.tree-item .item-btn:hover { background: var(--bg-active); color: var(--text); }
+
+.tree-children { padding-left: 16px; }
+.tree-children.collapsed { display: none; }
+
+.sidebar-footer {
+  padding: 8px 14px; border-top: 1px solid var(--border);
+  display: flex; gap: 4px;
+}
+
+.sidebar-footer button {
+  flex: 1; padding: 6px; border: none; background: none;
+  color: var(--text-secondary); font-size: 12px; cursor: pointer;
+  border-radius: var(--radius); display: flex; align-items: center;
+  justify-content: center; gap: 4px;
+}
+
+.sidebar-footer button:hover { background: var(--bg-hover); color: var(--text); }
+
+/* User bar */
+.user-bar {
+  padding: 8px 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.user-bar .user-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+.user-bar .logout-btn {
+  border: none; background: none; color: var(--text-secondary);
+  cursor: pointer; font-size: 12px; padding: 4px 8px;
+  border-radius: var(--radius);
+}
+
+.user-bar .logout-btn:hover { background: var(--bg-hover); color: var(--danger); }
+
+/* ==================== Main content ==================== */
+.main {
+  flex: 1; display: flex; flex-direction: column; min-width: 0; height: 100vh;
+}
+
+.topbar {
+  height: var(--topbar-height); min-height: var(--topbar-height);
+  display: flex; align-items: center; padding: 0 16px; gap: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.breadcrumb {
+  font-size: 13px; color: var(--text-secondary); flex: 1;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.breadcrumb span { color: var(--text); }
+
+.editor-wrap {
+  flex: 1; overflow-y: auto; display: flex; justify-content: center;
+}
+
+.editor-wrap::-webkit-scrollbar { width: 6px; }
+.editor-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.editor-container {
+  width: 100%; max-width: 720px; padding: 40px 24px 120px;
+}
+
+.doc-icon-picker {
+  font-size: 40px; cursor: pointer; width: 52px; height: 52px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius); margin-bottom: 4px; transition: background 0.1s;
+}
+
+.doc-icon-picker:hover { background: var(--bg-hover); }
+
+.doc-title {
+  font-size: 32px; font-weight: 700; border: none; outline: none; width: 100%;
+  background: none; color: var(--text); margin-bottom: 8px;
+  letter-spacing: -0.5px; line-height: 1.2;
+}
+
+.doc-title::placeholder { color: var(--text-tertiary); }
+
+.editor {
+  min-height: 300px; outline: none; font-size: 15px; line-height: 1.7;
+  color: var(--text); word-wrap: break-word;
+}
+
+.editor:empty::before {
+  content: "Start writing, or press '/' for commands...";
+  color: var(--text-tertiary); pointer-events: none;
+}
+
+.editor h1 { font-size: 24px; font-weight: 700; margin: 20px 0 4px; letter-spacing: -0.3px; }
+.editor h2 { font-size: 20px; font-weight: 600; margin: 16px 0 4px; letter-spacing: -0.2px; }
+.editor h3 { font-size: 17px; font-weight: 600; margin: 14px 0 4px; }
+.editor p { margin: 2px 0; }
+.editor ul, .editor ol { margin: 2px 0; padding-left: 24px; }
+.editor li { margin: 1px 0; }
+.editor blockquote {
+  border-left: 3px solid var(--border); padding-left: 14px;
+  color: var(--text-secondary); margin: 6px 0;
+}
+.editor code {
+  background: var(--bg-secondary); padding: 2px 5px; border-radius: 3px;
+  font-size: 13px; font-family: 'SFMono-Regular', Menlo, monospace;
+}
+.editor pre {
+  background: var(--bg-secondary); padding: 14px 16px; border-radius: var(--radius);
+  overflow-x: auto; margin: 8px 0; font-size: 13px; line-height: 1.5;
+  font-family: 'SFMono-Regular', Menlo, monospace;
+}
+.editor pre code { background: none; padding: 0; }
+.editor hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+.editor a { color: var(--accent); text-decoration: underline; }
+.editor img { max-width: 100%; border-radius: var(--radius); margin: 8px 0; }
+.editor input[type="checkbox"] { margin-right: 6px; accent-color: var(--accent); }
+
+/* Slash command menu */
+.slash-menu {
+  position: fixed; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  padding: 4px; min-width: 220px; z-index: 100; display: none;
+}
+
+.dark .slash-menu { box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
+
+.slash-menu-item {
+  padding: 6px 12px; border-radius: var(--radius); cursor: pointer;
+  font-size: 14px; display: flex; align-items: center; gap: 10px;
+}
+
+.slash-menu-item:hover, .slash-menu-item.selected { background: var(--bg-hover); }
+
+.slash-menu-item .cmd-icon {
+  width: 28px; height: 28px; background: var(--bg-secondary);
+  border-radius: var(--radius); display: flex; align-items: center;
+  justify-content: center; font-size: 15px; flex-shrink: 0;
+}
+
+.slash-menu-item .cmd-label { font-weight: 500; }
+.slash-menu-item .cmd-desc { font-size: 12px; color: var(--text-secondary); }
+
+/* Icon picker popup */
+.icon-popup {
+  position: fixed; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  padding: 12px; z-index: 100; display: none; width: 260px; max-height: 200px;
+  overflow-y: auto;
+}
+
+.icon-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; }
+
+.icon-option {
+  width: 30px; height: 30px; display: flex; align-items: center;
+  justify-content: center; cursor: pointer; border-radius: 4px;
+  font-size: 18px; border: none; background: none;
+}
+
+.icon-option:hover { background: var(--bg-hover); }
+
+/* Context menu */
+.context-menu {
+  position: fixed; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  padding: 4px; min-width: 160px; z-index: 100; display: none;
+}
+
+.context-menu-item {
+  padding: 6px 12px; border-radius: var(--radius); cursor: pointer;
+  font-size: 13px; display: flex; align-items: center; gap: 8px;
+}
+
+.context-menu-item:hover { background: var(--bg-hover); }
+.context-menu-item.danger { color: var(--danger); }
+
+/* Empty state */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; height: 100%; color: var(--text-tertiary);
+  gap: 12px; padding: 40px; text-align: center;
+}
+
+.empty-state .empty-icon { font-size: 48px; opacity: 0.5; }
+.empty-state p { font-size: 14px; }
+
+/* Formatting toolbar */
+.format-bar {
+  position: fixed; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  padding: 3px; display: none; z-index: 100; gap: 1px;
+}
+
+.format-bar button {
+  width: 30px; height: 28px; border: none; background: none;
+  cursor: pointer; color: var(--text); border-radius: 4px;
+  font-size: 13px; font-weight: 600; display: flex; align-items: center;
+  justify-content: center;
+}
+
+.format-bar button:hover { background: var(--bg-hover); }
+
+.app-wrap { display: none; width: 100%; height: 100vh; }
+</style>
+</head>
+<body>
+
+<!-- ==================== Auth Page ==================== -->
+<div class="auth-page" id="authPage">
+  <div class="auth-card" id="authCard">
+    <h1 id="authTitle">Welcome back</h1>
+    <p class="subtitle" id="authSubtitle">Sign in to your Docs workspace</p>
+    <div class="auth-error" id="authError"></div>
+
+    <div id="googleBtnWrap">
+      <button class="google-btn" id="googleSignInBtn" onclick="googleSignIn()">
+        <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Continue with Google
+      </button>
+      <div class="auth-divider">or</div>
+    </div>
+
+    <!-- Login form -->
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="loginEmail" required placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="loginPassword" required placeholder="Your password">
+      </div>
+      <button type="submit" class="auth-btn" id="loginBtn">Sign in</button>
+    </form>
+
+    <!-- Register form (hidden by default) -->
+    <form id="registerForm" onsubmit="handleRegister(event)" style="display:none;">
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" id="registerName" required placeholder="Your name">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="registerEmail" required placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="registerPassword" required placeholder="At least 6 characters" minlength="6">
+      </div>
+      <button type="submit" class="auth-btn" id="registerBtn">Create account</button>
+    </form>
+
+    <div class="auth-switch" id="authSwitch">
+      Don't have an account? <a onclick="showRegister()">Sign up</a>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== App (hidden until auth) ==================== -->
+<div class="app-wrap" id="appWrap">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-title">Docs</span>
+      <div class="sidebar-actions">
+        <button class="icon-btn" onclick="toggleSidebar()" title="Collapse sidebar">&#x2039;</button>
+      </div>
+    </div>
+    <div class="search-box">
+      <input class="search-input" id="searchInput" type="text" placeholder="Search..." oninput="filterDocs(this.value)">
+    </div>
+    <div class="doc-tree" id="docTree"></div>
+    <div class="sidebar-footer">
+      <button onclick="createDoc()">+ New page</button>
+      <button onclick="toggleDark()" id="darkBtn">&#9789; Dark</button>
+    </div>
+    <div class="user-bar" id="userBar">
+      <span class="user-name" id="userName"></span>
+      <button class="logout-btn" onclick="logout()">Sign out</button>
+    </div>
+  </aside>
+
+  <main class="main" id="mainContent">
+    <div class="topbar">
+      <button class="icon-btn" id="menuBtn" onclick="toggleSidebar()" title="Open sidebar" style="display:none;">&#9776;</button>
+      <div class="breadcrumb" id="breadcrumb"></div>
+      <button class="icon-btn" onclick="toggleDark()" title="Toggle theme">&#9789;</button>
+    </div>
+    <div class="editor-wrap" id="editorWrap">
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">&#128196;</div>
+        <p>No document selected</p>
+        <p style="font-size:12px;">Create a new page or select one from the sidebar</p>
+      </div>
+      <div class="editor-container" id="editorContainer" style="display:none;">
+        <div class="doc-icon-picker" id="iconPicker" onclick="showIconPicker(event)">&#128196;</div>
+        <input class="doc-title" id="docTitle" type="text" placeholder="Untitled" oninput="onTitleChange()">
+        <div class="editor" id="editor" contenteditable="true"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="slash-menu" id="slashMenu"></div>
+<div class="icon-popup" id="iconPopup"></div>
+<div class="context-menu" id="contextMenu"></div>
+<div class="format-bar" id="formatBar">
+  <button onclick="fmt('bold')" title="Bold"><b>B</b></button>
+  <button onclick="fmt('italic')" title="Italic"><i>I</i></button>
+  <button onclick="fmt('underline')" title="Underline"><u>U</u></button>
+  <button onclick="fmt('strikeThrough')" title="Strikethrough"><s>S</s></button>
+  <button onclick="fmt('createLink')" title="Link">&#128279;</button>
+  <button onclick="fmt('removeFormat')" title="Clear">&#10005;</button>
+</div>
+
+<script>
+// ====================== API Layer ======================
+const API = '/api';
+let authToken = localStorage.getItem('docs_token');
+let currentUser = null;
+
+async function api(path, options = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
+  const res = await fetch(API + path, { ...options, headers });
+  if (res.status === 401) {
+    logout();
+    throw new Error('Session expired');
+  }
+  if (res.status === 204) return null;
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+// ====================== Auth ======================
+function showAuthError(msg) {
+  const el = document.getElementById('authError');
+  el.textContent = msg;
+  el.style.display = msg ? 'block' : 'none';
+}
+
+function showLogin() {
+  document.getElementById('loginForm').style.display = 'block';
+  document.getElementById('registerForm').style.display = 'none';
+  document.getElementById('authTitle').textContent = 'Welcome back';
+  document.getElementById('authSubtitle').textContent = 'Sign in to your Docs workspace';
+  document.getElementById('authSwitch').innerHTML = "Don't have an account? <a onclick=\"showRegister()\">Sign up</a>";
+  showAuthError('');
+}
+
+function showRegister() {
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('registerForm').style.display = 'block';
+  document.getElementById('authTitle').textContent = 'Create account';
+  document.getElementById('authSubtitle').textContent = 'Get started with your Docs workspace';
+  document.getElementById('authSwitch').innerHTML = "Already have an account? <a onclick=\"showLogin()\">Sign in</a>";
+  showAuthError('');
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true;
+  showAuthError('');
+  try {
+    const data = await api('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: document.getElementById('loginEmail').value,
+        password: document.getElementById('loginPassword').value
+      })
+    });
+    authToken = data.token;
+    currentUser = data.user;
+    localStorage.setItem('docs_token', authToken);
+    enterApp();
+  } catch (err) {
+    showAuthError(err.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function handleRegister(e) {
+  e.preventDefault();
+  const btn = document.getElementById('registerBtn');
+  btn.disabled = true;
+  showAuthError('');
+  try {
+    const data = await api('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: document.getElementById('registerName').value,
+        email: document.getElementById('registerEmail').value,
+        password: document.getElementById('registerPassword').value
+      })
+    });
+    authToken = data.token;
+    currentUser = data.user;
+    localStorage.setItem('docs_token', authToken);
+    enterApp();
+  } catch (err) {
+    showAuthError(err.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function googleSignIn() {
+  showAuthError('Google OAuth requires GOOGLE_CLIENT_ID configuration. Use email/password login instead.');
+}
+
+function logout() {
+  authToken = null;
+  currentUser = null;
+  localStorage.removeItem('docs_token');
+  state.docs = {};
+  state.order = [];
+  state.activeId = null;
+  document.getElementById('authPage').style.display = 'flex';
+  document.getElementById('appWrap').style.display = 'none';
+}
+
+async function enterApp() {
+  document.getElementById('authPage').style.display = 'none';
+  document.getElementById('appWrap').style.display = 'flex';
+  document.getElementById('userName').textContent = currentUser ? currentUser.name : '';
+  await loadDocs();
+  renderTree();
+  if (state.activeId && state.docs[state.activeId]) {
+    selectDoc(state.activeId);
+  } else {
+    showEmpty();
+  }
+}
+
+// ====================== State ======================
+const ICONS = ['📄','📝','📋','📌','📎','📂','📁','🗂️','📓','📔','📒','📕','📗','📘','📙','📚','🔖','🏷️','💡','⭐','🎯','🔥','💎','🚀','🎨','🔧','⚙️','🧩','📊','📈','🗃️','✅','❤️','🌟','🏠','👤','🎵','🌍','🔑','📡'];
+
+let state = {
+  docs: {},       // id -> doc (local mirror)
+  order: [],      // root-level doc ids (in order)
+  activeId: null,
+  darkMode: localStorage.getItem('docs_dark') === 'true',
+  expandedNodes: JSON.parse(localStorage.getItem('docs_expanded') || '{}')
+};
+
+if (state.darkMode) document.body.classList.add('dark');
+updateDarkBtn();
+
+function saveLocalPrefs() {
+  localStorage.setItem('docs_dark', state.darkMode);
+  localStorage.setItem('docs_expanded', JSON.stringify(state.expandedNodes));
+}
+
+// ====================== Load docs from API ======================
+async function loadDocs() {
+  try {
+    const rows = await api('/docs');
+    state.docs = {};
+    state.order = [];
+
+    // Build lookup
+    const byId = {};
+    rows.forEach(r => {
+      byId[r.id] = {
+        id: r.id,
+        serverId: r.id,
+        title: r.title || '',
+        content: r.content || '',
+        icon: r.icon || '📄',
+        parentId: r.parent_id,
+        children: [],
+        sort_order: r.sort_order || 0,
+        tags: r.tags || [],
+        createdAt: r.created_at,
+        updatedAt: r.updated_at
+      };
+    });
+
+    // Build tree
+    Object.values(byId).forEach(doc => {
+      if (doc.parentId && byId[doc.parentId]) {
+        byId[doc.parentId].children.push(doc.id);
+      }
+    });
+
+    // Root order
+    const roots = Object.values(byId).filter(d => !d.parentId || !byId[d.parentId]);
+    roots.sort((a, b) => a.sort_order - b.sort_order);
+
+    state.docs = byId;
+    state.order = roots.map(d => d.id);
+  } catch (err) {
+    console.error('Failed to load docs:', err);
+  }
+}
+
+// ====================== Doc CRUD (API-backed) ======================
+let saveTimer = null;
+
+async function createDoc(parentId) {
+  try {
+    const body = { title: '', content: '', icon: '📄', parent_id: parentId || null, sort_order: 0 };
+    const row = await api('/docs', { method: 'POST', body: JSON.stringify(body) });
+
+    const doc = {
+      id: row.id, serverId: row.id, title: '', content: '', icon: '📄',
+      parentId: parentId || null, children: [], sort_order: 0,
+      createdAt: row.created_at, updatedAt: row.updated_at
+    };
+    state.docs[doc.id] = doc;
+
+    if (parentId && state.docs[parentId]) {
+      state.docs[parentId].children.push(doc.id);
+      state.expandedNodes[parentId] = true;
+      saveLocalPrefs();
+    } else {
+      state.order.push(doc.id);
+    }
+
+    renderTree();
+    selectDoc(doc.id);
+    setTimeout(() => document.getElementById('docTitle').focus(), 50);
+  } catch (err) {
+    console.error('Failed to create doc:', err);
+  }
+}
+
+async function deleteDoc(id) {
+  const doc = state.docs[id];
+  if (!doc) return;
+
+  try {
+    await api('/docs/' + id, { method: 'DELETE' });
+  } catch (err) {
+    console.error('Failed to delete doc:', err);
+    return;
+  }
+
+  // Move children to root (matches server behavior)
+  if (doc.children && doc.children.length > 0) {
+    doc.children.forEach(cid => {
+      if (state.docs[cid]) {
+        state.docs[cid].parentId = null;
+        state.order.push(cid);
+      }
+    });
+  }
+
+  // Remove from parent
+  if (doc.parentId && state.docs[doc.parentId]) {
+    const parent = state.docs[doc.parentId];
+    parent.children = parent.children.filter(c => c !== id);
+  } else {
+    state.order = state.order.filter(c => c !== id);
+  }
+
+  delete state.docs[id];
+
+  if (state.activeId === id) {
+    state.activeId = null;
+    showEmpty();
+  }
+  renderTree();
+}
+
+async function duplicateDoc(id) {
+  const src = state.docs[id];
+  if (!src) return;
+
+  try {
+    const body = {
+      title: src.title + ' (copy)',
+      content: src.content,
+      icon: src.icon,
+      parent_id: src.parentId || null,
+      sort_order: src.sort_order
+    };
+    const row = await api('/docs', { method: 'POST', body: JSON.stringify(body) });
+
+    const doc = {
+      id: row.id, serverId: row.id, title: body.title, content: body.content,
+      icon: body.icon, parentId: body.parent_id, children: [], sort_order: body.sort_order,
+      createdAt: row.created_at, updatedAt: row.updated_at
+    };
+    state.docs[doc.id] = doc;
+
+    if (doc.parentId && state.docs[doc.parentId]) {
+      state.docs[doc.parentId].children.push(doc.id);
+    } else {
+      state.order.push(doc.id);
+    }
+
+    renderTree();
+    selectDoc(doc.id);
+  } catch (err) {
+    console.error('Failed to duplicate doc:', err);
+  }
+}
+
+function scheduleSave() {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveCurrentDoc, 800);
+}
+
+async function saveCurrentDoc() {
+  if (!state.activeId || !state.docs[state.activeId]) return;
+  const doc = state.docs[state.activeId];
+  doc.title = document.getElementById('docTitle').value;
+  doc.content = document.getElementById('editor').innerHTML;
+
+  try {
+    await api('/docs/' + doc.id, {
+      method: 'PUT',
+      body: JSON.stringify({
+        title: doc.title,
+        content: doc.content,
+        icon: doc.icon,
+        parent_id: doc.parentId || null,
+        sort_order: doc.sort_order || 0,
+        tags: doc.tags || []
+      })
+    });
+  } catch (err) {
+    console.error('Failed to save doc:', err);
+  }
+}
+
+// ====================== Sidebar Tree ======================
+function renderTree(filter) {
+  const tree = document.getElementById('docTree');
+  tree.innerHTML = '';
+  const roots = filter ? getFilteredIds(filter) : state.order;
+  roots.forEach(id => tree.appendChild(renderTreeNode(id, filter)));
+}
+
+function getFilteredIds(q) {
+  q = q.toLowerCase();
+  const matched = new Set();
+  Object.values(state.docs).forEach(doc => {
+    if ((doc.title || 'Untitled').toLowerCase().includes(q) || (doc.content || '').toLowerCase().includes(q)) {
+      matched.add(doc.id);
+      let pid = doc.parentId;
+      while (pid) {
+        matched.add(pid);
+        pid = state.docs[pid] ? state.docs[pid].parentId : null;
+      }
+    }
+  });
+  return state.order.filter(id => matched.has(id));
+}
+
+function renderTreeNode(id, filter) {
+  const doc = state.docs[id];
+  if (!doc) return document.createDocumentFragment();
+
+  const wrap = document.createElement('div');
+
+  const item = document.createElement('div');
+  item.className = 'tree-item' + (state.activeId === id ? ' active' : '');
+  item.dataset.id = id;
+
+  const hasChildren = doc.children && doc.children.length > 0;
+  const expanded = state.expandedNodes[id];
+
+  const chevron = document.createElement('span');
+  chevron.className = 'chevron' + (hasChildren ? (expanded ? ' expanded' : '') : ' hidden');
+  chevron.innerHTML = '&#9654;';
+  chevron.onclick = (e) => { e.stopPropagation(); toggleExpand(id); };
+
+  const icon = document.createElement('span');
+  icon.className = 'icon';
+  icon.textContent = doc.icon || '📄';
+
+  const label = document.createElement('span');
+  label.className = 'label';
+  label.textContent = doc.title || 'Untitled';
+
+  const actions = document.createElement('span');
+  actions.className = 'item-actions';
+
+  const addBtn = document.createElement('button');
+  addBtn.className = 'item-btn';
+  addBtn.innerHTML = '+';
+  addBtn.title = 'Add sub-page';
+  addBtn.onclick = (e) => { e.stopPropagation(); createDoc(id); };
+
+  const moreBtn = document.createElement('button');
+  moreBtn.className = 'item-btn';
+  moreBtn.innerHTML = '&#8943;';
+  moreBtn.title = 'More';
+  moreBtn.onclick = (e) => { e.stopPropagation(); showContextMenu(e, id); };
+
+  actions.appendChild(addBtn);
+  actions.appendChild(moreBtn);
+
+  item.appendChild(chevron);
+  item.appendChild(icon);
+  item.appendChild(label);
+  item.appendChild(actions);
+  item.onclick = () => selectDoc(id);
+
+  wrap.appendChild(item);
+
+  if (hasChildren) {
+    const childrenWrap = document.createElement('div');
+    childrenWrap.className = 'tree-children' + (expanded || filter ? '' : ' collapsed');
+    const filteredSet = filter ? new Set(getFilteredIds(filter)) : null;
+    doc.children.forEach(cid => {
+      if (!filter || (filteredSet && filteredSet.has(cid))) {
+        childrenWrap.appendChild(renderTreeNode(cid, filter));
+      }
+    });
+    wrap.appendChild(childrenWrap);
+  }
+
+  return wrap;
+}
+
+function toggleExpand(id) {
+  state.expandedNodes[id] = !state.expandedNodes[id];
+  saveLocalPrefs();
+  renderTree(document.getElementById('searchInput').value);
+}
+
+function filterDocs(q) {
+  renderTree(q || null);
+}
+
+// ====================== Editor ======================
+function selectDoc(id) {
+  // Save current doc first
+  if (state.activeId && state.docs[state.activeId]) {
+    saveCurrentDoc();
+  }
+
+  state.activeId = id;
+  const doc = state.docs[id];
+  if (!doc) { showEmpty(); return; }
+
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('editorContainer').style.display = 'block';
+
+  document.getElementById('docTitle').value = doc.title || '';
+  document.getElementById('editor').innerHTML = doc.content || '';
+  document.getElementById('iconPicker').textContent = doc.icon || '📄';
+
+  updateBreadcrumb(id);
+  renderTree(document.getElementById('searchInput').value);
+}
+
+function showEmpty() {
+  document.getElementById('emptyState').style.display = 'flex';
+  document.getElementById('editorContainer').style.display = 'none';
+  document.getElementById('breadcrumb').innerHTML = '';
+}
+
+function onTitleChange() {
+  if (!state.activeId) return;
+  state.docs[state.activeId].title = document.getElementById('docTitle').value;
+  renderTree(document.getElementById('searchInput').value);
+  updateBreadcrumb(state.activeId);
+  scheduleSave();
+}
+
+function updateBreadcrumb(id) {
+  const parts = [];
+  let cur = id;
+  while (cur) {
+    const doc = state.docs[cur];
+    if (!doc) break;
+    parts.unshift(doc.title || 'Untitled');
+    cur = doc.parentId;
+  }
+  const bc = document.getElementById('breadcrumb');
+  bc.innerHTML = parts.map((p, i) =>
+    i === parts.length - 1 ? '<span>' + esc(p) + '</span>' : esc(p)
+  ).join(' / ');
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// ====================== Formatting ======================
+function fmt(cmd) {
+  if (cmd === 'createLink') {
+    const url = prompt('Enter URL:');
+    if (url) document.execCommand('createLink', false, url);
+  } else {
+    document.execCommand(cmd, false, null);
+  }
+  document.getElementById('editor').focus();
+}
+
+document.addEventListener('mouseup', () => {
+  setTimeout(() => {
+    const sel = window.getSelection();
+    if (sel.rangeCount && !sel.isCollapsed && document.getElementById('editor').contains(sel.anchorNode)) {
+      const range = sel.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+      const bar = document.getElementById('formatBar');
+      bar.style.display = 'flex';
+      bar.style.top = (rect.top - 40) + 'px';
+      bar.style.left = (rect.left + rect.width / 2 - bar.offsetWidth / 2) + 'px';
+    } else {
+      document.getElementById('formatBar').style.display = 'none';
+    }
+  }, 10);
+});
+
+// ====================== Slash Commands ======================
+const SLASH_COMMANDS = [
+  { label: 'Heading 1', desc: 'Large heading', icon: 'H1', action: () => document.execCommand('formatBlock', false, 'h1') },
+  { label: 'Heading 2', desc: 'Medium heading', icon: 'H2', action: () => document.execCommand('formatBlock', false, 'h2') },
+  { label: 'Heading 3', desc: 'Small heading', icon: 'H3', action: () => document.execCommand('formatBlock', false, 'h3') },
+  { label: 'Bullet List', desc: 'Unordered list', icon: '•', action: () => document.execCommand('insertUnorderedList') },
+  { label: 'Numbered List', desc: 'Ordered list', icon: '1.', action: () => document.execCommand('insertOrderedList') },
+  { label: 'Quote', desc: 'Blockquote', icon: '❝', action: () => document.execCommand('formatBlock', false, 'blockquote') },
+  { label: 'Code Block', desc: 'Code snippet', icon: '{}', action: () => insertCodeBlock() },
+  { label: 'Divider', desc: 'Horizontal rule', icon: '—', action: () => document.execCommand('insertHorizontalRule') },
+  { label: 'To-do', desc: 'Checkbox item', icon: '☐', action: () => insertTodo() },
+];
+
+let slashMenuIndex = 0;
+let slashActive = false;
+
+function showSlashMenu(x, y, filter) {
+  const menu = document.getElementById('slashMenu');
+  const items = filter
+    ? SLASH_COMMANDS.filter(c => c.label.toLowerCase().includes(filter.toLowerCase()))
+    : SLASH_COMMANDS;
+
+  if (items.length === 0) { hideSlashMenu(); return; }
+
+  slashMenuIndex = 0;
+  menu.innerHTML = '';
+  items.forEach((cmd, i) => {
+    const el = document.createElement('div');
+    el.className = 'slash-menu-item' + (i === 0 ? ' selected' : '');
+    el.innerHTML = '<span class="cmd-icon">' + cmd.icon + '</span><span><span class="cmd-label">' + cmd.label + '</span><br><span class="cmd-desc">' + cmd.desc + '</span></span>';
+    el.onclick = () => { executeSlashCommand(cmd); };
+    el.onmouseenter = () => {
+      menu.querySelectorAll('.slash-menu-item').forEach(e => e.classList.remove('selected'));
+      el.classList.add('selected');
+      slashMenuIndex = i;
+    };
+    menu.appendChild(el);
+  });
+
+  menu.style.display = 'block';
+  menu.style.left = x + 'px';
+  menu.style.top = y + 'px';
+  menu._items = items;
+  slashActive = true;
+}
+
+function hideSlashMenu() {
+  document.getElementById('slashMenu').style.display = 'none';
+  slashActive = false;
+}
+
+function executeSlashCommand(cmd) {
+  const sel = window.getSelection();
+  if (sel.rangeCount) {
+    const range = sel.getRangeAt(0);
+    const node = range.startContainer;
+    if (node.nodeType === 3) {
+      const text = node.textContent;
+      const slashIdx = text.lastIndexOf('/');
+      if (slashIdx >= 0) {
+        node.textContent = text.substring(0, slashIdx);
+        range.setStart(node, slashIdx);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+    }
+  }
+  cmd.action();
+  hideSlashMenu();
+  scheduleSave();
+}
+
+function insertCodeBlock() {
+  document.execCommand('insertHTML', false, '<pre><code>code here</code></pre><p></p>');
+}
+
+function insertTodo() {
+  document.execCommand('insertHTML', false, '<div><input type="checkbox"> To-do item</div>');
+}
+
+// Listen for / in editor
+const editorEl = document.getElementById('editor');
+editorEl.addEventListener('input', () => {
+  scheduleSave();
+
+  const sel = window.getSelection();
+  if (!sel.rangeCount) return;
+  const node = sel.anchorNode;
+  if (node && node.nodeType === 3) {
+    const text = node.textContent.substring(0, sel.anchorOffset);
+    const match = text.match(/\/([a-zA-Z0-9]*)$/);
+    if (match) {
+      const rect = sel.getRangeAt(0).getBoundingClientRect();
+      showSlashMenu(rect.left, rect.bottom + 4, match[1]);
+      return;
+    }
+  }
+  hideSlashMenu();
+});
+
+editorEl.addEventListener('keydown', (e) => {
+  if (slashActive) {
+    const menu = document.getElementById('slashMenu');
+    const items = menu._items || [];
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      slashMenuIndex = (slashMenuIndex + 1) % items.length;
+      updateSlashSelection(menu);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      slashMenuIndex = (slashMenuIndex - 1 + items.length) % items.length;
+      updateSlashSelection(menu);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (items[slashMenuIndex]) executeSlashCommand(items[slashMenuIndex]);
+    } else if (e.key === 'Escape') {
+      hideSlashMenu();
+    }
+    return;
+  }
+
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    document.execCommand('insertText', false, '  ');
+  }
+});
+
+// ====================== Markdown keyboard shortcuts ======================
+editorEl.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter' || slashActive) return;
+
+  const sel = window.getSelection();
+  if (!sel.rangeCount) return;
+  const node = sel.anchorNode;
+  if (!node || node.nodeType !== 3) return;
+
+  const text = node.textContent;
+
+  const headingMatch = text.match(/^(#{1,3})\s+(.*)$/);
+  if (headingMatch) {
+    e.preventDefault();
+    const level = headingMatch[1].length;
+    const content = headingMatch[2];
+    node.textContent = '';
+    document.execCommand('formatBlock', false, 'h' + level);
+    document.execCommand('insertText', false, content);
+    return;
+  }
+
+  if (text.match(/^[-*]\s+/)) {
+    e.preventDefault();
+    const content = text.replace(/^[-*]\s+/, '');
+    node.textContent = '';
+    document.execCommand('insertUnorderedList');
+    if (content) document.execCommand('insertText', false, content);
+    return;
+  }
+
+  if (text.match(/^\d+\.\s+/)) {
+    e.preventDefault();
+    const content = text.replace(/^\d+\.\s+/, '');
+    node.textContent = '';
+    document.execCommand('insertOrderedList');
+    if (content) document.execCommand('insertText', false, content);
+    return;
+  }
+
+  if (text.match(/^>\s+/)) {
+    e.preventDefault();
+    const content = text.replace(/^>\s+/, '');
+    node.textContent = '';
+    document.execCommand('formatBlock', false, 'blockquote');
+    if (content) document.execCommand('insertText', false, content);
+    return;
+  }
+
+  if (text.match(/^---\s*$/)) {
+    e.preventDefault();
+    node.textContent = '';
+    document.execCommand('insertHorizontalRule');
+    return;
+  }
+});
+
+function updateSlashSelection(menu) {
+  menu.querySelectorAll('.slash-menu-item').forEach((el, i) => {
+    el.classList.toggle('selected', i === slashMenuIndex);
+  });
+}
+
+// ====================== Icon Picker ======================
+function showIconPicker(event) {
+  const popup = document.getElementById('iconPopup');
+  const grid = document.createElement('div');
+  grid.className = 'icon-grid';
+  ICONS.forEach(icon => {
+    const btn = document.createElement('button');
+    btn.className = 'icon-option';
+    btn.textContent = icon;
+    btn.onclick = () => {
+      if (state.activeId && state.docs[state.activeId]) {
+        state.docs[state.activeId].icon = icon;
+        document.getElementById('iconPicker').textContent = icon;
+        scheduleSave();
+        renderTree(document.getElementById('searchInput').value);
+      }
+      popup.style.display = 'none';
+    };
+    grid.appendChild(btn);
+  });
+  popup.innerHTML = '';
+  popup.appendChild(grid);
+  popup.style.display = 'block';
+  const rect = event.target.getBoundingClientRect();
+  popup.style.left = rect.left + 'px';
+  popup.style.top = (rect.bottom + 4) + 'px';
+}
+
+// ====================== Context Menu ======================
+function showContextMenu(e, docId) {
+  const menu = document.getElementById('contextMenu');
+  menu.innerHTML = '';
+
+  const items = [
+    { label: '+ Sub-page', icon: '📄', action: () => createDoc(docId) },
+    { label: 'Duplicate', icon: '📋', action: () => duplicateDoc(docId) },
+    { label: 'Delete', icon: '🗑️', action: () => { if (confirm('Delete this page and move sub-pages to root?')) deleteDoc(docId); }, danger: true },
+  ];
+
+  items.forEach(item => {
+    const el = document.createElement('div');
+    el.className = 'context-menu-item' + (item.danger ? ' danger' : '');
+    el.innerHTML = '<span>' + item.icon + '</span><span>' + item.label + '</span>';
+    el.onclick = () => { item.action(); menu.style.display = 'none'; };
+    menu.appendChild(el);
+  });
+
+  menu.style.display = 'block';
+  const rect = e.target.getBoundingClientRect();
+  menu.style.left = rect.right + 'px';
+  menu.style.top = rect.top + 'px';
+}
+
+// Close popups on outside click
+document.addEventListener('mousedown', (e) => {
+  if (!e.target.closest('.icon-popup') && !e.target.closest('.doc-icon-picker')) {
+    document.getElementById('iconPopup').style.display = 'none';
+  }
+  if (!e.target.closest('.context-menu') && !e.target.closest('.item-btn')) {
+    document.getElementById('contextMenu').style.display = 'none';
+  }
+  if (!e.target.closest('.slash-menu') && !e.target.closest('.editor')) {
+    hideSlashMenu();
+  }
+});
+
+// ====================== Dark Mode ======================
+function toggleDark() {
+  state.darkMode = !state.darkMode;
+  document.body.classList.toggle('dark', state.darkMode);
+  updateDarkBtn();
+  saveLocalPrefs();
+}
+
+function updateDarkBtn() {
+  const btn = document.getElementById('darkBtn');
+  if (btn) btn.innerHTML = state.darkMode ? '&#9788; Light' : '&#9789; Dark';
+}
+
+// ====================== Sidebar Toggle ======================
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  const mb = document.getElementById('menuBtn');
+  sb.classList.toggle('collapsed');
+  mb.style.display = sb.classList.contains('collapsed') ? 'flex' : 'none';
+}
+
+// ====================== Keyboard Shortcuts ======================
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    document.getElementById('searchInput').focus();
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+    e.preventDefault();
+    createDoc();
+  }
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'D') {
+    e.preventDefault();
+    toggleDark();
+  }
+});
+
+// ====================== Init ======================
+(async function init() {
+  if (authToken) {
+    try {
+      currentUser = await api('/auth/me');
+      enterApp();
+    } catch (err) {
+      // Token invalid, show login
+      authToken = null;
+      localStorage.removeItem('docs_token');
+    }
+  }
+})();
+</script>
+</body>
+</html>

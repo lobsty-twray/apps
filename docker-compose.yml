@@ -38,8 +38,53 @@ services:
       timeout: 10s
       retries: 3
 
+  docs:
+    build: ./docs
+    container_name: lobsty-docs
+    restart: always
+    ports:
+      - "8093:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/docs
+      - JWT_SECRET=***REMOVED***
+      - GOOGLE_CLIENT_ID=
+      - GOOGLE_CLIENT_SECRET=
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/auth/me', r => process.exit(r.statusCode < 500 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: lobsty-postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=lobsty
+      - POSTGRES_PASSWORD=***REMOVED***
+      - POSTGRES_DB=lobsty_main
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lobsty"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+
 volumes:
   board-data:
     driver: local
   budget-data:
+    driver: local
+  postgres-data:
     driver: local
