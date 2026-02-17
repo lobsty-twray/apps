@@ -86,7 +86,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" id="project-cancel-btn">Cancel</button>
-                <button type="submit" class="btn btn-primary" id="project-save-btn">Save</button>
+                <button type="button" class="btn btn-primary" id="project-save-btn" onclick="document.getElementById('project-form').requestSubmit()">Save</button>
             </div>
         </div>
     </div>
@@ -140,7 +140,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-danger" id="task-delete-btn" style="display: none;">Delete</button>
                 <button type="button" class="btn btn-secondary" id="task-cancel-btn">Cancel</button>
-                <button type="submit" class="btn btn-primary" id="task-save-btn">Save</button>
+                <button type="button" class="btn btn-primary" id="task-save-btn" onclick="document.getElementById('task-form').requestSubmit()">Save</button>
             </div>
         </div>
     </div>
