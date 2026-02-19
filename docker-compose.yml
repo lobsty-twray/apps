@@ -318,6 +318,15 @@ services:
       postgres:
         condition: service_healthy
 
+  app-hub:
+    build: ./app-hub
+    container_name: lobsty-app-hub
+    restart: always
+    ports:
+      - 8110:3000
+    environment:
+      - NODE_ENV=production
+
 volumes:
   board-data:
     driver: local

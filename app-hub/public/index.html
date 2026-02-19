@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ray's App Hub</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+        
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.3em;
+            opacity: 0.9;
+        }
+        
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .app-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        
+        .app-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+        
+        .app-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+        
+        .app-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .app-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .app-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #667eea;
+            font-weight: 500;
+            font-size: 0.9em;
+        }
+        
+        .category-header {
+            color: white;
+            font-size: 1.8em;
+            margin: 40px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        .stats {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #2ecc71;
+            border-radius: 50%;
+            margin-right: 5px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        @media (max-width: 768px) {
+            h1 { font-size: 2em; }
+            .apps-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 Ray's App Hub</h1>
+            <p class="subtitle">Your Content Creation Command Center</p>
+        </header>
+        
+        <div class="stats">
+            <div>
+                <div class="stat-value">10</div>
+                <div class="stat-label">Active Apps</div>
+            </div>
+            <div>
+                <div class="stat-value">✅</div>
+                <div class="stat-label">All Running</div>
+            </div>
+            <div>
+                <div class="stat-value">50k+</div>
+                <div class="stat-label">Lines of Code</div>
+            </div>
+        </div>
+        
+        <h2 class="category-header">📹 Content Creation</h2>
+        <div class="apps-grid">
+            <a href="http://youtube-studio.twray.dev" class="app-card" target="_blank">
+                <div class="app-icon">📺</div>
+                <div class="app-title">YouTube Studio</div>
+                <div class="app-description">Track your video pipeline from idea to publish. Manage titles, descriptions, and publishing workflow.</div>
+                <div class="app-link"><span class="status-indicator"></span> Open App →</div>
+            </a>
+            
+            <a href="http://script-writer.twray.dev" class="app-card" target="_blank">
+                <div class="app-icon">✍️</div>
+                <div class="app-title">Script Writer</div>
+                <div class="app-description">Create video scripts with templates. Track word count, version history, and organize by series.</div>
+                <div class="app-link"><span class="status-indicator"></span> Open App →</div>
+            </a>
+            
+            <a href="http://thumbnail-analyzer.twray.dev" class="app-card" target="_blank">
+                <div class="app-icon">🎬</div>
+                <div class="app-title">Thumbnail Analyzer</div>
+                <div class="app-description">Design and test thumbnails. Track CTR estimates and compare different designs.</div>
+                <div class="app-link"><span class="status-indicator"></span> Open App →</div>
+            </a>
+            
+            <a href="http://content-ideas.twray.dev" class="app-card" target="_blank">
+                <div class="app-icon">💡</div>
+                <div class="app-title">Content Ideas</div>
+                <div class="app-description">Kanban board for brainstorming. Move ideas from concept to ready to publish.</div>
+                <div class="app-link"><span class="status-indicator"></span> Open App →</div>
+            </a>
+        </div>
+        
+        <h2 class="category-header">⚡ Hardware & Performance</h2>
+        <div class="apps-grid">
+            <a href="http://hardware-monitor.twray.dev" class="app-card" target="_blank">
+                <div class="app-icon">🖥️</div>
+                <div class="app-title">Hardware Monitor</div>
+                <div class="app-description">Real-time RTX 5090 stats. Monitor CPU, GPU, RAM, network, and storage in real-time.</div>
+                <div class="app-link"><span class="status-indicator"></span> Open App →</div>
+            </a>
+            
+            <a href="http://benchmark-tracker.twray.dev" class="app-card" target="_blank">
+                <div class="app-icon">📊</div>
+                <div class="app-title">Benchmark Tracker</div>
+                <div class="app-description">Log benchmark scores and track performance over time. Compare hardware configurations.</div>
+                <div class="app-link"><span class="status-indicator"></span> Open App →</div>
+            </a>
+            
+            <a href="http://gear-inventory.twray.dev" class="app-card" target="_blank">
+                <div class="app-icon">🎥</div>
+                <div class="app-title">Gear Inventory</div>
+                <div class="app-description">Catalog all your cameras, lenses, displays, and 3D printers. Track specs and maintenance.</div>
+                <div class="app-link"><span class="status-indicator"></span> Open App →</div>
+            </a>
+        </div>
+        
+        <h2 class="category-header">💼 Business & Planning</h2>
+        <div class="apps-grid">
+            <a href="http://sponsor-manager.twray.dev" class="app-card" target="_blank">
+                <div class="app-icon">💰</div>
+                <div class="app-title">Sponsor Manager</div>
+                <div class="app-description">Track sponsor deals, deliverables, and payments. Manage revenue and deadlines.</div>
+                <div class="app-link"><span class="status-indicator"></span> Open App →</div>
+            </a>
+            
+            <a href="http://gaming-logger.twray.dev" class="app-card" target="_blank">
+                <div class="app-icon">🎮</div>
+                <div class="app-title">Gaming Logger</div>
+                <div class="app-description">Track gaming sessions. Identify high-potential moments for content creation.</div>
+                <div class="app-link"><span class="status-indicator"></span> Open App →</div>
+            </a>
+            
+            <a href="http://stream-planner.twray.dev" class="app-card" target="_blank">
+                <div class="app-icon">🎥</div>
+                <div class="app-title">Stream Planner</div>
+                <div class="app-description">Schedule streams across Twitch, YouTube, and Discord. Track viewers and duration.</div>
+                <div class="app-link"><span class="status-indicator"></span> Open App →</div>
+            </a>
+        </div>
+        
+        <div style="text-align: center; color: white; margin-top: 60px; opacity: 0.8;">
+            <p>🦞 Built by Lobsty | All apps running on Lobsty VM</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">Local: 192.100.2.228:8099-8109 | Cloud: *.twray.dev</p>
+        </div>
+    </div>
+</body>
+</html>
