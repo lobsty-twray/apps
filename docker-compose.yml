@@ -279,6 +279,19 @@ services:
       postgres:
         condition: service_healthy
 
+  gaming-logger:
+    build: ./gaming-logger
+    container_name: lobsty-gaming-logger
+    restart: always
+    ports:
+      - 8107:3000
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/gaming_logger
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   board-data:
     driver: local
