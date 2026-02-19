@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Benchmark Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1f3a70 0%, #3a0d3a 100%);
+            color: #333;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #1f3a70;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .section h2 {
+            color: #1f3a70;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #1f3a70;
+            padding-bottom: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        input, select, textarea {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #1f3a70;
+        }
+
+        .btn {
+            background: #1f3a70;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #16284f;
+            transform: translateY(-2px);
+        }
+
+        .benchmark-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #1f3a70;
+        }
+
+        .benchmark-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #1f3a70;
+        }
+
+        .benchmark-score {
+            font-size: 1.8em;
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .benchmark-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 20px 0;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎮 Benchmark Tracker</h1>
+            <p>Track GPU/CPU performance over time</p>
+        </header>
+
+        <div class="stats-grid" id="stats"></div>
+
+        <div class="section">
+            <h2>Add Benchmark Result</h2>
+            <div class="form-grid">
+                <input type="text" id="testName" placeholder="Test Name (e.g., Cyberpunk 2077)" required>
+                <input type="text" id="gpuModel" placeholder="GPU Model (e.g., RTX 5090)">
+                <input type="number" id="gpuMemory" placeholder="GPU Memory (GB)">
+                <input type="text" id="cpuModel" placeholder="CPU Model">
+                <input type="number" id="ramGB" placeholder="RAM (GB)">
+                <input type="text" id="driverVersion" placeholder="Driver Version">
+                <input type="text" id="software" placeholder="Software/Benchmark">
+                <input type="number" id="score" placeholder="Score" required>
+                <input type="number" id="fps" placeholder="FPS (optional)">
+                <input type="number" id="powerUsage" placeholder="Power Usage (W)">
+                <input type="number" id="temperature" placeholder="Temp (°C)">
+            </div>
+            <textarea id="notes" placeholder="Notes..."></textarea>
+            <button class="btn" onclick="addBenchmark()">Save Benchmark</button>
+        </div>
+
+        <div class="section">
+            <h2>Recent Benchmarks</h2>
+            <div id="benchmarksList" class="no-data">Loading...</div>
+        </div>
+
+        <div class="section">
+            <h2>Performance Trends</h2>
+            <div class="chart-container">
+                <canvas id="scoreChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = '';
+        let scoreChart = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStats();
+            loadBenchmarks();
+        });
+
+        async function loadStats() {
+            try {
+                const res = await fetch(`${API}/api/stats`);
+                const stats = await res.json();
+                
+                let html = `
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.total_benchmarks}</div>
+                        <div class="stat-label">Total Benchmarks</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.total_series}</div>
+                        <div class="stat-label">Test Series</div>
+                    </div>
+                `;
+                
+                if (stats.top_tests.length > 0) {
+                    html += `
+                        <div class="stat-card">
+                            <div class="stat-value">${stats.top_tests[0].test_name}</div>
+                            <div class="stat-label">Top Test: ${stats.top_tests[0].avg_score.toFixed(1)}</div>
+                        </div>
+                    `;
+                }
+                
+                document.getElementById('stats').innerHTML = html;
+            } catch (err) {
+                console.error('Error loading stats:', err);
+            }
+        }
+
+        async function loadBenchmarks() {
+            try {
+                const res = await fetch(`${API}/api/benchmarks`);
+                const benchmarks = await res.json();
+                
+                if (benchmarks.length === 0) {
+                    document.getElementById('benchmarksList').innerHTML = '<div class="no-data">No benchmarks yet</div>';
+                    return;
+                }
+                
+                let html = benchmarks.slice(0, 10).map(b => `
+                    <div class="benchmark-item">
+                        <div class="benchmark-header">
+                            <span>${b.test_name}</span>
+                            <span class="benchmark-score">${b.score}</span>
+                        </div>
+                        <div class="benchmark-details">
+                            ${b.gpu_model ? `<div>GPU: ${b.gpu_model}</div>` : ''}
+                            ${b.cpu_model ? `<div>CPU: ${b.cpu_model}</div>` : ''}
+                            ${b.fps ? `<div>FPS: ${b.fps}</div>` : ''}
+                            ${b.temperature ? `<div>Temp: ${b.temperature}°C</div>` : ''}
+                            ${b.power_usage ? `<div>Power: ${b.power_usage}W</div>` : ''}
+                            <div>${new Date(b.created_at).toLocaleString()}</div>
+                        </div>
+                        ${b.notes ? `<div style="margin-top: 10px; color: #555;">${b.notes}</div>` : ''}
+                    </div>
+                `).join('');
+                
+                document.getElementById('benchmarksList').innerHTML = html;
+                
+                updateChart(benchmarks);
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        }
+
+        function updateChart(benchmarks) {
+            const grouped = {};
+            benchmarks.forEach(b => {
+                if (!grouped[b.test_name]) {
+                    grouped[b.test_name] = [];
+                }
+                grouped[b.test_name].push(b);
+            });
+            
+            const ctx = document.getElementById('scoreChart').getContext('2d');
+            
+            if (scoreChart) {
+                scoreChart.destroy();
+            }
+            
+            const labels = Object.keys(grouped);
+            const datasets = labels.map((label, idx) => ({
+                label: label,
+                data: grouped[label].map(b => b.score),
+                borderColor: `hsl(${idx * 40}, 70%, 50%)`,
+                backgroundColor: `hsl(${idx * 40}, 70%, 50%, 0.1)`,
+                tension: 0.4
+            }));
+            
+            scoreChart = new Chart(ctx, {
+                type: 'line',
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Benchmark Scores Over Time'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Score' }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function addBenchmark() {
+            const data = {
+                test_name: document.getElementById('testName').value,
+                gpu_model: document.getElementById('gpuModel').value || null,
+                gpu_memory: document.getElementById('gpuMemory').value || null,
+                cpu_model: document.getElementById('cpuModel').value || null,
+                ram_gb: document.getElementById('ramGB').value || null,
+                driver_version: document.getElementById('driverVersion').value || null,
+                software: document.getElementById('software').value || null,
+                score: parseFloat(document.getElementById('score').value),
+                fps: document.getElementById('fps').value ? parseFloat(document.getElementById('fps').value) : null,
+                power_usage: document.getElementById('powerUsage').value ? parseInt(document.getElementById('powerUsage').value) : null,
+                temperature: document.getElementById('temperature').value ? parseInt(document.getElementById('temperature').value) : null,
+                notes: document.getElementById('notes').value || null
+            };
+            
+            if (!data.test_name || !data.score) {
+                alert('Test name and score required');
+                return;
+            }
+            
+            try {
+                const res = await fetch(`${API}/api/benchmarks`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (res.ok) {
+                    document.querySelector('form')?.reset();
+                    document.getElementById('testName').value = '';
+                    loadBenchmarks();
+                    loadStats();
+                }
+            } catch (err) {
+                console.error('Error:', err);
+                alert('Failed to save benchmark');
+            }
+        }
+    </script>
+</body>
+</html>

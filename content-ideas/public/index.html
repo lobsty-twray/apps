@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Ideas</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: #333;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .stat-value {
+            font-size: 2.2em;
+            font-weight: bold;
+            color: #fa709a;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.85em;
+        }
+
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: #fa709a;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #e85880;
+            transform: translateY(-2px);
+        }
+
+        .kanban {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .kanban-column {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .kanban-header {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            padding: 15px;
+            font-weight: bold;
+        }
+
+        .kanban-body {
+            padding: 15px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .idea-card {
+            background: #f9f9f9;
+            border: 2px solid #f0f0f0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .idea-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-color: #fa709a;
+        }
+
+        .idea-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .idea-category {
+            display: inline-block;
+            background: #fee140;
+            color: #333;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin-right: 5px;
+            margin-bottom: 8px;
+        }
+
+        .idea-description {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .idea-tags {
+            font-size: 0.8em;
+            color: #999;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #fa709a;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        @media (max-width: 768px) {
+            .kanban {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>💡 Content Ideas</h1>
+            <p>Brainstorm and organize your next videos</p>
+        </header>
+
+        <div class="stats" id="stats"></div>
+
+        <div class="controls">
+            <button class="btn" onclick="openNewIdeaModal()">+ New Idea</button>
+            <select id="filterCategory" onchange="filterIdeas()" style="padding: 10px; border-radius: 8px; border: none;">
+                <option value="">All Categories</option>
+                <option value="review">Reviews</option>
+                <option value="tutorial">Tutorials</option>
+                <option value="benchmark">Benchmarks</option>
+                <option value="collab">Collabs</option>
+                <option value="shorts">Shorts</option>
+                <option value="other">Other</option>
+            </select>
+        </div>
+
+        <div class="kanban">
+            <div class="kanban-column">
+                <div class="kanban-header">💭 Brainstorm</div>
+                <div class="kanban-body" id="brainstormList"></div>
+            </div>
+            <div class="kanban-column">
+                <div class="kanban-header">🔍 Research</div>
+                <div class="kanban-body" id="researchList"></div>
+            </div>
+            <div class="kanban-column">
+                <div class="kanban-header">🚀 Ready</div>
+                <div class="kanban-body" id="readyList"></div>
+            </div>
+            <div class="kanban-column">
+                <div class="kanban-header">✅ Published</div>
+                <div class="kanban-body" id="publishedList"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="ideaModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>New Idea</h2>
+                <button class="close-btn" onclick="closeModal()">✕</button>
+            </div>
+            <form id="ideaForm">
+                <div class="form-group">
+                    <label>Title *</label>
+                    <input type="text" id="ideaTitle" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="ideaDescription"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="ideaCategory">
+                        <option value="">Uncategorized</option>
+                        <option value="review">Review</option>
+                        <option value="tutorial">Tutorial</option>
+                        <option value="benchmark">Benchmark</option>
+                        <option value="collab">Collab</option>
+                        <option value="shorts">Shorts</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tags (comma-separated)</label>
+                    <input type="text" id="ideaTags" placeholder="gpu, nvidia, performance">
+                </div>
+                <div class="form-group">
+                    <label>Priority</label>
+                    <select id="ideaPriority">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn">Save Idea</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API = '';
+        let allIdeas = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStats();
+            loadIdeas();
+        });
+
+        async function loadStats() {
+            try {
+                const res = await fetch(`${API}/api/stats`);
+                const stats = await res.json();
+                document.getElementById('stats').innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.total}</div>
+                        <div class="stat-label">Total Ideas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.high_priority}</div>
+                        <div class="stat-label">High Priority</div>
+                    </div>
+                `;
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        }
+
+        async function loadIdeas() {
+            try {
+                const res = await fetch(`${API}/api/ideas`);
+                allIdeas = await res.json();
+                displayIdeas();
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        }
+
+        function displayIdeas() {
+            const statuses = {
+                brainstorm: [],
+                research: [],
+                ready: [],
+                published: []
+            };
+
+            allIdeas.forEach(idea => {
+                if (statuses[idea.status]) {
+                    statuses[idea.status].push(idea);
+                }
+            });
+
+            Object.entries(statuses).forEach(([status, ideas]) => {
+                const container = document.getElementById(`${status}List`);
+                const html = ideas.map(i => `
+                    <div class="idea-card" onclick="editIdea(${i.id})">
+                        <div class="idea-title">${i.title}</div>
+                        ${i.category ? `<span class="idea-category">${i.category}</span>` : ''}
+                        ${i.description ? `<div class="idea-description">${i.description}</div>` : ''}
+                        ${i.tags ? `<div class="idea-tags">Tags: ${i.tags}</div>` : ''}
+                    </div>
+                `).join('');
+                container.innerHTML = html || '<div style="text-align: center; color: #ccc; padding: 20px;">Empty</div>';
+            });
+        }
+
+        function openNewIdeaModal() {
+            document.getElementById('ideaForm').reset();
+            document.getElementById('ideaModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('ideaModal').classList.remove('active');
+        }
+
+        document.getElementById('ideaForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const data = {
+                title: document.getElementById('ideaTitle').value,
+                description: document.getElementById('ideaDescription').value,
+                category: document.getElementById('ideaCategory').value,
+                tags: document.getElementById('ideaTags').value,
+                priority: document.getElementById('ideaPriority').value,
+                status: 'brainstorm'
+            };
+
+            try {
+                await fetch(`${API}/api/ideas`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                closeModal();
+                loadIdeas();
+                loadStats();
+            } catch (err) {
+                console.error('Error:', err);
+                alert('Failed to save idea');
+            }
+        });
+
+        function filterIdeas() {
+            // Just reload - filter logic in display
+            displayIdeas();
+        }
+
+        function editIdea(id) {
+            alert('Idea #' + id + ' (full edit modal coming soon)');
+        }
+    </script>
+</body>
+</html>

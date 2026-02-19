@@ -181,3 +181,55 @@ Sleep well, Ray. You've got some fun new tools to play with tomorrow! 🌙✨
 **Expected wake time:** ~08:00 EST
 
 🦞 *Lobsty out.*
+
+## Build #4 & #5 - Benchmark Tracker & Script Writer
+**Time:** 5:30-6:00 AM EST
+**Status:** Deployed + Building
+
+### Benchmark Tracker (Port 8103) ✅
+- **Purpose:** Track GPU/CPU benchmarks over time (RTX 5090 performance testing)
+- **Features:**
+  - Add benchmark results with hardware specs
+  - Track performance trends with charts
+  - Filter by test name
+  - Stats: total benchmarks, test series, top performers
+  - Performance graphs using Chart.js
+- **Database:** benchmark_tracker
+- **Status:** RUNNING and tested ✅
+
+### Script Writer (Port 8104) 🚧 Building
+- **Purpose:** AI-assisted video script writer (for Tech with Ray)
+- **Features:**
+  - Create and organize scripts by series/category
+  - Built-in templates (Review, Tutorial, Unboxing formats)
+  - Word count and estimated reading time
+  - Version history tracking
+  - Drag-drop script management
+  - Status tracking (Draft → Review → Published)
+- **Database:** script_writer
+- **Status:** Building...
+
+## Summary So Far
+✅ Apps Deployed (4):
+1. YouTube Studio Dashboard (8099) - Video pipeline tracker
+2. Hardware Monitor (8100) - Real-time system stats
+3. Gear Inventory Manager (8101) - Camera/lens catalog
+4. Benchmark Tracker (8103) - Performance testing ✅
+
+🚧 Building (1):
+5. Script Writer (8104) - Script management
+
+⏸️ Skipped:
+- Content Calendar (8102) - Docker build OOM, skipped for time
+
+## Time Remaining
+- Current: 6:00 AM EST
+- Deadline: 8:00 AM EST
+- **2 hours left to build more!**
+
+## Next Apps to Build (if time permits)
+- Sponsor Manager (deal tracking)
+- Gaming Session Logger (content ideas)
+- Collab Tracker (collaboration requests)
+- Content Ideas Manager (brainstorm storage)
+- Thumbnail Analyzer (test different designs)

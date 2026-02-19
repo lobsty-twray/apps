@@ -214,6 +214,71 @@ services:
       postgres:
         condition: service_healthy
 
+  content-calendar:
+    build: ./content-calendar
+    container_name: lobsty-content-calendar
+    restart: always
+    ports:
+      - 8102:3000
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/content_calendar
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  benchmark-tracker:
+    build: ./benchmark-tracker
+    container_name: lobsty-benchmark-tracker
+    restart: always
+    ports:
+      - 8103:3000
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/benchmark_tracker
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  script-writer:
+    build: ./script-writer
+    container_name: lobsty-script-writer
+    restart: always
+    ports:
+      - 8104:3000
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/script_writer
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  sponsor-manager:
+    build: ./sponsor-manager
+    container_name: lobsty-sponsor-manager
+    restart: always
+    ports:
+      - 8105:3000
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/sponsor_manager
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  content-ideas:
+    build: ./content-ideas
+    container_name: lobsty-content-ideas
+    restart: always
+    ports:
+      - 8106:3000
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/content_ideas
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   board-data:
     driver: local
