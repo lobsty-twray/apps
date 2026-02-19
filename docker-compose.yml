@@ -292,6 +292,32 @@ services:
       postgres:
         condition: service_healthy
 
+  thumbnail-analyzer:
+    build: ./thumbnail-analyzer
+    container_name: lobsty-thumbnail-analyzer
+    restart: always
+    ports:
+      - 8108:3000
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/thumbnail_analyzer
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  stream-planner:
+    build: ./stream-planner
+    container_name: lobsty-stream-planner
+    restart: always
+    ports:
+      - 8109:3000
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/stream_planner
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   board-data:
     driver: local
