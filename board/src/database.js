@@ -58,6 +58,19 @@ function initDatabase() {
     )
   `);
 
+  // Task-Doc links table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS task_docs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      task_id INTEGER NOT NULL,
+      url TEXT NOT NULL,
+      title TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (task_id) REFERENCES tasks (id) ON DELETE CASCADE,
+      UNIQUE(task_id, url)
+    )
+  `);
+
   // Create indexes for better performance
   db.exec(`
     CREATE INDEX IF NOT EXISTS idx_tasks_project_id ON tasks (project_id);
@@ -65,6 +78,7 @@ function initDatabase() {
     CREATE INDEX IF NOT EXISTS idx_tasks_priority ON tasks (priority);
     CREATE INDEX IF NOT EXISTS idx_task_labels_task_id ON task_labels (task_id);
     CREATE INDEX IF NOT EXISTS idx_task_labels_label_id ON task_labels (label_id);
+    CREATE INDEX IF NOT EXISTS idx_task_docs_task_id ON task_docs (task_id);
   `);
 
   console.log('Database initialized successfully');

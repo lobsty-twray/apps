@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hardware Monitor - Tech with Ray</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f0f1e;
+      color: white;
+      padding: 20px;
+    }
+    .container { max-width: 1600px; margin: 0 auto; }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .status {
+      font-size: 0.9rem;
+      color: #888;
+      margin-bottom: 30px;
+    }
+    .status.connected { color: #4caf50; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .card {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      border: 1px solid #2a2a3e;
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .card h2 {
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+      color: #667eea;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #2a2a3e;
+    }
+    .stat-row:last-child { border-bottom: none; }
+    .stat-label { color: #888; }
+    .stat-value {
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #2a2a3e;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      transition: width 0.3s;
+    }
+    .chart-container {
+      position: relative;
+      height: 200px;
+      margin-top: 15px;
+    }
+    .gpu-temp {
+      font-size: 3rem;
+      font-weight: bold;
+      text-align: center;
+      margin: 20px 0;
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>💻 Hardware Monitor</h1>
+    <div class="status" id="status">Connecting...</div>
+
+    <div class="grid">
+      <!-- CPU Card -->
+      <div class="card">
+        <h2>🔥 CPU</h2>
+        <div class="stat-row">
+          <span class="stat-label">Load</span>
+          <span class="stat-value" id="cpu-load">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="cpu-progress" style="width: 0%"></div>
+        </div>
+        <div class="chart-container">
+          <canvas id="cpu-chart"></canvas>
+        </div>
+      </div>
+
+      <!-- Memory Card -->
+      <div class="card">
+        <h2>🧠 Memory</h2>
+        <div class="stat-row">
+          <span class="stat-label">Used</span>
+          <span class="stat-value" id="mem-used">0 GB</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Total</span>
+          <span class="stat-value" id="mem-total">0 GB</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="mem-progress" style="width: 0%"></div>
+        </div>
+        <div class="chart-container">
+          <canvas id="mem-chart"></canvas>
+        </div>
+      </div>
+
+      <!-- GPU Card -->
+      <div class="card">
+        <h2>🎮 GPU (RTX 5090)</h2>
+        <div class="gpu-temp" id="gpu-temp">-- °C</div>
+        <div class="stat-row">
+          <span class="stat-label">Utilization</span>
+          <span class="stat-value" id="gpu-util">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="gpu-progress" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Network Card -->
+      <div class="card">
+        <h2>🌐 Network</h2>
+        <div class="stat-row">
+          <span class="stat-label">Download</span>
+          <span class="stat-value" id="net-rx">0 MB/s</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Upload</span>
+          <span class="stat-value" id="net-tx">0 MB/s</span>
+        </div>
+        <div class="chart-container">
+          <canvas id="net-chart"></canvas>
+        </div>
+      </div>
+
+      <!-- Storage Card -->
+      <div class="card">
+        <h2>💾 Storage</h2>
+        <div id="disk-list"></div>
+      </div>
+
+      <!-- Temperature Card -->
+      <div class="card">
+        <h2>🌡️ Temperatures</h2>
+        <div class="stat-row">
+          <span class="stat-label">CPU Main</span>
+          <span class="stat-value" id="temp-main">-- °C</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">CPU Max</span>
+          <span class="stat-value" id="temp-max">-- °C</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const ws = new WebSocket(`ws://${location.host}`);
+    const status = document.getElementById("status");
+
+    ws.onopen = () => {
+      status.textContent = "✅ Connected";
+      status.classList.add("connected");
+    };
+
+    ws.onclose = () => {
+      status.textContent = "❌ Disconnected - Reconnecting...";
+      status.classList.remove("connected");
+      setTimeout(() => location.reload(), 3000);
+    };
+
+    // Chart data
+    const cpuData = [];
+    const memData = [];
+    const netRxData = [];
+    const netTxData = [];
+    const maxDataPoints = 30;
+
+    // CPU Chart
+    const cpuChart = new Chart(document.getElementById("cpu-chart"), {
+      type: "line",
+      data: {
+        labels: [],
+        datasets: [{
+          label: "CPU Load %",
+          data: cpuData,
+          borderColor: "#667eea",
+          backgroundColor: "rgba(102, 126, 234, 0.1)",
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, max: 100, ticks: { color: "#888" } },
+          x: { display: false }
+        }
+      }
+    });
+
+    // Memory Chart
+    const memChart = new Chart(document.getElementById("mem-chart"), {
+      type: "line",
+      data: {
+        labels: [],
+        datasets: [{
+          label: "Memory %",
+          data: memData,
+          borderColor: "#f093fb",
+          backgroundColor: "rgba(240, 147, 251, 0.1)",
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, max: 100, ticks: { color: "#888" } },
+          x: { display: false }
+        }
+      }
+    });
+
+    // Network Chart
+    const netChart = new Chart(document.getElementById("net-chart"), {
+      type: "line",
+      data: {
+        labels: [],
+        datasets: [
+          {
+            label: "Download",
+            data: netRxData,
+            borderColor: "#4caf50",
+            backgroundColor: "rgba(76, 175, 80, 0.1)",
+            tension: 0.4
+          },
+          {
+            label: "Upload",
+            data: netTxData,
+            borderColor: "#ff9800",
+            backgroundColor: "rgba(255, 152, 0, 0.1)",
+            tension: 0.4
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { color: "#888" } },
+          x: { display: false }
+        }
+      }
+    });
+
+    function formatBytes(bytes) {
+      if (bytes === 0) return "0 B";
+      const k = 1024;
+      const sizes = ["B", "KB", "MB", "GB", "TB"];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return Math.round(bytes / Math.pow(k, i) * 100) / 100 + " " + sizes[i];
+    }
+
+    ws.onmessage = (event) => {
+      const stats = JSON.parse(event.data);
+
+      // CPU
+      document.getElementById("cpu-load").textContent = stats.cpu.load + "%";
+      document.getElementById("cpu-progress").style.width = stats.cpu.load + "%";
+      cpuData.push(stats.cpu.load);
+      if (cpuData.length > maxDataPoints) cpuData.shift();
+      cpuChart.update("none");
+
+      // Memory
+      const memUsedGB = (stats.memory.used / 1073741824).toFixed(1);
+      const memTotalGB = (stats.memory.total / 1073741824).toFixed(1);
+      document.getElementById("mem-used").textContent = memUsedGB + " GB";
+      document.getElementById("mem-total").textContent = memTotalGB + " GB";
+      document.getElementById("mem-progress").style.width = stats.memory.percent + "%";
+      memData.push(stats.memory.percent);
+      if (memData.length > maxDataPoints) memData.shift();
+      memChart.update("none");
+
+      // GPU
+      if (stats.gpu.length > 0) {
+        const gpu = stats.gpu[0];
+        document.getElementById("gpu-temp").textContent = gpu.temp ? gpu.temp + " °C" : "-- °C";
+        document.getElementById("gpu-util").textContent = gpu.utilizationGpu + "%";
+        document.getElementById("gpu-progress").style.width = gpu.utilizationGpu + "%";
+      }
+
+      // Network
+      if (stats.network.length > 0) {
+        const net = stats.network[0];
+        document.getElementById("net-rx").textContent = formatBytes(net.rx) + "/s";
+        document.getElementById("net-tx").textContent = formatBytes(net.tx) + "/s";
+        netRxData.push(net.rx / 1048576); // Convert to MB
+        netTxData.push(net.tx / 1048576);
+        if (netRxData.length > maxDataPoints) netRxData.shift();
+        if (netTxData.length > maxDataPoints) netTxData.shift();
+        netChart.update("none");
+      }
+
+      // Storage
+      const diskList = document.getElementById("disk-list");
+      diskList.innerHTML = stats.disk.map(disk => `
+        <div class="stat-row">
+          <span class="stat-label">${disk.mount || disk.fs}</span>
+          <span class="stat-value">${disk.percent}% (${formatBytes(disk.used)} / ${formatBytes(disk.size)})</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: ${disk.percent}%"></div>
+        </div>
+      `).join("");
+
+      // Temperatures
+      document.getElementById("temp-main").textContent = stats.temps.main ? stats.temps.main + " °C" : "-- °C";
+      document.getElementById("temp-max").textContent = stats.temps.max ? stats.temps.max + " °C" : "-- °C";
+    };
+  </script>
+</body>
+</html>

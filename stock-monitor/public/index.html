@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock Monitor</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0e17;
+      color: #e0e6ed;
+      min-height: 100vh;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .header-left { display: flex; align-items: center; gap: 14px; }
+    .header h1 { font-size: 22px; font-weight: 700; color: #fff; }
+    .header .subtitle { font-size: 13px; color: #64748b; }
+    .header-actions { display: flex; gap: 10px; align-items: center; }
+
+    .btn {
+      background: rgba(255,255,255,0.08);
+      color: #cbd5e1;
+      border: 1px solid #2a3444;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary { background: #2563eb; border-color: #2563eb; color: #fff; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-danger { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.3); color: #ef4444; }
+    .btn-danger:hover { background: rgba(239,68,68,0.25); }
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+    .btn-icon { padding: 6px 8px; min-width: 32px; justify-content: center; }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+    /* Product Cards */
+    .products-grid { display: flex; flex-direction: column; gap: 12px; }
+
+    .product-card {
+      background: #111827;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 20px;
+      transition: border-color 0.2s;
+    }
+    .product-card:hover { border-color: #334155; }
+    .product-card.in-stock { border-left: 4px solid #22c55e; }
+    .product-card.out-of-stock { border-left: 4px solid #ef4444; }
+    .product-card.unknown { border-left: 4px solid #64748b; }
+    .product-card.error { border-left: 4px solid #f59e0b; }
+
+    .product-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .product-info { flex: 1; min-width: 200px; }
+    .product-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .product-url {
+      font-size: 12px;
+      color: #475569;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 400px;
+    }
+    .product-url a { color: #475569; text-decoration: none; }
+    .product-url a:hover { color: #64748b; text-decoration: underline; }
+
+    .product-status {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .status-badge {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .status-badge.in-stock { background: rgba(34,197,94,0.15); color: #22c55e; }
+    .status-badge.out-of-stock, .status-badge.sold-out { background: rgba(239,68,68,0.15); color: #ef4444; }
+    .status-badge.notify-me { background: rgba(245,158,11,0.15); color: #f59e0b; }
+    .status-badge.unknown { background: rgba(100,116,139,0.15); color: #64748b; }
+    .status-badge.error { background: rgba(245,158,11,0.15); color: #f59e0b; }
+
+    .product-price {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      min-width: 100px;
+      text-align: right;
+    }
+    .product-meta {
+      font-size: 12px;
+      color: #475569;
+      min-width: 120px;
+      text-align: right;
+    }
+    .product-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: #1a2332;
+      border: 1px solid #2a3444;
+      border-radius: 16px;
+      padding: 28px;
+      width: 90%;
+      max-width: 500px;
+    }
+    .modal h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #fff;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      color: #94a3b8;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 10px 12px;
+      background: #111827;
+      border: 1px solid #2a3444;
+      border-radius: 8px;
+      color: #e0e6ed;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus { border-color: #2563eb; }
+    .form-group input::placeholder { color: #475569; }
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 24px;
+    }
+
+    /* History Modal */
+    .history-list {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid #1e293b;
+      font-size: 13px;
+    }
+    .history-item:last-child { border-bottom: none; }
+    .history-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .history-dot.in-stock { background: #22c55e; }
+    .history-dot.out-of-stock, .history-dot.sold-out { background: #ef4444; }
+    .history-dot.error { background: #f59e0b; }
+    .history-dot.unknown { background: #64748b; }
+    .history-time { color: #475569; min-width: 140px; }
+    .history-status { color: #94a3b8; flex: 1; }
+    .history-price { color: #e0e6ed; font-weight: 600; }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #475569;
+    }
+    .empty-state h3 { color: #64748b; margin-bottom: 10px; font-size: 18px; }
+
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px;
+      color: #64748b;
+    }
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid #1e293b;
+      border-top-color: #2563eb;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 10px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .stats-bar {
+      display: flex;
+      gap: 20px;
+      padding: 16px 0;
+      border-bottom: 1px solid #1e293b;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .stat-item { font-size: 13px; color: #64748b; }
+    .stat-item strong { color: #94a3b8; }
+
+    @media (max-width: 768px) {
+      .header { padding: 14px 16px; }
+      .header h1 { font-size: 18px; }
+      .container { padding: 12px; }
+      .product-card { padding: 14px; }
+      .product-row { gap: 10px; }
+      .product-price { font-size: 16px; min-width: auto; text-align: left; }
+      .product-meta { min-width: auto; text-align: left; }
+      .product-url { max-width: 250px; }
+      .product-actions { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-left">
+      <div>
+        <h1>Stock Monitor</h1>
+        <span class="subtitle">Multi-Product Availability Tracker</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <span id="lastRefresh" style="font-size:12px;color:#475569"></span>
+      <button class="btn btn-primary" onclick="openAddModal()">+ Add Product</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div id="statsBar" class="stats-bar" style="display:none"></div>
+    <div id="content">
+      <div class="loading"><div class="spinner"></div> Loading products...</div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Product Modal -->
+  <div class="modal-overlay" id="productModal">
+    <div class="modal">
+      <h2 id="modalTitle">Add Product</h2>
+      <form id="productForm" onsubmit="saveProduct(event)">
+        <input type="hidden" id="editId">
+        <div class="form-group">
+          <label>Product Name</label>
+          <input type="text" id="pName" placeholder="e.g. NVIDIA RTX 5090" required>
+        </div>
+        <div class="form-group">
+          <label>URL</label>
+          <input type="url" id="pUrl" placeholder="https://www.bestbuy.com/..." required>
+        </div>
+        <div class="form-group">
+          <label>Target Price (USD)</label>
+          <input type="number" id="pPrice" placeholder="2000" min="0">
+        </div>
+        <div class="form-group">
+          <label>Check Interval (minutes)</label>
+          <input type="number" id="pInterval" placeholder="5" min="1" max="1440" value="5">
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveBtn">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- History Modal -->
+  <div class="modal-overlay" id="historyModal">
+    <div class="modal" style="max-width:600px">
+      <h2 id="historyTitle">Check History</h2>
+      <div id="historyContent">
+        <div class="loading"><div class="spinner"></div> Loading...</div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn" onclick="closeHistoryModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let products = [];
+
+    async function fetchJSON(url, opts) {
+      const res = await fetch(url, opts);
+      return res.json();
+    }
+
+    function formatPrice(cents) {
+      if (!cents) return 'N/A';
+      return '$' + Number(cents).toLocaleString('en-US');
+    }
+
+    function relativeTime(dateStr) {
+      if (!dateStr) return 'Never';
+      const diff = Date.now() - new Date(dateStr).getTime();
+      const secs = Math.floor(diff / 1000);
+      if (secs < 60) return 'just now';
+      const mins = Math.floor(secs / 60);
+      if (mins < 60) return mins + 'm ago';
+      const hrs = Math.floor(mins / 60);
+      if (hrs < 24) return hrs + 'h ago';
+      return Math.floor(hrs / 24) + 'd ago';
+    }
+
+    function formatDateTime(dateStr) {
+      if (!dateStr) return 'N/A';
+      return new Date(dateStr).toLocaleString('en-US', {
+        month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
+      });
+    }
+
+    function statusLabel(status) {
+      const map = {
+        'in_stock': 'In Stock',
+        'out_of_stock': 'Out of Stock',
+        'sold_out': 'Sold Out',
+        'notify_me': 'Notify Me',
+        'unknown': 'Unknown',
+        'error': 'Error'
+      };
+      return map[status] || status;
+    }
+
+    function statusIcon(status) {
+      if (status === 'in_stock') return '\u2705';
+      if (status === 'error') return '\u26a0\ufe0f';
+      if (status === 'notify_me') return '\ud83d\udd14';
+      return '\u274c';
+    }
+
+    function statusClass(status) {
+      if (status === 'in_stock') return 'in-stock';
+      if (status === 'sold_out' || status === 'out_of_stock') return 'sold-out';
+      if (status === 'notify_me') return 'notify-me';
+      if (status === 'error') return 'error';
+      return 'unknown';
+    }
+
+    function cardClass(status) {
+      if (status === 'in_stock') return 'in-stock';
+      if (status === 'sold_out' || status === 'out_of_stock') return 'out-of-stock';
+      if (status === 'error') return 'error';
+      return 'unknown';
+    }
+
+    function truncateUrl(url) {
+      try {
+        const u = new URL(url);
+        const path = u.pathname.length > 40 ? u.pathname.substring(0, 40) + '...' : u.pathname;
+        return u.hostname + path;
+      } catch { return url; }
+    }
+
+    async function loadProducts() {
+      try {
+        const res = await fetchJSON('/api/products');
+        products = res.data || [];
+        renderProducts();
+        renderStats();
+      } catch (err) {
+        document.getElementById('content').innerHTML =
+          '<div class="empty-state"><h3>Error loading products</h3><p>' + err.message + '</p></div>';
+      }
+      document.getElementById('lastRefresh').textContent = 'Updated ' + new Date().toLocaleTimeString();
+    }
+
+    function renderStats() {
+      const bar = document.getElementById('statsBar');
+      if (products.length === 0) { bar.style.display = 'none'; return; }
+      bar.style.display = 'flex';
+      const inStock = products.filter(p => p.last_status === 'in_stock').length;
+      const outOfStock = products.filter(p => ['out_of_stock', 'sold_out'].includes(p.last_status)).length;
+      const errors = products.filter(p => p.last_status === 'error').length;
+      bar.innerHTML = `
+        <div class="stat-item"><strong>${products.length}</strong> Products</div>
+        <div class="stat-item" style="color:#22c55e"><strong>${inStock}</strong> In Stock</div>
+        <div class="stat-item" style="color:#ef4444"><strong>${outOfStock}</strong> Out of Stock</div>
+        ${errors ? `<div class="stat-item" style="color:#f59e0b"><strong>${errors}</strong> Errors</div>` : ''}
+      `;
+    }
+
+    function renderProducts() {
+      const container = document.getElementById('content');
+
+      if (products.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <h3>No Products Yet</h3>
+            <p>Click "+ Add Product" to start monitoring.</p>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = '<div class="products-grid">' + products.map(p => `
+        <div class="product-card ${cardClass(p.last_status)}">
+          <div class="product-row">
+            <div class="product-info">
+              <div class="product-name">${escapeHtml(p.name)}</div>
+              <div class="product-url">
+                <a href="${escapeHtml(p.url)}" target="_blank" rel="noopener">${truncateUrl(p.url)}</a>
+              </div>
+            </div>
+            <span class="status-badge ${statusClass(p.last_status)}">
+              ${statusIcon(p.last_status)} ${statusLabel(p.last_status)}
+            </span>
+            <div class="product-price">${formatPrice(p.last_price)}</div>
+            <div class="product-meta">
+              <div>Last check: ${relativeTime(p.last_check)}</div>
+              <div>Every ${p.check_interval}min${p.target_price ? ' | Target: ' + formatPrice(p.target_price) : ''}</div>
+            </div>
+            <div class="product-actions">
+              <button class="btn btn-sm" onclick="checkNow(${p.id})" title="Check Now" id="checkBtn${p.id}">Check</button>
+              <button class="btn btn-sm" onclick="viewHistory(${p.id}, '${escapeHtml(p.name)}')" title="History">History</button>
+              <button class="btn btn-sm btn-icon" onclick="openEditModal(${p.id})" title="Edit">&#9998;</button>
+              <button class="btn btn-sm btn-icon btn-danger" onclick="deleteProduct(${p.id}, '${escapeHtml(p.name)}')" title="Delete">&#128465;</button>
+            </div>
+          </div>
+        </div>
+      `).join('') + '</div>';
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    // --- Add / Edit Modal ---
+
+    function openAddModal() {
+      document.getElementById('modalTitle').textContent = 'Add Product';
+      document.getElementById('editId').value = '';
+      document.getElementById('pName').value = '';
+      document.getElementById('pUrl').value = '';
+      document.getElementById('pPrice').value = '';
+      document.getElementById('pInterval').value = '5';
+      document.getElementById('productModal').classList.add('active');
+    }
+
+    function openEditModal(id) {
+      const p = products.find(x => x.id === id);
+      if (!p) return;
+      document.getElementById('modalTitle').textContent = 'Edit Product';
+      document.getElementById('editId').value = id;
+      document.getElementById('pName').value = p.name;
+      document.getElementById('pUrl').value = p.url;
+      document.getElementById('pPrice').value = p.target_price || '';
+      document.getElementById('pInterval').value = p.check_interval;
+      document.getElementById('productModal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('productModal').classList.remove('active');
+    }
+
+    async function saveProduct(e) {
+      e.preventDefault();
+      const id = document.getElementById('editId').value;
+      const body = {
+        name: document.getElementById('pName').value,
+        url: document.getElementById('pUrl').value,
+        target_price: parseInt(document.getElementById('pPrice').value) || 0,
+        check_interval: parseInt(document.getElementById('pInterval').value) || 5
+      };
+
+      const saveBtn = document.getElementById('saveBtn');
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving...';
+
+      try {
+        if (id) {
+          await fetchJSON(`/api/products/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+        } else {
+          await fetchJSON('/api/products', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+        }
+        closeModal();
+        await loadProducts();
+      } catch (err) {
+        alert('Error: ' + err.message);
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save';
+      }
+    }
+
+    // --- Actions ---
+
+    async function checkNow(id) {
+      const btn = document.getElementById('checkBtn' + id);
+      if (!btn) return;
+      btn.disabled = true;
+      btn.textContent = 'Checking...';
+      try {
+        await fetchJSON(`/api/products/${id}/check`, { method: 'POST' });
+        await loadProducts();
+      } catch (err) {
+        alert('Check failed: ' + err.message);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = 'Check';
+        }
+      }
+    }
+
+    async function deleteProduct(id, name) {
+      if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+      try {
+        await fetchJSON(`/api/products/${id}`, { method: 'DELETE' });
+        await loadProducts();
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    // --- History Modal ---
+
+    async function viewHistory(id, name) {
+      document.getElementById('historyTitle').textContent = name + ' - Check History';
+      document.getElementById('historyContent').innerHTML =
+        '<div class="loading"><div class="spinner"></div> Loading...</div>';
+      document.getElementById('historyModal').classList.add('active');
+
+      try {
+        const res = await fetchJSON(`/api/products/${id}/history?limit=100`);
+        const history = res.data || [];
+
+        if (history.length === 0) {
+          document.getElementById('historyContent').innerHTML =
+            '<p style="color:#475569;text-align:center;padding:20px">No check history yet.</p>';
+          return;
+        }
+
+        document.getElementById('historyContent').innerHTML = `
+          <div class="history-list">
+            ${history.map(h => `
+              <div class="history-item">
+                <div class="history-dot ${statusClass(h.status)}"></div>
+                <div class="history-time">${formatDateTime(h.checked_at)}</div>
+                <div class="history-status">${statusIcon(h.status)} ${statusLabel(h.status)}</div>
+                <div class="history-price">${h.price ? formatPrice(h.price) : ''}</div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } catch (err) {
+        document.getElementById('historyContent').innerHTML =
+          '<p style="color:#ef4444">Error: ' + err.message + '</p>';
+      }
+    }
+
+    function closeHistoryModal() {
+      document.getElementById('historyModal').classList.remove('active');
+    }
+
+    // --- Close modals on backdrop click ---
+    document.getElementById('productModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('productModal')) closeModal();
+    });
+    document.getElementById('historyModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('historyModal')) closeHistoryModal();
+    });
+
+    // --- Init ---
+    loadProducts();
+    setInterval(loadProducts, 30000); // refresh UI every 30s
+  </script>
+</body>
+</html>

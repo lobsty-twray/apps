@@ -102,12 +102,14 @@ app.get('/api/projects/:id/tasks', (req, res) => {
       ORDER BY t.status, t.position, t.created_at
     `).all(req.params.id);
     
-    // Parse labels and colors
+    // Parse labels and colors, load docs
+    const docsStmt = db.prepare('SELECT id, url, title FROM task_docs WHERE task_id = ? ORDER BY created_at');
     tasks.forEach(task => {
       task.labels = task.labels ? task.labels.split(',') : [];
       task.label_colors = task.label_colors ? task.label_colors.split(',') : [];
+      task.docs = docsStmt.all(task.id);
     });
-    
+
     res.json(tasks);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -156,7 +158,8 @@ app.get('/api/tasks/:id', (req, res) => {
     
     task.labels = task.labels ? task.labels.split(',') : [];
     task.label_colors = task.label_colors ? task.label_colors.split(',') : [];
-    
+    task.docs = db.prepare('SELECT id, url, title FROM task_docs WHERE task_id = ? ORDER BY created_at').all(task.id);
+
     res.json(task);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -215,6 +218,43 @@ app.delete('/api/tasks/:id', (req, res) => {
       return res.status(404).json({ error: 'Task not found' });
     }
     
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Task Docs API
+app.post('/api/tasks/:id/docs', (req, res) => {
+  try {
+    const { url, title } = req.body;
+    if (!url || !title) {
+      return res.status(400).json({ error: 'URL and title are required' });
+    }
+
+    const stmt = db.prepare('INSERT OR IGNORE INTO task_docs (task_id, url, title) VALUES (?, ?, ?)');
+    const result = stmt.run(req.params.id, url, title);
+
+    if (result.changes === 0) {
+      return res.status(409).json({ error: 'Doc already linked' });
+    }
+
+    const doc = db.prepare('SELECT * FROM task_docs WHERE id = ?').get(result.lastInsertRowid);
+    res.status(201).json(doc);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/tasks/:taskId/docs/:docId', (req, res) => {
+  try {
+    const stmt = db.prepare('DELETE FROM task_docs WHERE id = ? AND task_id = ?');
+    const result = stmt.run(req.params.docId, req.params.taskId);
+
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'Doc link not found' });
+    }
+
     res.status(204).send();
   } catch (error) {
     res.status(500).json({ error: error.message });

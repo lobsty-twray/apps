@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gear Inventory - Tech with Ray</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container { max-width: 1600px; margin: 0 auto; }
+    h1 {
+      color: white;
+      margin-bottom: 20px;
+      font-size: 2.5rem;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    .controls {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      background: #3498db;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.3s;
+    }
+    .btn:hover {
+      background: #2980b9;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    .btn-secondary { background: #95a5a6; }
+    .btn-secondary:hover { background: #7f8c8d; }
+    .filter-pills {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .filter-pill {
+      background: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 0.9rem;
+    }
+    .filter-pill:hover, .filter-pill.active {
+      background: #3498db;
+      color: white;
+    }
+    .gear-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .gear-card {
+      background: white;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      transition: transform 0.3s;
+    }
+    .gear-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+    }
+    .gear-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      background: #ecf0f1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #95a5a6;
+      font-size: 4rem;
+    }
+    .gear-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .gear-content {
+      padding: 20px;
+    }
+    .gear-name {
+      font-size: 1.3rem;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #2c3e50;
+    }
+    .gear-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-bottom: 15px;
+      font-size: 0.9rem;
+      color: #7f8c8d;
+    }
+    .gear-category {
+      display: inline-block;
+      background: #3498db;
+      color: white;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      margin-bottom: 10px;
+    }
+    .gear-actions {
+      display: flex;
+      gap: 10px;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      overflow-y: auto;
+    }
+    .modal.active { display: flex; }
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+      color: #333;
+    }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📸 Gear Inventory</h1>
+    
+    <div class="controls">
+      <button class="btn" onclick="openAddModal()">+ Add Gear</button>
+      <div class="filter-pills" id="filters">
+        <div class="filter-pill active" data-category="">All</div>
+      </div>
+    </div>
+
+    <div class="gear-grid" id="gear-grid"></div>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div class="modal" id="gear-modal">
+    <div class="modal-content">
+      <h2 id="modal-title">Add Gear</h2>
+      <form id="gear-form" onsubmit="saveGear(event)" enctype="multipart/form-data">
+        <input type="hidden" id="gear-id">
+        
+        <div class="form-group">
+          <label>Name *</label>
+          <input type="text" id="gear-name" required>
+        </div>
+        
+        <div class="form-group">
+          <label>Category *</label>
+          <input type="text" id="gear-category" list="category-list" required>
+          <datalist id="category-list">
+            <option value="Camera">
+            <option value="Lens">
+            <option value="Display">
+            <option value="Computer">
+            <option value="3D Printer">
+            <option value="Phone">
+            <option value="Accessory">
+          </datalist>
+        </div>
+
+        <div class="form-group">
+          <label>Brand</label>
+          <input type="text" id="gear-brand">
+        </div>
+
+        <div class="form-group">
+          <label>Model</label>
+          <input type="text" id="gear-model">
+        </div>
+
+        <div class="form-group">
+          <label>Purchase Date</label>
+          <input type="date" id="gear-purchase-date">
+        </div>
+
+        <div class="form-group">
+          <label>Purchase Price ($)</label>
+          <input type="number" id="gear-purchase-price" step="0.01">
+        </div>
+
+        <div class="form-group">
+          <label>Warranty Until</label>
+          <input type="date" id="gear-warranty">
+        </div>
+
+        <div class="form-group">
+          <label>Location</label>
+          <input type="text" id="gear-location" placeholder="Office, Studio, Storage...">
+        </div>
+
+        <div class="form-group">
+          <label>Image</label>
+          <input type="file" id="gear-image" accept="image/*">
+          <input type="hidden" id="gear-image-url">
+        </div>
+
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea id="gear-notes" rows="3"></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let gear = [];
+    let currentFilter = "";
+
+    async function loadGear() {
+      const params = currentFilter ? `?category=${currentFilter}` : "";
+      const res = await fetch("/api/gear" + params);
+      gear = await res.json();
+      renderGear();
+      loadCategories();
+    }
+
+    async function loadCategories() {
+      const res = await fetch("/api/categories");
+      const categories = await res.json();
+      const filters = document.getElementById("filters");
+      filters.innerHTML = `
+        <div class="filter-pill active" data-category="" onclick="filterGear('')">All (${gear.length})</div>
+        ${categories.map(cat => {
+          const count = gear.filter(g => g.category === cat).length;
+          return `<div class="filter-pill" data-category="${cat}" onclick="filterGear('${cat}')">${cat} (${count})</div>`;
+        }).join("")}
+      `;
+    }
+
+    function filterGear(category) {
+      currentFilter = category;
+      document.querySelectorAll(".filter-pill").forEach(pill => {
+        pill.classList.toggle("active", pill.dataset.category === category);
+      });
+      loadGear();
+    }
+
+    function renderGear() {
+      const grid = document.getElementById("gear-grid");
+      grid.innerHTML = gear.map(g => `
+        <div class="gear-card">
+          <div class="gear-image">
+            ${g.image_url ? `<img src="${g.image_url}" alt="${g.name}">` : '📦'}
+          </div>
+          <div class="gear-content">
+            <div class="gear-category">${g.category}</div>
+            <div class="gear-name">${g.name}</div>
+            <div class="gear-meta">
+              ${g.brand ? `<div>${g.brand} ${g.model || ''}</div>` : ''}
+              ${g.location ? `<div>📍 ${g.location}</div>` : ''}
+              ${g.purchase_price ? `<div>💰 $${parseFloat(g.purchase_price).toFixed(2)}</div>` : ''}
+            </div>
+            <div class="gear-actions">
+              <button class="btn" onclick="editGear(${g.id})" style="padding: 8px 16px; font-size: 0.9rem;">Edit</button>
+              <button class="btn btn-secondary" onclick="deleteGear(${g.id})" style="padding: 8px 16px; font-size: 0.9rem;">Delete</button>
+            </div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function openAddModal() {
+      document.getElementById("modal-title").textContent = "Add Gear";
+      document.getElementById("gear-form").reset();
+      document.getElementById("gear-id").value = "";
+      document.getElementById("gear-modal").classList.add("active");
+    }
+
+    function editGear(id) {
+      const g = gear.find(item => item.id === id);
+      document.getElementById("modal-title").textContent = "Edit Gear";
+      document.getElementById("gear-id").value = g.id;
+      document.getElementById("gear-name").value = g.name;
+      document.getElementById("gear-category").value = g.category;
+      document.getElementById("gear-brand").value = g.brand || "";
+      document.getElementById("gear-model").value = g.model || "";
+      document.getElementById("gear-purchase-date").value = g.purchase_date || "";
+      document.getElementById("gear-purchase-price").value = g.purchase_price || "";
+      document.getElementById("gear-warranty").value = g.warranty_until || "";
+      document.getElementById("gear-location").value = g.location || "";
+      document.getElementById("gear-notes").value = g.notes || "";
+      document.getElementById("gear-image-url").value = g.image_url || "";
+      document.getElementById("gear-modal").classList.add("active");
+    }
+
+    function closeModal() {
+      document.getElementById("gear-modal").classList.remove("active");
+    }
+
+    async function saveGear(e) {
+      e.preventDefault();
+      const id = document.getElementById("gear-id").value;
+      const formData = new FormData();
+      
+      formData.append("name", document.getElementById("gear-name").value);
+      formData.append("category", document.getElementById("gear-category").value);
+      formData.append("brand", document.getElementById("gear-brand").value);
+      formData.append("model", document.getElementById("gear-model").value);
+      formData.append("purchase_date", document.getElementById("gear-purchase-date").value);
+      formData.append("purchase_price", document.getElementById("gear-purchase-price").value);
+      formData.append("warranty_until", document.getElementById("gear-warranty").value);
+      formData.append("location", document.getElementById("gear-location").value);
+      formData.append("notes", document.getElementById("gear-notes").value);
+      
+      const imageFile = document.getElementById("gear-image").files[0];
+      if (imageFile) {
+        formData.append("image", imageFile);
+      } else if (id) {
+        formData.append("image_url", document.getElementById("gear-image-url").value);
+      }
+
+      const url = id ? `/api/gear/${id}` : "/api/gear";
+      const method = id ? "PUT" : "POST";
+      
+      await fetch(url, { method, body: formData });
+      
+      closeModal();
+      loadGear();
+    }
+
+    async function deleteGear(id) {
+      if (!confirm("Delete this gear item?")) return;
+      await fetch(`/api/gear/${id}`, { method: "DELETE" });
+      loadGear();
+    }
+
+    loadGear();
+  </script>
+</body>
+</html>

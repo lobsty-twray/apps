@@ -1,0 +1,15 @@
+{
+  "name": "stock-monitor",
+  "version": "2.0.0",
+  "description": "Multi-product stock availability and price monitor with Playwright scraping",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "pg": "^8.13.0",
+    "playwright": "^1.49.0",
+    "node-cron": "^3.0.3"
+  }
+}
