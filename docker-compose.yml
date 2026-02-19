@@ -1,97 +1,172 @@
 services:
-  todo:
-    build: ./todo
-    container_name: todo-app
-    restart: always
-    ports:
-      - "8090:80"
-
   board:
     build: ./board
     container_name: lobsty-board
     restart: always
     ports:
-      - "8091:3000"
+    - 8091:3000
     volumes:
-      - board-data:/app/data
+    - board-data:/app/data
     environment:
-      - NODE_ENV=production
+    - NODE_ENV=production
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/projects"]
+      test:
+      - CMD
+      - wget
+      - --no-verbose
+      - --tries=1
+      - --spider
+      - http://localhost:3000/api/projects
       interval: 30s
       timeout: 10s
       retries: 3
-
-  budget:
-    build: ./budget
-    container_name: lobsty-budget
-    restart: always
-    ports:
-      - "8092:3000"
-    volumes:
-      - budget-data:/app/data
-    environment:
-      - NODE_ENV=production
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/dashboard"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
   docs:
     build: ./docs
     container_name: lobsty-docs
     restart: always
     ports:
-      - "8093:3000"
+    - 8093:3000
     environment:
-      - NODE_ENV=production
-      - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/docs
-      - JWT_SECRET=***REMOVED***
-      - GOOGLE_CLIENT_ID=***REMOVED***
-      - GOOGLE_CLIENT_SECRET=***REMOVED***
+    - NODE_ENV=production
+    - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/docs
+    - JWT_SECRET=***REMOVED***
+    - GOOGLE_CLIENT_ID=***REMOVED***
+    - GOOGLE_CLIENT_SECRET=***REMOVED***
     depends_on:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/auth/me', r => process.exit(r.statusCode < 500 ? 0 : 1)).on('error', () => process.exit(1))"]
+      test:
+      - CMD
+      - node
+      - -e
+      - 'require(''http'').get(''http://localhost:3000/api/auth/me'', r => process.exit(r.statusCode
+        < 500 ? 0 : 1)).on(''error'', () => process.exit(1))'
       interval: 30s
       timeout: 10s
       retries: 3
-
   drafts:
     build: ./drafts
     container_name: lobsty-drafts
     restart: always
     ports:
-      - "8094:3000"
+    - 8094:3000
     environment:
-      - NODE_ENV=production
-      - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/drafts
-      - JWT_SECRET=lobsty-drafts-jwt-secret-2026
+    - NODE_ENV=production
+    - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/drafts
+    - JWT_SECRET=lobsty-drafts-jwt-secret-2026
     depends_on:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/auth/me', r => process.exit(r.statusCode < 500 ? 0 : 1)).on('error', () => process.exit(1))"]
+      test:
+      - CMD
+      - node
+      - -e
+      - 'require(''http'').get(''http://localhost:3000/api/auth/me'', r => process.exit(r.statusCode
+        < 500 ? 0 : 1)).on(''error'', () => process.exit(1))'
       interval: 30s
       timeout: 10s
       retries: 3
-
+  shop:
+    build: ./shop
+    container_name: lobsty-shop
+    restart: always
+    ports:
+    - 8096:3000
+    volumes:
+    - shop-uploads:/app/uploads
+    environment:
+    - NODE_ENV=production
+    - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/shop
+    - JWT_SECRET=lobsty-shop-jwt-secret-2026
+    - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+    - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}
+    - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+    - BASE_URL=https://shop.twray.dev
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+      - CMD
+      - node
+      - -e
+      - 'require(''http'').get(''http://localhost:3000/api/products'', (res) => {
+        process.exit(res.statusCode === 200 ? 0 : 1) }).on(''error'', () => process.exit(1))'
+      interval: 30s
+      timeout: 10s
+      retries: 3
+  video-pipeline:
+    build: ./video-pipeline
+    container_name: lobsty-video-pipeline
+    restart: always
+    ports:
+    - 8097:3000
+    volumes:
+    - video-pipeline-uploads:/app/uploads
+    environment:
+    - NODE_ENV=production
+    - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/video-pipeline
+    - JWT_SECRET=lobsty-video-pipeline-jwt-secret-2026
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+      - CMD
+      - node
+      - -e
+      - 'require(''http'').get(''http://localhost:3000/api/auth/me'', r => process.exit(r.statusCode
+        < 500 ? 0 : 1)).on(''error'', () => process.exit(1))'
+      interval: 30s
+      timeout: 10s
+      retries: 3
+  stock-monitor:
+    build: ./stock-monitor
+    container_name: lobsty-stock-monitor
+    restart: always
+    ports:
+    - 8098:3000
+    environment:
+    - NODE_ENV=production
+    - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/stock_monitor
+    - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+    - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
+    - BESTBUY_API_KEY=${BESTBUY_API_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+      - CMD
+      - node
+      - -e
+      - 'require(''http'').get(''http://localhost:3000/api/products'', r => process.exit(r.statusCode
+        < 500 ? 0 : 1)).on(''error'', () => process.exit(1))'
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 1G
   postgres:
     image: postgres:16-alpine
     container_name: lobsty-postgres
     restart: always
     ports:
-      - "5432:5432"
+    - 5432:5432
     environment:
-      - POSTGRES_USER=lobsty
-      - POSTGRES_PASSWORD=***REMOVED***
-      - POSTGRES_DB=lobsty_main
+    - POSTGRES_USER=lobsty
+    - POSTGRES_PASSWORD=***REMOVED***
+    - POSTGRES_DB=lobsty_main
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+    - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U lobsty"]
+      test:
+      - CMD-SHELL
+      - pg_isready -U lobsty
       interval: 10s
       timeout: 5s
       retries: 5
@@ -100,10 +175,30 @@ services:
         limits:
           memory: 2G
 
+  youtube-studio:
+    build: ./youtube-studio
+    container_name: lobsty-youtube-studio
+    restart: always
+    ports:
+      - 8099:3000
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/youtube_studio
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
 volumes:
   board-data:
     driver: local
-  budget-data:
+  shop-uploads:
+    driver: local
+  video-pipeline-uploads:
     driver: local
   postgres-data:
     driver: local
