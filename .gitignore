@@ -1,1 +1,6 @@
 .env
+# Ignore backup files
+*.backup*
+secrets.txt
+.git.bfg-report/
+*.jar
