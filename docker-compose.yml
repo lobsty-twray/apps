@@ -28,7 +28,7 @@ services:
     - 8093:3000
     environment:
     - NODE_ENV=production
-    - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/docs
+    - DATABASE_URL=postgresql://lobsty:lobsty2026@lobsty-postgres:5432/docs
     - JWT_SECRET=***REMOVED***
     - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
     - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
