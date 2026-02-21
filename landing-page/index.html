@@ -4,221 +4,414 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ray — Tech with Ray</title>
-<meta name="description" content="Content creator, software engineer, and hardware enthusiast.">
+<meta name="description" content="Content creator, software engineer, and hardware enthusiast. Deep dives into tech, hardware reviews, and everything in between.">
+<meta property="og:title" content="Tech with Ray">
+<meta property="og:description" content="Content creator, software engineer & hardware enthusiast — building at the intersection of code and hardware.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://twray.dev">
+<meta name="theme-color" content="#0a0a0f">
+<link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg">
+<link rel="icon" type="image/x-icon" href="/favicons/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --bg:#0a0a0f;--surface:rgba(255,255,255,.04);--glass:rgba(255,255,255,.06);
-  --border:rgba(255,255,255,.08);--text:#e4e4e7;--muted:#a1a1aa;
-  --accent:#6366f1;--accent2:#a78bfa;--glow:rgba(99,102,241,.25);
+  --bg:#0a0a0f;--surface:rgba(255,255,255,.03);--glass:rgba(255,255,255,.05);
+  --glass-strong:rgba(255,255,255,.08);--border:rgba(255,255,255,.08);
+  --border-glow:rgba(0,212,255,.15);--text:#e4e4e7;--muted:#a1a1aa;
+  --blue:#00d4ff;--purple:#7c3aed;--pink:#f472b6;
+  --glow-blue:rgba(0,212,255,.3);--glow-purple:rgba(124,58,237,.3);
 }
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
-a{color:var(--accent2);text-decoration:none;transition:color .2s}
-a:hover{color:#c4b5fd}
+a{color:var(--blue);text-decoration:none;transition:color .2s}
+a:hover{color:var(--pink)}
+
+/* ── ANIMATED BG ── */
+.bg-mesh{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;overflow:hidden}
+.bg-mesh::before,.bg-mesh::after{content:'';position:absolute;border-radius:50%;filter:blur(120px);opacity:.4;animation:float 20s ease-in-out infinite}
+.bg-mesh::before{width:600px;height:600px;background:radial-gradient(circle,var(--glow-purple),transparent 70%);top:-10%;left:-10%;animation-delay:0s}
+.bg-mesh::after{width:500px;height:500px;background:radial-gradient(circle,var(--glow-blue),transparent 70%);bottom:-10%;right:-10%;animation-delay:-10s}
+@keyframes float{0%,100%{transform:translate(0,0) scale(1)}25%{transform:translate(80px,50px) scale(1.1)}50%{transform:translate(-40px,100px) scale(.9)}75%{transform:translate(60px,-30px) scale(1.05)}}
+
+/* ── GRID OVERLAY ── */
+.grid-overlay{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;
+  background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);
+  background-size:60px 60px}
 
 /* ── NAV ── */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:1rem 1.25rem;
-  background:rgba(10,10,15,.8);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:.75rem 1.25rem;
+  background:rgba(10,10,15,.7);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);
   display:flex;align-items:center;justify-content:space-between}
-nav .logo{font-weight:700;font-size:1.1rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-nav .links{display:flex;gap:.5rem}
-nav .links a{color:var(--muted);font-size:.85rem;padding:.5rem .75rem;border-radius:8px;min-height:44px;display:inline-flex;align-items:center;transition:background .2s,color .2s}
-nav .links a:hover{background:var(--glass);color:var(--text)}
+nav .logo{font-weight:800;font-size:1.15rem;background:linear-gradient(135deg,var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 30px var(--glow-blue)}
+nav .links{display:flex;gap:.25rem}
+nav .links a{color:var(--muted);font-size:.85rem;padding:.5rem .65rem;border-radius:8px;min-height:44px;display:inline-flex;align-items:center;transition:all .2s}
+nav .links a:hover{background:var(--glass-strong);color:var(--text)}
 
 /* ── SECTIONS ── */
-section{padding:5rem 1.25rem 3rem;max-width:960px;margin:0 auto}
-.section-title{font-size:1.5rem;font-weight:700;margin-bottom:1.5rem;background:linear-gradient(135deg,var(--text),var(--muted));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+section{padding:5rem 1.25rem 3rem;max-width:1000px;margin:0 auto}
+.section-label{font-size:.75rem;text-transform:uppercase;letter-spacing:.15em;color:var(--blue);font-weight:600;margin-bottom:.5rem}
+.section-title{font-size:clamp(1.5rem,4vw,2.25rem);font-weight:800;margin-bottom:1.5rem;background:linear-gradient(135deg,var(--text) 30%,var(--muted));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+
+/* ── REVEAL ANIMATION ── */
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .7s ease,transform .7s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal-delay-1{transition-delay:.1s}
+.reveal-delay-2{transition-delay:.2s}
+.reveal-delay-3{transition-delay:.3s}
+.reveal-delay-4{transition-delay:.4s}
 
 /* ── HERO ── */
 .hero{min-height:100dvh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:6rem 1.25rem 3rem;position:relative}
-.hero::before{content:'';position:absolute;top:-20%;left:50%;transform:translateX(-50%);width:400px;height:400px;background:radial-gradient(circle,var(--glow) 0%,transparent 70%);pointer-events:none;opacity:.6}
-.hero .avatar{width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:2.5rem;font-weight:700;margin-bottom:1.5rem;box-shadow:0 0 40px var(--glow)}
-.hero h1{font-size:clamp(2.5rem,8vw,4.5rem);font-weight:800;letter-spacing:-.02em;line-height:1.1;margin-bottom:.5rem}
-.hero h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2),#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.hero .tagline{font-size:clamp(1rem,3vw,1.25rem);color:var(--muted);max-width:500px;margin:0 auto 2rem}
+.hero-particles{position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden;pointer-events:none}
+.particle{position:absolute;width:2px;height:2px;background:var(--blue);border-radius:50%;opacity:0;animation:particleFloat linear infinite}
+@keyframes particleFloat{0%{opacity:0;transform:translateY(100vh) scale(0)}10%{opacity:.6}90%{opacity:.6}100%{opacity:0;transform:translateY(-10vh) scale(1)}}
+
+.hero .avatar{width:110px;height:110px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple));display:flex;align-items:center;justify-content:center;font-size:2.75rem;font-weight:900;color:#fff;margin-bottom:1.5rem;box-shadow:0 0 60px var(--glow-blue),0 0 120px var(--glow-purple);animation:avatarPulse 3s ease-in-out infinite;position:relative}
+.hero .avatar::after{content:'';position:absolute;inset:-4px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple),var(--pink));z-index:-1;animation:spin 6s linear infinite;opacity:.6}
+@keyframes avatarPulse{0%,100%{box-shadow:0 0 60px var(--glow-blue),0 0 120px var(--glow-purple)}50%{box-shadow:0 0 80px var(--glow-blue),0 0 160px var(--glow-purple)}}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+.hero h1{font-size:clamp(3rem,10vw,6rem);font-weight:900;letter-spacing:-.03em;line-height:1;margin-bottom:.75rem;position:relative}
+.hero h1 .glow-text{background:linear-gradient(135deg,var(--blue),var(--purple),var(--pink),var(--blue));background-size:300% 300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:gradientShift 4s ease infinite}
+@keyframes gradientShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.hero h1::after{content:'';position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);width:60%;height:2px;background:linear-gradient(90deg,transparent,var(--blue),var(--purple),transparent);border-radius:2px}
+
+.hero .tagline{font-size:clamp(1rem,3vw,1.25rem);color:var(--muted);max-width:550px;margin:1rem auto 2rem;min-height:1.5em}
+.typing-cursor{display:inline-block;width:2px;height:1.2em;background:var(--blue);margin-left:2px;animation:blink .8s step-end infinite;vertical-align:text-bottom}
+@keyframes blink{50%{opacity:0}}
+
 .hero .cta{display:flex;flex-wrap:wrap;gap:.75rem;justify-content:center}
-.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:.75rem 1.75rem;border-radius:12px;font-weight:600;font-size:.95rem;transition:transform .2s,box-shadow .2s;cursor:pointer;border:none}
-.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 4px 24px var(--glow)}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 32px var(--glow);color:#fff}
-.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text);backdrop-filter:blur(8px)}
-.btn-outline:hover{background:var(--glass);transform:translateY(-2px);color:var(--text)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:48px;padding:.75rem 1.75rem;border-radius:14px;font-weight:700;font-size:.95rem;transition:all .3s cubic-bezier(.4,0,.2,1);cursor:pointer;border:none;position:relative;overflow:hidden}
+.btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.1),transparent);opacity:0;transition:opacity .3s}
+.btn:hover::before{opacity:1}
+.btn-primary{background:linear-gradient(135deg,var(--blue),var(--purple));color:#fff;box-shadow:0 4px 30px var(--glow-blue)}
+.btn-primary:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 8px 40px var(--glow-blue),0 0 60px var(--glow-purple);color:#fff}
+.btn-outline{background:rgba(255,255,255,.03);border:1px solid var(--border);color:var(--text);backdrop-filter:blur(8px)}
+.btn-outline:hover{background:var(--glass-strong);transform:translateY(-3px);border-color:var(--border-glow);color:var(--text)}
+
+/* ── STATS ── */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:3rem}
+.stat{text-align:center;padding:1.25rem .5rem;border-radius:16px;background:var(--glass);border:1px solid var(--border);backdrop-filter:blur(10px);transition:border-color .3s}
+.stat:hover{border-color:var(--border-glow)}
+.stat-num{font-size:clamp(1.5rem,5vw,2.25rem);font-weight:900;background:linear-gradient(135deg,var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:block}
+.stat-label{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-top:.25rem}
+
+/* ── DIVIDER ── */
+.gradient-divider{height:1px;background:linear-gradient(90deg,transparent,var(--blue),var(--purple),transparent);margin:0 auto;max-width:600px;opacity:.3}
 
 /* ── YOUTUBE ── */
-.yt-banner{background:linear-gradient(135deg,rgba(255,0,0,.12),rgba(99,102,241,.1));border:1px solid rgba(255,0,0,.15);border-radius:16px;padding:2rem 1.5rem;text-align:center;display:flex;flex-direction:column;align-items:center;gap:1rem}
-.yt-banner svg{width:48px;height:48px;fill:#ff0000}
-.yt-banner h3{font-size:1.25rem}
-.yt-banner p{color:var(--muted);max-width:480px;font-size:.95rem}
-.yt-banner .btn{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;min-height:48px}
-.yt-banner .btn:hover{color:#fff;transform:translateY(-2px)}
+.yt-section{position:relative}
+.yt-banner{background:linear-gradient(135deg,rgba(255,0,0,.08),rgba(124,58,237,.06));border:1px solid rgba(255,0,0,.12);border-radius:20px;padding:2.5rem 1.5rem;text-align:center;display:flex;flex-direction:column;align-items:center;gap:1rem;position:relative;overflow:hidden;backdrop-filter:blur(10px)}
+.yt-banner::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:conic-gradient(from 0deg,transparent,rgba(255,0,0,.05),transparent,rgba(124,58,237,.05),transparent);animation:spin 15s linear infinite}
+.yt-banner svg{width:56px;height:56px;fill:#ff0000;filter:drop-shadow(0 0 20px rgba(255,0,0,.4));position:relative}
+.yt-banner h3{font-size:1.35rem;font-weight:800;position:relative}
+.yt-banner p{color:var(--muted);max-width:500px;font-size:.95rem;position:relative}
+.yt-banner .btn{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;min-height:48px;box-shadow:0 4px 30px rgba(220,38,38,.3);position:relative}
+.yt-banner .btn:hover{color:#fff;transform:translateY(-3px);box-shadow:0 8px 40px rgba(220,38,38,.4)}
 
 /* ── PROJECTS ── */
 .projects-grid{display:grid;grid-template-columns:1fr;gap:1rem}
-.card{background:var(--glass);border:1px solid var(--border);border-radius:16px;padding:1.5rem;transition:transform .25s,box-shadow .25s,border-color .25s}
-.card:hover{transform:translateY(-4px);box-shadow:0 8px 32px rgba(0,0,0,.3);border-color:rgba(99,102,241,.3)}
-.card .icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;margin-bottom:1rem;background:linear-gradient(135deg,var(--accent),var(--accent2));opacity:.85}
-.card h3{font-size:1.05rem;margin-bottom:.4rem}
-.card p{color:var(--muted);font-size:.9rem;line-height:1.5}
-.card .tag{display:inline-block;margin-top:.75rem;padding:.25rem .65rem;border-radius:6px;font-size:.75rem;background:rgba(99,102,241,.15);color:var(--accent2);margin-right:.35rem}
+.card{background:var(--glass);border:1px solid var(--border);border-radius:20px;padding:1.5rem;transition:all .4s cubic-bezier(.4,0,.2,1);position:relative;overflow:hidden;backdrop-filter:blur(10px)}
+.card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,212,255,.05),rgba(124,58,237,.05));opacity:0;transition:opacity .4s}
+.card:hover::before{opacity:1}
+.card:hover{transform:translateY(-6px);box-shadow:0 12px 40px rgba(0,0,0,.4),0 0 30px var(--glow-blue);border-color:var(--border-glow)}
+.card .icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin-bottom:1rem;background:linear-gradient(135deg,var(--blue),var(--purple));box-shadow:0 4px 20px var(--glow-blue);position:relative}
+.card h3{font-size:1.1rem;font-weight:700;margin-bottom:.4rem;position:relative}
+.card p{color:var(--muted);font-size:.9rem;line-height:1.6;position:relative}
+.card .tags{margin-top:.75rem;display:flex;flex-wrap:wrap;gap:.35rem;position:relative}
+.tag{display:inline-block;padding:.25rem .65rem;border-radius:8px;font-size:.72rem;font-weight:600;background:rgba(0,212,255,.1);color:var(--blue);border:1px solid rgba(0,212,255,.15);transition:all .2s}
+.card:hover .tag{background:rgba(0,212,255,.15);border-color:rgba(0,212,255,.25)}
+.card-link{display:block;color:inherit;text-decoration:none}
+.card-link:hover{color:inherit}
 
-/* ── ABOUT / TECH ── */
-.about-content{display:flex;flex-direction:column;gap:1.5rem}
-.about-text{color:var(--muted);font-size:.95rem;line-height:1.7}
-.tech-chips{display:flex;flex-wrap:wrap;gap:.5rem}
-.chip{padding:.5rem 1rem;border-radius:10px;font-size:.85rem;background:var(--glass);border:1px solid var(--border);color:var(--text);min-height:44px;display:inline-flex;align-items:center;transition:border-color .2s}
-.chip:hover{border-color:var(--accent)}
+/* ── ABOUT ── */
+.about-content{display:flex;flex-direction:column;gap:2rem}
+.about-text{color:var(--muted);font-size:.95rem;line-height:1.8}
+.about-text strong{color:var(--text);font-weight:600}
+
+/* ── TECH STACK ── */
+.tech-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:.65rem}
+.tech-item{display:flex;flex-direction:column;align-items:center;gap:.4rem;padding:.85rem .5rem;border-radius:14px;background:var(--glass);border:1px solid var(--border);transition:all .3s;cursor:default;min-height:44px}
+.tech-item:hover{border-color:var(--border-glow);transform:translateY(-3px);box-shadow:0 8px 25px rgba(0,0,0,.3)}
+.tech-item .tech-icon{font-size:1.5rem}
+.tech-item .tech-name{font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
 
 /* ── STORE BANNER ── */
-.store-banner{background:linear-gradient(135deg,rgba(99,102,241,.1),rgba(167,139,250,.08));border:1px solid var(--border);border-radius:16px;padding:2rem 1.5rem;text-align:center;display:flex;flex-direction:column;align-items:center;gap:1rem}
-.store-banner h3{font-size:1.25rem}
-.store-banner p{color:var(--muted);font-size:.95rem}
+.store-banner{background:linear-gradient(135deg,rgba(0,212,255,.06),rgba(124,58,237,.06));border:1px solid var(--border);border-radius:20px;padding:2.5rem 1.5rem;text-align:center;display:flex;flex-direction:column;align-items:center;gap:1rem;backdrop-filter:blur(10px);position:relative;overflow:hidden}
+.store-banner::before{content:'';position:absolute;inset:-2px;border-radius:22px;background:linear-gradient(135deg,var(--blue),var(--purple),var(--pink),var(--blue));opacity:.1;z-index:-1}
+.store-banner h3{font-size:1.35rem;font-weight:800}
+.store-banner p{color:var(--muted);font-size:.95rem;max-width:480px}
 
-/* ── FOOTER ── */
-footer{border-top:1px solid var(--border);padding:2rem 1.25rem;text-align:center;color:var(--muted);font-size:.85rem}
-footer .social{display:flex;justify-content:center;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap}
-footer .social a{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;background:var(--glass);border:1px solid var(--border);color:var(--muted);transition:color .2s,border-color .2s;padding:.5rem .85rem;font-size:.85rem}
-footer .social a:hover{color:var(--accent2);border-color:var(--accent)}
+/* ── SOCIAL/FOOTER ── */
+footer{border-top:1px solid transparent;background-image:linear-gradient(var(--bg),var(--bg)),linear-gradient(90deg,var(--blue),var(--purple));background-origin:border-box;background-clip:padding-box,border-box;padding:2.5rem 1.25rem;text-align:center}
+footer .social{display:flex;justify-content:center;gap:.5rem;margin-bottom:1.25rem;flex-wrap:wrap}
+footer .social a{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;border-radius:12px;background:var(--glass);border:1px solid var(--border);color:var(--muted);transition:all .3s;padding:.5rem .85rem;font-size:.85rem;font-weight:600;gap:.4rem}
+footer .social a:hover{color:var(--blue);border-color:var(--border-glow);box-shadow:0 0 20px var(--glow-blue);transform:translateY(-2px)}
+footer .social a svg{width:18px;height:18px;fill:currentColor}
+footer .copy{color:var(--muted);font-size:.8rem}
 
-/* ── RESPONSIVE: tablet ── */
+/* ── RESPONSIVE ── */
 @media(min-width:640px){
   section{padding:6rem 2rem 3rem}
   .projects-grid{grid-template-columns:repeat(2,1fr)}
-  nav{padding:1rem 2rem}
+  nav{padding:.75rem 2rem}
+  .tech-grid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}
 }
-/* ── RESPONSIVE: desktop ── */
 @media(min-width:1024px){
   section{padding:7rem 2rem 4rem}
   .projects-grid{grid-template-columns:repeat(3,1fr)}
   .about-content{flex-direction:row}
   .about-text{flex:1}
-  .tech-chips{flex:1}
+  .stats-row{max-width:700px;margin:3rem auto 0}
 }
 
-/* ── ANIMATIONS ── */
-@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
-.fade-up{opacity:0;animation:fadeUp .6s ease forwards}
-.fade-up:nth-child(2){animation-delay:.1s}
-.fade-up:nth-child(3){animation-delay:.2s}
-.fade-up:nth-child(4){animation-delay:.3s}
-.fade-up:nth-child(5){animation-delay:.4s}
+/* ── CODE FLOAT ── */
+.code-float{position:absolute;font-family:'Courier New',monospace;font-size:.65rem;color:rgba(0,212,255,.08);pointer-events:none;white-space:nowrap;animation:codeDrift 30s linear infinite}
+@keyframes codeDrift{0%{transform:translateY(0) rotate(-5deg);opacity:0}5%{opacity:1}95%{opacity:1}100%{transform:translateY(-100vh) rotate(5deg);opacity:0}}
 </style>
 </head>
 <body>
 
+<div class="bg-mesh"></div>
+<div class="grid-overlay"></div>
+
 <nav>
-  <div class="logo">Tech with Ray</div>
+  <div class="logo">⚡ Tech with Ray</div>
   <div class="links">
     <a href="#projects">Projects</a>
     <a href="#about">About</a>
+    <a href="#youtube">YouTube</a>
     <a href="#store">Store</a>
   </div>
 </nav>
 
 <section class="hero">
-  <div class="avatar fade-up">R</div>
-  <h1 class="fade-up"><span>Ray</span></h1>
-  <p class="tagline fade-up">Content creator, software engineer &amp; hardware enthusiast — building at the intersection of code and hardware.</p>
-  <div class="cta fade-up">
-    <a href="https://youtube.com/@techwithray" target="_blank" rel="noopener" class="btn btn-primary">▶ YouTube</a>
-    <a href="https://techwithray.com" target="_blank" rel="noopener" class="btn btn-outline">🛒 Store</a>
+  <div class="hero-particles" id="particles"></div>
+  
+  <div class="avatar reveal">R</div>
+  <h1 class="reveal reveal-delay-1"><span class="glow-text">Tech with Ray</span></h1>
+  <p class="tagline reveal reveal-delay-2" id="tagline"><span class="typing-cursor"></span></p>
+  <div class="cta reveal reveal-delay-3">
+    <a href="https://youtube.com/@techwithray" target="_blank" rel="noopener" class="btn btn-primary">▶ YouTube Channel</a>
+    <a href="https://techwithray.com" target="_blank" rel="noopener" class="btn btn-outline">🛒 Visit Store</a>
+    <a href="https://github.com/lobsty-twray" target="_blank" rel="noopener" class="btn btn-outline">⌨ GitHub</a>
+  </div>
+  
+  <div class="stats-row reveal reveal-delay-4">
+    <div class="stat">
+      <span class="stat-num" data-target="15" data-suffix="+">0</span>
+      <span class="stat-label">Projects</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num" data-target="12" data-suffix="+">0</span>
+      <span class="stat-label">Tech Stack</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num" data-target="24" data-suffix="/7">0</span>
+      <span class="stat-label">Self-Hosted</span>
+    </div>
   </div>
 </section>
 
-<section id="youtube">
-  <h2 class="section-title">YouTube</h2>
-  <div class="yt-banner">
+<div class="gradient-divider"></div>
+
+<section id="youtube" class="yt-section">
+  <div class="section-label reveal">Channel</div>
+  <h2 class="section-title reveal">YouTube</h2>
+  <div class="yt-banner reveal">
     <svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2 31.3 31.3 0 000 12a31.3 31.3 0 00.5 5.8 3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1A31.3 31.3 0 0024 12a31.3 31.3 0 00-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
     <h3>Tech with Ray</h3>
-    <p>Deep dives into tech, hardware reviews, software engineering, 3D printing, sim racing, and everything in between.</p>
-    <a href="https://youtube.com/@techwithray" target="_blank" rel="noopener" class="btn">Subscribe</a>
+    <p>Deep dives into tech, hardware reviews, software engineering, 3D printing, sim racing, and everything in between. New videos weekly.</p>
+    <a href="https://youtube.com/@techwithray" target="_blank" rel="noopener" class="btn">▶ Subscribe</a>
   </div>
 </section>
+
+<div class="gradient-divider"></div>
 
 <section id="projects">
-  <h2 class="section-title">Projects</h2>
+  <div class="section-label reveal">Portfolio</div>
+  <h2 class="section-title reveal">Projects</h2>
   <div class="projects-grid">
-    <div class="card fade-up">
+    <a href="https://board.twray.dev" target="_blank" class="card-link"><div class="card reveal">
       <div class="icon">📋</div>
       <h3>Kanban Board</h3>
-      <p>Drag-and-drop project management with document linking, real-time updates, and team workflows.</p>
-      <span class="tag">React</span><span class="tag">PostgreSQL</span>
-    </div>
-    <div class="card fade-up">
+      <p>Drag-and-drop project management with document linking and real-time updates.</p>
+      <div class="tags"><span class="tag">React</span><span class="tag">PostgreSQL</span><span class="tag">DnD</span></div>
+    </div></a>
+    <a href="https://docs.twray.dev" target="_blank" class="card-link"><div class="card reveal reveal-delay-1">
       <div class="icon">📝</div>
       <h3>Docs Hub</h3>
-      <p>Notion-like document editor with Google OAuth, real-time collaboration, and public sharing.</p>
-      <span class="tag">Next.js</span><span class="tag">OAuth</span>
-    </div>
-    <div class="card fade-up">
+      <p>Notion-like document editor with Google OAuth, collaboration, and sharing.</p>
+      <div class="tags"><span class="tag">Next.js</span><span class="tag">OAuth</span><span class="tag">Markdown</span></div>
+    </div></a>
+    <a href="https://stock-monitor.twray.dev" target="_blank" class="card-link"><div class="card reveal reveal-delay-2">
       <div class="icon">📈</div>
       <h3>Stock Monitor</h3>
-      <p>Real-time stock tracking dashboard with alerts, portfolio analytics, and market insights.</p>
-      <span class="tag">APIs</span><span class="tag">WebSocket</span>
-    </div>
-    <div class="card fade-up">
+      <p>Real-time stock tracking with alerts, notifications, and market insights.</p>
+      <div class="tags"><span class="tag">APIs</span><span class="tag">WebSocket</span><span class="tag">Charts</span></div>
+    </div></a>
+    <div class="card reveal reveal-delay-3">
       <div class="icon">🎬</div>
       <h3>Video Pipeline</h3>
-      <p>Automated video processing workflow — ingest, transcode, thumbnail generation, and publishing.</p>
-      <span class="tag">FFmpeg</span><span class="tag">Automation</span>
+      <p>Automated video processing — ingest, transcode, thumbnail generation, and publishing.</p>
+      <div class="tags"><span class="tag">FFmpeg</span><span class="tag">Automation</span><span class="tag">Node.js</span></div>
     </div>
-    <div class="card fade-up">
-      <div class="icon">💰</div>
-      <h3>Budget Tracker</h3>
-      <p>Personal finance dashboard with expense categorization, visual breakdowns, and savings goals.</p>
-      <span class="tag">Charts</span><span class="tag">PostgreSQL</span>
-    </div>
+    <a href="https://drafts.twray.dev" target="_blank" class="card-link"><div class="card reveal reveal-delay-4">
+      <div class="icon">✏️</div>
+      <h3>Drafts Hub</h3>
+      <p>Centralized draft workspace with approval workflows for content creation.</p>
+      <div class="tags"><span class="tag">React</span><span class="tag">Workflow</span><span class="tag">PostgreSQL</span></div>
+    </div></a>
+    <a href="https://admin.twray.dev" target="_blank" class="card-link"><div class="card reveal">
+      <div class="icon">⚙️</div>
+      <h3>Admin Dashboard</h3>
+      <p>Centralized control panel for managing all self-hosted services and Docker containers.</p>
+      <div class="tags"><span class="tag">Docker</span><span class="tag">OAuth</span><span class="tag">Monitoring</span></div>
+    </div></a>
   </div>
 </section>
+
+<div class="gradient-divider"></div>
 
 <section id="about">
-  <h2 class="section-title">About &amp; Tech Stack</h2>
+  <div class="section-label reveal">About</div>
+  <h2 class="section-title reveal">About & Tech Stack</h2>
   <div class="about-content">
-    <div class="about-text">
-      <p>I build things with code and tinker with hardware. From custom water-cooled PCs and sim rigs to self-hosted apps on my NAS — I love the full spectrum of tech. When I'm not coding, I'm 3D printing, filming for YouTube, or chasing lap times.</p>
+    <div class="about-text reveal">
+      <p>I build things with <strong>code</strong> and tinker with <strong>hardware</strong>. From custom water-cooled PCs and sim rigs to a full self-hosted app ecosystem on my NAS — I love the full spectrum of tech.</p>
+      <br>
+      <p>My setup: <strong>RTX 5090</strong> gaming rig, <strong>UGreen DXP6800 Pro</strong> NAS with 22TB RAID, <strong>Bambu 3D printers</strong>, <strong>Sony cinema cameras</strong>, and a fleet of foldable phones. When I'm not coding, I'm filming for YouTube or chasing lap times on the sim rig.</p>
     </div>
-    <div class="tech-chips">
-      <span class="chip">TypeScript</span>
-      <span class="chip">React</span>
-      <span class="chip">Next.js</span>
-      <span class="chip">Node.js</span>
-      <span class="chip">PostgreSQL</span>
-      <span class="chip">Docker</span>
-      <span class="chip">Python</span>
-      <span class="chip">Linux</span>
-      <span class="chip">Nginx</span>
-      <span class="chip">FFmpeg</span>
-      <span class="chip">3D Printing</span>
-      <span class="chip">Home Lab</span>
-    </div>
+  </div>
+  
+  <div class="tech-grid" style="margin-top:2rem">
+    <div class="tech-item reveal"><span class="tech-icon">🟦</span><span class="tech-name">TypeScript</span></div>
+    <div class="tech-item reveal"><span class="tech-icon">⚛️</span><span class="tech-name">React</span></div>
+    <div class="tech-item reveal"><span class="tech-icon">▲</span><span class="tech-name">Next.js</span></div>
+    <div class="tech-item reveal"><span class="tech-icon">🟢</span><span class="tech-name">Node.js</span></div>
+    <div class="tech-item reveal"><span class="tech-icon">🐘</span><span class="tech-name">PostgreSQL</span></div>
+    <div class="tech-item reveal"><span class="tech-icon">🐳</span><span class="tech-name">Docker</span></div>
+    <div class="tech-item reveal"><span class="tech-icon">🐍</span><span class="tech-name">Python</span></div>
+    <div class="tech-item reveal"><span class="tech-icon">🐧</span><span class="tech-name">Linux</span></div>
+    <div class="tech-item reveal"><span class="tech-icon">☁️</span><span class="tech-name">Cloudflare</span></div>
+    <div class="tech-item reveal"><span class="tech-icon">🔧</span><span class="tech-name">Nginx</span></div>
+    <div class="tech-item reveal"><span class="tech-icon">🎥</span><span class="tech-name">FFmpeg</span></div>
+    <div class="tech-item reveal"><span class="tech-icon">🖨️</span><span class="tech-name">3D Print</span></div>
   </div>
 </section>
 
+<div class="gradient-divider"></div>
+
 <section id="store">
-  <div class="store-banner">
+  <div class="section-label reveal">Shop</div>
+  <h2 class="section-title reveal">Store</h2>
+  <div class="store-banner reveal">
     <h3>🛒 Tech with Ray Store</h3>
-    <p>Merch, recommended gear, and curated tech picks.</p>
-    <a href="https://techwithray.com" target="_blank" rel="noopener" class="btn btn-primary">Visit Store</a>
+    <p>Merch, recommended gear, and curated tech picks — all in one place.</p>
+    <a href="https://techwithray.com" target="_blank" rel="noopener" class="btn btn-primary">Visit Store →</a>
   </div>
 </section>
 
 <footer>
   <div class="social">
-    <a href="https://youtube.com/@techwithray" target="_blank" rel="noopener">YouTube</a>
-    <a href="https://techwithray.com" target="_blank" rel="noopener">Store</a>
-    <a href="https://github.com/lobsty-twray" target="_blank" rel="noopener">GitHub</a>
+    <a href="https://youtube.com/@techwithray" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2 31.3 31.3 0 000 12a31.3 31.3 0 00.5 5.8 3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1A31.3 31.3 0 0024 12a31.3 31.3 0 00-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
+      YouTube
+    </a>
+    <a href="https://techwithray.com" target="_blank" rel="noopener">🛒 Store</a>
+    <a href="https://github.com/lobsty-twray" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.39.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.21.08 1.85 1.24 1.85 1.24 1.07 1.84 2.81 1.31 3.5 1 .11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 016.02 0c2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.82.58A12 12 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+      GitHub
+    </a>
+    <a href="https://twitter.com/techwithray" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      X
+    </a>
   </div>
-  <p>&copy; 2026 Tech with Ray. Built with ☕ and curiosity.</p>
+  <p class="copy">© 2026 Tech with Ray. Built with ☕ and curiosity.</p>
 </footer>
 
 <script>
-// Intersection Observer for fade-in animations
-const obs = new IntersectionObserver((entries) => {
-  entries.forEach(e => { if (e.isIntersecting) { e.target.style.animationPlayState = 'running'; obs.unobserve(e.target); }});
-}, { threshold: 0.1 });
-document.querySelectorAll('.card.fade-up').forEach(el => {
-  el.style.animationPlayState = 'paused';
-  obs.observe(el);
-});
+// Typing effect
+const phrases = [
+  'Content creator, engineer & hardware enthusiast.',
+  'Building at the intersection of code & hardware.',
+  'Self-hosting everything. Breaking nothing.™',
+  'RTX 5090 + 22TB NAS + unlimited curiosity.'
+];
+let phraseIdx = 0, charIdx = 0, deleting = false;
+const taglineEl = document.getElementById('tagline');
+function type() {
+  const phrase = phrases[phraseIdx];
+  if (!deleting) {
+    taglineEl.innerHTML = phrase.substring(0, ++charIdx) + '<span class="typing-cursor"></span>';
+    if (charIdx === phrase.length) { setTimeout(() => { deleting = true; type(); }, 2500); return; }
+    setTimeout(type, 40 + Math.random() * 30);
+  } else {
+    taglineEl.innerHTML = phrase.substring(0, --charIdx) + '<span class="typing-cursor"></span>';
+    if (charIdx === 0) { deleting = false; phraseIdx = (phraseIdx + 1) % phrases.length; setTimeout(type, 400); return; }
+    setTimeout(type, 20);
+  }
+}
+type();
+
+// Particle spawner
+const pc = document.getElementById('particles');
+function spawnParticle() {
+  const p = document.createElement('div');
+  p.className = 'particle';
+  p.style.left = Math.random() * 100 + '%';
+  p.style.animationDuration = (8 + Math.random() * 12) + 's';
+  p.style.width = p.style.height = (1 + Math.random() * 2) + 'px';
+  const colors = ['var(--blue)', 'var(--purple)', 'var(--pink)'];
+  p.style.background = colors[Math.floor(Math.random() * 3)];
+  pc.appendChild(p);
+  p.addEventListener('animationend', () => p.remove());
+}
+setInterval(spawnParticle, 300);
+
+// Intersection Observer for reveals
+const revealObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); revealObs.unobserve(e.target); }});
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+// Counter animation
+const counterObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    const el = e.target;
+    const target = +el.dataset.target;
+    const suffix = el.dataset.suffix || '';
+    let current = 0;
+    const step = Math.max(1, Math.floor(target / 40));
+    const timer = setInterval(() => {
+      current = Math.min(current + step, target);
+      el.textContent = current + suffix;
+      if (current >= target) clearInterval(timer);
+    }, 30);
+    counterObs.unobserve(el);
+  });
+}, { threshold: 0.5 });
+document.querySelectorAll('.stat-num').forEach(el => counterObs.observe(el));
+
+// Floating code snippets
+const codeSnippets = ['const app = express();', 'docker compose up -d', 'git push origin main', 'SELECT * FROM projects;', 'npm run build', 'sudo systemctl restart', 'ffmpeg -i input.mp4', 'kubectl apply -f', 'CREATE TABLE videos (', 'interface TechStack {'];
+function spawnCode() {
+  const el = document.createElement('div');
+  el.className = 'code-float';
+  el.textContent = codeSnippets[Math.floor(Math.random() * codeSnippets.length)];
+  el.style.left = Math.random() * 90 + '%';
+  el.style.top = (100 + Math.random() * 20) + '%';
+  el.style.animationDuration = (25 + Math.random() * 15) + 's';
+  document.body.appendChild(el);
+  el.addEventListener('animationend', () => el.remove());
+}
+setInterval(spawnCode, 4000);
+spawnCode(); spawnCode();
 </script>
 </body>
 </html>
