@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ray — Tech with Ray</title>
+<meta name="description" content="Content creator, software engineer, and hardware enthusiast.">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a0f;--surface:rgba(255,255,255,.04);--glass:rgba(255,255,255,.06);
+  --border:rgba(255,255,255,.08);--text:#e4e4e7;--muted:#a1a1aa;
+  --accent:#6366f1;--accent2:#a78bfa;--glow:rgba(99,102,241,.25);
+}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
+a{color:var(--accent2);text-decoration:none;transition:color .2s}
+a:hover{color:#c4b5fd}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:1rem 1.25rem;
+  background:rgba(10,10,15,.8);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between}
+nav .logo{font-weight:700;font-size:1.1rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+nav .links{display:flex;gap:.5rem}
+nav .links a{color:var(--muted);font-size:.85rem;padding:.5rem .75rem;border-radius:8px;min-height:44px;display:inline-flex;align-items:center;transition:background .2s,color .2s}
+nav .links a:hover{background:var(--glass);color:var(--text)}
+
+/* ── SECTIONS ── */
+section{padding:5rem 1.25rem 3rem;max-width:960px;margin:0 auto}
+.section-title{font-size:1.5rem;font-weight:700;margin-bottom:1.5rem;background:linear-gradient(135deg,var(--text),var(--muted));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+
+/* ── HERO ── */
+.hero{min-height:100dvh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:6rem 1.25rem 3rem;position:relative}
+.hero::before{content:'';position:absolute;top:-20%;left:50%;transform:translateX(-50%);width:400px;height:400px;background:radial-gradient(circle,var(--glow) 0%,transparent 70%);pointer-events:none;opacity:.6}
+.hero .avatar{width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:2.5rem;font-weight:700;margin-bottom:1.5rem;box-shadow:0 0 40px var(--glow)}
+.hero h1{font-size:clamp(2.5rem,8vw,4.5rem);font-weight:800;letter-spacing:-.02em;line-height:1.1;margin-bottom:.5rem}
+.hero h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2),#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero .tagline{font-size:clamp(1rem,3vw,1.25rem);color:var(--muted);max-width:500px;margin:0 auto 2rem}
+.hero .cta{display:flex;flex-wrap:wrap;gap:.75rem;justify-content:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:.75rem 1.75rem;border-radius:12px;font-weight:600;font-size:.95rem;transition:transform .2s,box-shadow .2s;cursor:pointer;border:none}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 4px 24px var(--glow)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 32px var(--glow);color:#fff}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text);backdrop-filter:blur(8px)}
+.btn-outline:hover{background:var(--glass);transform:translateY(-2px);color:var(--text)}
+
+/* ── YOUTUBE ── */
+.yt-banner{background:linear-gradient(135deg,rgba(255,0,0,.12),rgba(99,102,241,.1));border:1px solid rgba(255,0,0,.15);border-radius:16px;padding:2rem 1.5rem;text-align:center;display:flex;flex-direction:column;align-items:center;gap:1rem}
+.yt-banner svg{width:48px;height:48px;fill:#ff0000}
+.yt-banner h3{font-size:1.25rem}
+.yt-banner p{color:var(--muted);max-width:480px;font-size:.95rem}
+.yt-banner .btn{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;min-height:48px}
+.yt-banner .btn:hover{color:#fff;transform:translateY(-2px)}
+
+/* ── PROJECTS ── */
+.projects-grid{display:grid;grid-template-columns:1fr;gap:1rem}
+.card{background:var(--glass);border:1px solid var(--border);border-radius:16px;padding:1.5rem;transition:transform .25s,box-shadow .25s,border-color .25s}
+.card:hover{transform:translateY(-4px);box-shadow:0 8px 32px rgba(0,0,0,.3);border-color:rgba(99,102,241,.3)}
+.card .icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;margin-bottom:1rem;background:linear-gradient(135deg,var(--accent),var(--accent2));opacity:.85}
+.card h3{font-size:1.05rem;margin-bottom:.4rem}
+.card p{color:var(--muted);font-size:.9rem;line-height:1.5}
+.card .tag{display:inline-block;margin-top:.75rem;padding:.25rem .65rem;border-radius:6px;font-size:.75rem;background:rgba(99,102,241,.15);color:var(--accent2);margin-right:.35rem}
+
+/* ── ABOUT / TECH ── */
+.about-content{display:flex;flex-direction:column;gap:1.5rem}
+.about-text{color:var(--muted);font-size:.95rem;line-height:1.7}
+.tech-chips{display:flex;flex-wrap:wrap;gap:.5rem}
+.chip{padding:.5rem 1rem;border-radius:10px;font-size:.85rem;background:var(--glass);border:1px solid var(--border);color:var(--text);min-height:44px;display:inline-flex;align-items:center;transition:border-color .2s}
+.chip:hover{border-color:var(--accent)}
+
+/* ── STORE BANNER ── */
+.store-banner{background:linear-gradient(135deg,rgba(99,102,241,.1),rgba(167,139,250,.08));border:1px solid var(--border);border-radius:16px;padding:2rem 1.5rem;text-align:center;display:flex;flex-direction:column;align-items:center;gap:1rem}
+.store-banner h3{font-size:1.25rem}
+.store-banner p{color:var(--muted);font-size:.95rem}
+
+/* ── FOOTER ── */
+footer{border-top:1px solid var(--border);padding:2rem 1.25rem;text-align:center;color:var(--muted);font-size:.85rem}
+footer .social{display:flex;justify-content:center;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap}
+footer .social a{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;background:var(--glass);border:1px solid var(--border);color:var(--muted);transition:color .2s,border-color .2s;padding:.5rem .85rem;font-size:.85rem}
+footer .social a:hover{color:var(--accent2);border-color:var(--accent)}
+
+/* ── RESPONSIVE: tablet ── */
+@media(min-width:640px){
+  section{padding:6rem 2rem 3rem}
+  .projects-grid{grid-template-columns:repeat(2,1fr)}
+  nav{padding:1rem 2rem}
+}
+/* ── RESPONSIVE: desktop ── */
+@media(min-width:1024px){
+  section{padding:7rem 2rem 4rem}
+  .projects-grid{grid-template-columns:repeat(3,1fr)}
+  .about-content{flex-direction:row}
+  .about-text{flex:1}
+  .tech-chips{flex:1}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.fade-up{opacity:0;animation:fadeUp .6s ease forwards}
+.fade-up:nth-child(2){animation-delay:.1s}
+.fade-up:nth-child(3){animation-delay:.2s}
+.fade-up:nth-child(4){animation-delay:.3s}
+.fade-up:nth-child(5){animation-delay:.4s}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Tech with Ray</div>
+  <div class="links">
+    <a href="#projects">Projects</a>
+    <a href="#about">About</a>
+    <a href="#store">Store</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="avatar fade-up">R</div>
+  <h1 class="fade-up"><span>Ray</span></h1>
+  <p class="tagline fade-up">Content creator, software engineer &amp; hardware enthusiast — building at the intersection of code and hardware.</p>
+  <div class="cta fade-up">
+    <a href="https://youtube.com/@techwithray" target="_blank" rel="noopener" class="btn btn-primary">▶ YouTube</a>
+    <a href="https://techwithray.com" target="_blank" rel="noopener" class="btn btn-outline">🛒 Store</a>
+  </div>
+</section>
+
+<section id="youtube">
+  <h2 class="section-title">YouTube</h2>
+  <div class="yt-banner">
+    <svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2 31.3 31.3 0 000 12a31.3 31.3 0 00.5 5.8 3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1A31.3 31.3 0 0024 12a31.3 31.3 0 00-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
+    <h3>Tech with Ray</h3>
+    <p>Deep dives into tech, hardware reviews, software engineering, 3D printing, sim racing, and everything in between.</p>
+    <a href="https://youtube.com/@techwithray" target="_blank" rel="noopener" class="btn">Subscribe</a>
+  </div>
+</section>
+
+<section id="projects">
+  <h2 class="section-title">Projects</h2>
+  <div class="projects-grid">
+    <div class="card fade-up">
+      <div class="icon">📋</div>
+      <h3>Kanban Board</h3>
+      <p>Drag-and-drop project management with document linking, real-time updates, and team workflows.</p>
+      <span class="tag">React</span><span class="tag">PostgreSQL</span>
+    </div>
+    <div class="card fade-up">
+      <div class="icon">📝</div>
+      <h3>Docs Hub</h3>
+      <p>Notion-like document editor with Google OAuth, real-time collaboration, and public sharing.</p>
+      <span class="tag">Next.js</span><span class="tag">OAuth</span>
+    </div>
+    <div class="card fade-up">
+      <div class="icon">📈</div>
+      <h3>Stock Monitor</h3>
+      <p>Real-time stock tracking dashboard with alerts, portfolio analytics, and market insights.</p>
+      <span class="tag">APIs</span><span class="tag">WebSocket</span>
+    </div>
+    <div class="card fade-up">
+      <div class="icon">🎬</div>
+      <h3>Video Pipeline</h3>
+      <p>Automated video processing workflow — ingest, transcode, thumbnail generation, and publishing.</p>
+      <span class="tag">FFmpeg</span><span class="tag">Automation</span>
+    </div>
+    <div class="card fade-up">
+      <div class="icon">💰</div>
+      <h3>Budget Tracker</h3>
+      <p>Personal finance dashboard with expense categorization, visual breakdowns, and savings goals.</p>
+      <span class="tag">Charts</span><span class="tag">PostgreSQL</span>
+    </div>
+  </div>
+</section>
+
+<section id="about">
+  <h2 class="section-title">About &amp; Tech Stack</h2>
+  <div class="about-content">
+    <div class="about-text">
+      <p>I build things with code and tinker with hardware. From custom water-cooled PCs and sim rigs to self-hosted apps on my NAS — I love the full spectrum of tech. When I'm not coding, I'm 3D printing, filming for YouTube, or chasing lap times.</p>
+    </div>
+    <div class="tech-chips">
+      <span class="chip">TypeScript</span>
+      <span class="chip">React</span>
+      <span class="chip">Next.js</span>
+      <span class="chip">Node.js</span>
+      <span class="chip">PostgreSQL</span>
+      <span class="chip">Docker</span>
+      <span class="chip">Python</span>
+      <span class="chip">Linux</span>
+      <span class="chip">Nginx</span>
+      <span class="chip">FFmpeg</span>
+      <span class="chip">3D Printing</span>
+      <span class="chip">Home Lab</span>
+    </div>
+  </div>
+</section>
+
+<section id="store">
+  <div class="store-banner">
+    <h3>🛒 Tech with Ray Store</h3>
+    <p>Merch, recommended gear, and curated tech picks.</p>
+    <a href="https://techwithray.com" target="_blank" rel="noopener" class="btn btn-primary">Visit Store</a>
+  </div>
+</section>
+
+<footer>
+  <div class="social">
+    <a href="https://youtube.com/@techwithray" target="_blank" rel="noopener">YouTube</a>
+    <a href="https://techwithray.com" target="_blank" rel="noopener">Store</a>
+    <a href="https://github.com/lobsty-twray" target="_blank" rel="noopener">GitHub</a>
+  </div>
+  <p>&copy; 2026 Tech with Ray. Built with ☕ and curiosity.</p>
+</footer>
+
+<script>
+// Intersection Observer for fade-in animations
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.style.animationPlayState = 'running'; obs.unobserve(e.target); }});
+}, { threshold: 0.1 });
+document.querySelectorAll('.card.fade-up').forEach(el => {
+  el.style.animationPlayState = 'paused';
+  obs.observe(el);
+});
+</script>
+</body>
+</html>
