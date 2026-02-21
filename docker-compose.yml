@@ -130,10 +130,12 @@ services:
     - 8098:3000
     environment:
     - NODE_ENV=production
-    - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/stock_monitor
+    - DATABASE_URL=postgresql://lobsty:lobsty2026@lobsty-postgres:5432/stock_monitor
     - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
     - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
     - BESTBUY_API_KEY=${BESTBUY_API_KEY:-}
+    - NTFY_URL=${NTFY_URL:-https://ntfy.sh}
+    - NTFY_TOPIC=${NTFY_TOPIC:-}
     depends_on:
       postgres:
         condition: service_healthy
@@ -338,3 +340,31 @@ volumes:
     driver: local
   gear-uploads:
     driver: local
+
+  rustdesk-hbbs:
+    image: rustdesk/rustdesk-server:latest
+    container_name: rustdesk-hbbs
+    restart: always
+    command: hbbs
+    ports:
+      - 21115:21115
+      - 21116:21116
+      - 21116:21116/udp
+      - 21118:21118
+    volumes:
+      - rustdesk-data:/root
+    networks:
+      - default
+
+  rustdesk-hbbr:
+    image: rustdesk/rustdesk-server:latest
+    container_name: rustdesk-hbbr
+    restart: always
+    command: hbbr
+    ports:
+      - 21117:21117
+      - 21119:21119
+    volumes:
+      - rustdesk-data:/root
+    networks:
+      - default

@@ -12,6 +12,8 @@ const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://lobsty:***REMOVED
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '';
 const BESTBUY_API_KEY = process.env.BESTBUY_API_KEY || '';
+const NTFY_URL = process.env.NTFY_URL || 'https://ntfy.sh';
+const NTFY_TOPIC = process.env.NTFY_TOPIC || '';
 
 const pool = new Pool({ connectionString: DATABASE_URL });
 
@@ -83,6 +85,43 @@ function sendTelegramAlert(message) {
   });
   req.on('error', err => console.error('[Telegram] Request error:', err.message));
   req.write(data);
+  req.end();
+}
+
+// --- ntfy Alerts ---
+
+function sendNtfyAlert(title, message, productUrl) {
+  if (!NTFY_TOPIC) {
+    console.log('[ntfy] No topic configured, skipping alert');
+    return;
+  }
+  const ntfyUrl = `${NTFY_URL}/${NTFY_TOPIC}`;
+  // Use JSON mode to avoid header encoding issues with Unicode
+  const payload = JSON.stringify({
+    topic: NTFY_TOPIC,
+    title: title,
+    message: message,
+    priority: 5,
+    tags: ['rotating_light', 'shopping'],
+    click: productUrl || undefined,
+    actions: productUrl ? [{ action: 'view', label: 'Buy Now', url: productUrl }] : undefined
+  });
+
+  const parsedUrl = new URL(NTFY_URL);
+  const transport = parsedUrl.protocol === 'https:' ? https : http;
+  const req = transport.request(NTFY_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' }
+  }, (res) => {
+    let body = '';
+    res.on('data', chunk => body += chunk);
+    res.on('end', () => {
+      if (res.statusCode !== 200) console.error('[ntfy] Error:', res.statusCode, body);
+      else console.log('[ntfy] Alert sent successfully');
+    });
+  });
+  req.on('error', err => console.error('[ntfy] Request error:', err.message));
+  req.write(payload);
   req.end();
 }
 
@@ -513,12 +552,23 @@ function checkAlerts(product, result) {
   if (result.inStock && wasOutOfStock) {
     const msg = `🚨 <b>${product.name}</b> IN STOCK!\nPrice: ${result.priceText}\n\n<a href="${product.url}">Buy Now</a>`;
     sendTelegramAlert(msg);
+    sendNtfyAlert(`🚨 ${product.name} IN STOCK!`, `Price: ${result.priceText}\nBuy now before it sells out!`, product.url);
   }
 
   // Alert: Price dropped below target
   if (result.price > 0 && product.target_price > 0 && result.price <= product.target_price) {
     const msg = `💰 <b>${product.name}</b> PRICE DROP!\nPrice: ${result.priceText} (Target: $${product.target_price.toLocaleString()})\n\n<a href="${product.url}">Buy Now</a>`;
     sendTelegramAlert(msg);
+    sendNtfyAlert(`💰 ${product.name} PRICE DROP!`, `Price: ${result.priceText} (Target: $${product.target_price.toLocaleString()})`, product.url);
+  }
+
+  // Alert: Status changed (e.g., from notify_me to something else)
+  if (product.last_status && product.last_status !== result.status && result.status !== 'error') {
+    console.log(`[Alert] Status changed: ${product.name} ${product.last_status} -> ${result.status}`);
+    if (result.status !== 'in_stock' && !(result.price > 0 && product.target_price > 0 && result.price <= product.target_price)) {
+      // Only send status change notification if we didn't already send in_stock or price drop
+      sendNtfyAlert(`📊 ${product.name} Status Update`, `Status: ${result.status}\nPrice: ${result.priceText || 'N/A'}`, product.url);
+    }
   }
 }
 
