@@ -3,625 +3,660 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Stock Monitor</title>
+  <title>Tech with Ray — Free Restock Monitor</title>
+  <meta name="description" content="Get instant notifications when hard-to-find tech comes back in stock. Free, open, powered by the community.">
+  <meta property="og:title" content="Tech with Ray — Free Restock Monitor">
+  <meta property="og:description" content="Get instant notifications when hard-to-find tech comes back in stock. Free, open, powered by the community.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://stock-monitor.twray.dev">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#00d4ff">
+  <link rel="icon" href="/favicons/favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg">
+  <link rel="apple-touch-icon" href="/favicons/apple-touch-icon.png">
   <style>
+    :root {
+      --bg: #0a0a0f;
+      --bg2: #12121a;
+      --bg3: #1a1a2e;
+      --blue: #00d4ff;
+      --purple: #7c3aed;
+      --green: #22c55e;
+      --red: #ef4444;
+      --yellow: #eab308;
+      --text: #e0e6ed;
+      --text2: #8892a4;
+      --glass: rgba(255,255,255,0.05);
+      --glass-border: rgba(255,255,255,0.1);
+      --radius: 16px;
+    }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #0a0e17;
-      color: #e0e6ed;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
+      overflow-x: hidden;
     }
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
 
-    .header {
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-      padding: 20px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
-      border-bottom: 1px solid #1e293b;
+    /* Nav */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(10,10,15,0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 0 20px;
+      height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
     }
-    .header-left { display: flex; align-items: center; gap: 14px; }
-    .header h1 { font-size: 22px; font-weight: 700; color: #fff; }
-    .header .subtitle { font-size: 13px; color: #64748b; }
-    .header-actions { display: flex; gap: 10px; align-items: center; }
-
-    .btn {
-      background: rgba(255,255,255,0.08);
-      color: #cbd5e1;
-      border: 1px solid #2a3444;
-      padding: 8px 16px;
-      border-radius: 8px;
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 18px; color: var(--text);
       cursor: pointer;
-      font-size: 13px;
-      font-weight: 500;
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
     }
-    .btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-primary { background: #2563eb; border-color: #2563eb; color: #fff; }
-    .btn-primary:hover { background: #1d4ed8; }
-    .btn-danger { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.3); color: #ef4444; }
-    .btn-danger:hover { background: rgba(239,68,68,0.25); }
-    .btn-sm { padding: 5px 10px; font-size: 12px; }
-    .btn-icon { padding: 6px 8px; min-width: 32px; justify-content: center; }
+    .nav-brand span { background: linear-gradient(135deg, var(--blue), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .nav-links { display: flex; gap: 8px; }
+    .nav-links button {
+      background: transparent; border: 1px solid var(--glass-border); color: var(--text2);
+      padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 14px;
+      transition: all 0.2s;
+    }
+    .nav-links button:hover, .nav-links button.active {
+      background: var(--glass); color: var(--blue); border-color: var(--blue);
+    }
+    @media(max-width:600px) {
+      .nav-links button { padding: 6px 10px; font-size: 12px; }
+    }
 
-    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    /* Pages */
+    .page { display: none; padding-top: 80px; min-height: 100vh; }
+    .page.active { display: block; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+
+    /* Hero */
+    .hero {
+      text-align: center; padding: 60px 20px 40px;
+      background: radial-gradient(ellipse at top, rgba(0,212,255,0.08) 0%, transparent 60%);
+    }
+    .hero-badge {
+      display: inline-block; padding: 6px 16px; border-radius: 20px;
+      background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3);
+      color: var(--blue); font-size: 13px; font-weight: 600; margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-size: clamp(28px, 5vw, 48px); font-weight: 800; line-height: 1.2;
+      margin-bottom: 16px;
+    }
+    .hero h1 .grad { background: linear-gradient(135deg, var(--blue), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero p { font-size: clamp(16px, 2.5vw, 20px); color: var(--text2); max-width: 600px; margin: 0 auto 32px; line-height: 1.6; }
+    .hero-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      padding: 12px 28px; border-radius: 12px; font-size: 16px; font-weight: 600;
+      cursor: pointer; border: none; transition: all 0.3s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      color: white; box-shadow: 0 4px 20px rgba(0,212,255,0.3);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,212,255,0.4); }
+    .btn-secondary { background: var(--glass); color: var(--text); border: 1px solid var(--glass-border); }
+    .btn-secondary:hover { border-color: var(--blue); color: var(--blue); }
+
+    /* Steps */
+    .steps {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 24px; padding: 40px 0 60px;
+    }
+    .step {
+      background: var(--glass); border: 1px solid var(--glass-border);
+      border-radius: var(--radius); padding: 32px 24px; text-align: center;
+      transition: transform 0.3s, border-color 0.3s;
+    }
+    .step:hover { transform: translateY(-4px); border-color: rgba(0,212,255,0.3); }
+    .step-num {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      color: white; font-size: 20px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+    }
+    .step h3 { font-size: 18px; margin-bottom: 8px; }
+    .step p { color: var(--text2); font-size: 14px; line-height: 1.5; }
 
     /* Product Cards */
-    .products-grid { display: flex; flex-direction: column; gap: 12px; }
-
+    .products-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 24px; padding: 20px 0 60px;
+    }
     .product-card {
-      background: #111827;
-      border: 1px solid #1e293b;
-      border-radius: 12px;
-      padding: 20px;
-      transition: border-color 0.2s;
+      background: var(--glass); border: 1px solid var(--glass-border);
+      border-radius: var(--radius); overflow: hidden;
+      transition: transform 0.3s, border-color 0.3s;
     }
-    .product-card:hover { border-color: #334155; }
-    .product-card.in-stock { border-left: 4px solid #22c55e; }
-    .product-card.out-of-stock { border-left: 4px solid #ef4444; }
-    .product-card.unknown { border-left: 4px solid #64748b; }
-    .product-card.error { border-left: 4px solid #f59e0b; }
+    .product-card:hover { transform: translateY(-4px); border-color: rgba(0,212,255,0.3); }
+    .product-img {
+      width: 100%; height: 200px; object-fit: cover;
+      background: var(--bg2);
+    }
+    .product-img-placeholder {
+      width: 100%; height: 200px; background: linear-gradient(135deg, var(--bg2), var(--bg3));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 48px;
+    }
+    .product-body { padding: 20px; }
+    .product-name { font-size: 17px; font-weight: 700; margin-bottom: 12px; line-height: 1.3; }
+    .product-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .badge {
+      padding: 4px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;
+    }
+    .badge-stock { background: rgba(34,197,94,0.15); color: var(--green); }
+    .badge-oos { background: rgba(239,68,68,0.15); color: var(--red); }
+    .badge-checking { background: rgba(234,179,8,0.15); color: var(--yellow); }
+    .badge-error { background: rgba(234,179,8,0.15); color: var(--yellow); }
+    .badge-price { background: rgba(0,212,255,0.1); color: var(--blue); }
+    .product-time { color: var(--text2); font-size: 12px; margin-bottom: 16px; }
+    .product-actions { display: flex; gap: 8px; }
+    .product-actions .btn { flex: 1; padding: 10px; font-size: 14px; text-align: center; }
 
-    .product-row {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-    .product-info { flex: 1; min-width: 200px; }
-    .product-name {
-      font-size: 16px;
-      font-weight: 600;
-      color: #fff;
-      margin-bottom: 4px;
-    }
-    .product-url {
-      font-size: 12px;
-      color: #475569;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      max-width: 400px;
-    }
-    .product-url a { color: #475569; text-decoration: none; }
-    .product-url a:hover { color: #64748b; text-decoration: underline; }
-
-    .product-status {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
-    .status-badge {
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 600;
-      white-space: nowrap;
-    }
-    .status-badge.in-stock { background: rgba(34,197,94,0.15); color: #22c55e; }
-    .status-badge.out-of-stock, .status-badge.sold-out { background: rgba(239,68,68,0.15); color: #ef4444; }
-    .status-badge.notify-me { background: rgba(245,158,11,0.15); color: #f59e0b; }
-    .status-badge.unknown { background: rgba(100,116,139,0.15); color: #64748b; }
-    .status-badge.error { background: rgba(245,158,11,0.15); color: #f59e0b; }
-
-    .product-price {
-      font-size: 20px;
-      font-weight: 700;
-      color: #fff;
-      min-width: 100px;
-      text-align: right;
-    }
-    .product-meta {
-      font-size: 12px;
-      color: #475569;
-      min-width: 120px;
-      text-align: right;
-    }
-    .product-actions {
-      display: flex;
-      gap: 6px;
-    }
-
-    /* Modal */
+    /* Subscribe Modal */
     .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      z-index: 100;
-      align-items: center;
-      justify-content: center;
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px); z-index: 200;
+      align-items: center; justify-content: center; padding: 20px;
     }
     .modal-overlay.active { display: flex; }
     .modal {
-      background: #1a2332;
-      border: 1px solid #2a3444;
-      border-radius: 16px;
-      padding: 28px;
-      width: 90%;
-      max-width: 500px;
+      background: var(--bg2); border: 1px solid var(--glass-border);
+      border-radius: var(--radius); padding: 32px; max-width: 480px; width: 100%;
+      max-height: 90vh; overflow-y: auto;
     }
-    .modal h2 {
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 20px;
-      color: #fff;
+    .modal h2 { font-size: 22px; margin-bottom: 8px; }
+    .modal .subtitle { color: var(--text2); margin-bottom: 24px; font-size: 14px; }
+    .modal-close {
+      float: right; background: none; border: none; color: var(--text2);
+      font-size: 24px; cursor: pointer; margin: -8px -8px 0 0;
     }
-    .form-group {
-      margin-bottom: 16px;
+    .sub-step {
+      display: flex; gap: 16px; margin-bottom: 20px; align-items: flex-start;
     }
-    .form-group label {
-      display: block;
-      font-size: 13px;
-      color: #94a3b8;
-      margin-bottom: 6px;
-      font-weight: 500;
+    .sub-step-num {
+      min-width: 32px; height: 32px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      color: white; font-size: 14px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
     }
-    .form-group input, .form-group select {
-      width: 100%;
-      padding: 10px 12px;
-      background: #111827;
-      border: 1px solid #2a3444;
-      border-radius: 8px;
-      color: #e0e6ed;
-      font-size: 14px;
-      outline: none;
+    .sub-step-content h4 { font-size: 15px; margin-bottom: 4px; }
+    .sub-step-content p { color: var(--text2); font-size: 13px; line-height: 1.5; }
+    .topic-box {
+      background: var(--bg); border: 1px solid var(--glass-border);
+      border-radius: 8px; padding: 12px 16px; font-family: monospace;
+      font-size: 14px; color: var(--blue); margin: 8px 0;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    }
+    .topic-box button {
+      background: var(--glass); border: 1px solid var(--glass-border);
+      color: var(--text2); padding: 4px 12px; border-radius: 6px;
+      cursor: pointer; font-size: 12px; white-space: nowrap;
+    }
+    .topic-box button:hover { color: var(--blue); border-color: var(--blue); }
+    .app-links { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+    .app-links a {
+      padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 600;
+      background: var(--glass); border: 1px solid var(--glass-border);
+      color: var(--text); transition: all 0.2s;
+    }
+    .app-links a:hover { border-color: var(--blue); color: var(--blue); text-decoration: none; }
+
+    /* Request Form */
+    .form-card {
+      background: var(--glass); border: 1px solid var(--glass-border);
+      border-radius: var(--radius); padding: 32px; max-width: 600px; margin: 0 auto 40px;
+    }
+    .form-card h2 { font-size: 22px; margin-bottom: 8px; }
+    .form-card .subtitle { color: var(--text2); margin-bottom: 24px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+    .form-group input, .form-group textarea {
+      width: 100%; padding: 12px 16px; border-radius: 10px;
+      background: var(--bg); border: 1px solid var(--glass-border);
+      color: var(--text); font-size: 15px; font-family: inherit;
       transition: border-color 0.2s;
     }
-    .form-group input:focus { border-color: #2563eb; }
-    .form-group input::placeholder { color: #475569; }
-    .modal-actions {
-      display: flex;
-      gap: 10px;
-      justify-content: flex-end;
-      margin-top: 24px;
+    .form-group input:focus, .form-group textarea:focus {
+      outline: none; border-color: var(--blue);
     }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-success {
+      display: none; text-align: center; padding: 40px 20px;
+    }
+    .form-success.active { display: block; }
+    .form-success .check { font-size: 48px; margin-bottom: 16px; }
+    .form-success h3 { font-size: 20px; margin-bottom: 8px; }
+    .form-success p { color: var(--text2); }
 
-    /* History Modal */
-    .history-list {
-      max-height: 400px;
-      overflow-y: auto;
+    /* Requests list */
+    .requests-list { max-width: 600px; margin: 0 auto; padding-bottom: 60px; }
+    .requests-list h3 { font-size: 18px; margin-bottom: 16px; color: var(--text2); }
+    .request-item {
+      background: var(--glass); border: 1px solid var(--glass-border);
+      border-radius: 12px; padding: 16px; margin-bottom: 12px;
+      display: flex; justify-content: space-between; align-items: center; gap: 12px;
     }
-    .history-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 0;
-      border-bottom: 1px solid #1e293b;
-      font-size: 13px;
+    .request-info h4 { font-size: 15px; margin-bottom: 4px; }
+    .request-info p { color: var(--text2); font-size: 13px; }
+    .vote-btn {
+      background: var(--glass); border: 1px solid var(--glass-border);
+      color: var(--text2); padding: 8px 14px; border-radius: 8px;
+      cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 6px;
+      transition: all 0.2s; white-space: nowrap;
     }
-    .history-item:last-child { border-bottom: none; }
-    .history-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-    .history-dot.in-stock { background: #22c55e; }
-    .history-dot.out-of-stock, .history-dot.sold-out { background: #ef4444; }
-    .history-dot.error { background: #f59e0b; }
-    .history-dot.unknown { background: #64748b; }
-    .history-time { color: #475569; min-width: 140px; }
-    .history-status { color: #94a3b8; flex: 1; }
-    .history-price { color: #e0e6ed; font-weight: 600; }
+    .vote-btn:hover { border-color: var(--purple); color: var(--purple); }
 
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: #475569;
+    /* Section headers */
+    .section-header {
+      text-align: center; padding: 40px 0 20px;
     }
-    .empty-state h3 { color: #64748b; margin-bottom: 10px; font-size: 18px; }
+    .section-header h2 { font-size: clamp(24px, 4vw, 36px); font-weight: 800; margin-bottom: 8px; }
+    .section-header p { color: var(--text2); font-size: 16px; }
 
-    .loading {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 60px;
-      color: #64748b;
+    /* Footer */
+    .footer {
+      border-top: 1px solid var(--glass-border);
+      padding: 40px 20px; text-align: center; color: var(--text2); font-size: 14px;
     }
-    .spinner {
-      width: 24px;
-      height: 24px;
-      border: 3px solid #1e293b;
-      border-top-color: #2563eb;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin-right: 10px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .footer a { color: var(--blue); }
+    .footer-links { display: flex; gap: 20px; justify-content: center; margin-bottom: 16px; flex-wrap: wrap; }
 
-    .stats-bar {
-      display: flex;
-      gap: 20px;
-      padding: 16px 0;
-      border-bottom: 1px solid #1e293b;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
+    /* Buy Me a Coffee floating button */
+    .bmc-float {
+      position: fixed; bottom: 20px; right: 20px; z-index: 90;
+      background: linear-gradient(135deg, #FF813F, #FF5F5F);
+      color: white; padding: 12px 20px; border-radius: 50px;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      box-shadow: 0 4px 20px rgba(255,129,63,0.4);
+      transition: transform 0.3s, box-shadow 0.3s;
+      text-decoration: none; display: flex; align-items: center; gap: 8px;
     }
-    .stat-item { font-size: 13px; color: #64748b; }
-    .stat-item strong { color: #94a3b8; }
+    .bmc-float:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(255,129,63,0.5); text-decoration: none; }
 
-    @media (max-width: 768px) {
-      .header { padding: 14px 16px; }
-      .header h1 { font-size: 18px; }
-      .container { padding: 12px; }
-      .product-card { padding: 14px; }
-      .product-row { gap: 10px; }
-      .product-price { font-size: 16px; min-width: auto; text-align: left; }
-      .product-meta { min-width: auto; text-align: left; }
-      .product-url { max-width: 250px; }
-      .product-actions { width: 100%; }
+    /* Loading shimmer */
+    .shimmer {
+      background: linear-gradient(90deg, var(--glass) 25%, rgba(255,255,255,0.08) 50%, var(--glass) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    /* Pulse for live indicator */
+    .pulse { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; animation: pulse 2s infinite; }
+    .pulse-green { background: var(--green); }
+    .pulse-red { background: var(--red); }
+    .pulse-yellow { background: var(--yellow); }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+    /* Responsive */
+    @media(max-width:480px) {
+      .products-grid { grid-template-columns: 1fr; }
+      .hero { padding: 40px 16px 24px; }
+      .steps { gap: 16px; }
+      .form-card { padding: 20px; }
+      .modal { padding: 24px; }
     }
   </style>
-<link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg"><link rel="icon" type="image/x-icon" href="/favicons/favicon.ico"><link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png"></head>
+</head>
 <body>
-  <div class="header">
-    <div class="header-left">
-      <div>
-        <h1>Stock Monitor</h1>
-        <span class="subtitle">Multi-Product Availability Tracker</span>
-      </div>
-    </div>
-    <div class="header-actions">
-      <span id="lastRefresh" style="font-size:12px;color:#475569"></span>
-      <button class="btn btn-primary" onclick="openAddModal()">+ Add Product</button>
+
+<!-- Nav -->
+<nav class="nav">
+  <div class="nav-brand" onclick="showPage('home')">⚡ <span>TWR Restock</span></div>
+  <div class="nav-links">
+    <button onclick="showPage('home')">Home</button>
+    <button onclick="showPage('status')" class="active">Status</button>
+    <button onclick="showPage('request')">Request</button>
+  </div>
+</nav>
+
+<!-- Home Page -->
+<div id="page-home" class="page active">
+  <div class="hero">
+    <div class="hero-badge">🔔 Free • Real-time • Community-powered</div>
+    <h1>Never miss a <span class="grad">restock</span> again</h1>
+    <p>Get instant push notifications when hard-to-find tech comes back in stock. RTX 5090, Samsung Z Tri-Fold, and more.</p>
+    <div class="hero-buttons">
+      <button class="btn btn-primary" onclick="showPage('status')">📡 View Live Status</button>
+      <button class="btn btn-secondary" onclick="showPage('request')">📬 Request a Product</button>
     </div>
   </div>
 
   <div class="container">
-    <div id="statsBar" class="stats-bar" style="display:none"></div>
-    <div id="content">
-      <div class="loading"><div class="spinner"></div> Loading products...</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Browse Products</h3>
+        <p>Check our live status board to see what we're tracking and current availability.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>Subscribe via ntfy</h3>
+        <p>Download the free ntfy app and subscribe to product-specific notification topics.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>Get Notified Instantly</h3>
+        <p>Receive push notifications the moment a product comes back in stock. Beat the bots!</p>
+      </div>
     </div>
   </div>
 
-  <!-- Add/Edit Product Modal -->
-  <div class="modal-overlay" id="productModal">
-    <div class="modal">
-      <h2 id="modalTitle">Add Product</h2>
-      <form id="productForm" onsubmit="saveProduct(event)">
-        <input type="hidden" id="editId">
+  <div class="container">
+    <div class="section-header">
+      <h2>Currently Tracking</h2>
+      <p>Live status updated every few minutes</p>
+    </div>
+    <div id="home-products" class="products-grid"></div>
+  </div>
+</div>
+
+<!-- Status Page -->
+<div id="page-status" class="page">
+  <div class="container">
+    <div class="section-header">
+      <h2>📡 Live Status Board</h2>
+      <p><span class="pulse pulse-green"></span>Auto-refreshes every 30 seconds</p>
+    </div>
+    <div id="status-products" class="products-grid"></div>
+  </div>
+</div>
+
+<!-- Request Page -->
+<div id="page-request" class="page">
+  <div class="container">
+    <div class="section-header">
+      <h2>📬 Request a Product</h2>
+      <p>Want us to track something? Submit a request and the community can upvote it!</p>
+    </div>
+
+    <div class="form-card" id="request-form-card">
+      <form id="request-form" onsubmit="submitRequest(event)">
         <div class="form-group">
-          <label>Product Name</label>
-          <input type="text" id="pName" placeholder="e.g. NVIDIA RTX 5090" required>
+          <label>Product Name *</label>
+          <input type="text" name="product_name" placeholder="e.g. PlayStation 5 Pro" required>
         </div>
         <div class="form-group">
-          <label>URL</label>
-          <input type="url" id="pUrl" placeholder="https://www.bestbuy.com/..." required>
+          <label>Product URL *</label>
+          <input type="url" name="product_url" placeholder="https://..." required>
         </div>
         <div class="form-group">
-          <label>Target Price (USD)</label>
-          <input type="number" id="pPrice" placeholder="2000" min="0">
+          <label>Your Email (optional)</label>
+          <input type="email" name="email" placeholder="Get notified when we start tracking">
         </div>
         <div class="form-group">
-          <label>Check Interval (minutes)</label>
-          <input type="number" id="pInterval" placeholder="5" min="1" max="1440" value="5">
+          <label>Notes (optional)</label>
+          <textarea name="notes" placeholder="Specific variant, color, retailer preferences..."></textarea>
         </div>
-        <div class="modal-actions">
-          <button type="button" class="btn" onclick="closeModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="saveBtn">Save</button>
-        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%">Submit Request</button>
       </form>
     </div>
-  </div>
 
-  <!-- History Modal -->
-  <div class="modal-overlay" id="historyModal">
-    <div class="modal" style="max-width:600px">
-      <h2 id="historyTitle">Check History</h2>
-      <div id="historyContent">
-        <div class="loading"><div class="spinner"></div> Loading...</div>
+    <div class="form-success" id="request-success">
+      <div class="check">✅</div>
+      <h3>Thank you!</h3>
+      <p>We'll review your request and start tracking it if it fits. You'll see it appear on the status board!</p>
+      <button class="btn btn-secondary" onclick="resetRequestForm()" style="margin-top:20px">Submit Another</button>
+    </div>
+
+    <div class="requests-list" id="requests-list">
+      <h3>Community Requests</h3>
+      <div id="requests-container"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Subscribe Modal -->
+<div class="modal-overlay" id="subscribe-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <h2>🔔 Subscribe to Notifications</h2>
+    <p class="subtitle" id="modal-product-name"></p>
+
+    <div class="sub-step">
+      <div class="sub-step-num">1</div>
+      <div class="sub-step-content">
+        <h4>Get the ntfy app (free)</h4>
+        <p>Download ntfy — a free, open-source push notification app.</p>
+        <div class="app-links">
+          <a href="https://play.google.com/store/apps/details?id=io.heckel.ntfy" target="_blank">📱 Google Play</a>
+          <a href="https://apps.apple.com/us/app/ntfy/id1625396347" target="_blank">🍎 App Store</a>
+          <a href="https://ntfy.sh" target="_blank">🌐 Web App</a>
+        </div>
       </div>
-      <div class="modal-actions">
-        <button class="btn" onclick="closeHistoryModal()">Close</button>
+    </div>
+
+    <div class="sub-step">
+      <div class="sub-step-num">2</div>
+      <div class="sub-step-content">
+        <h4>Subscribe to this topic</h4>
+        <p>In the ntfy app, tap + and enter this topic name:</p>
+        <div class="topic-box">
+          <span id="modal-topic"></span>
+          <button onclick="copyTopic()">Copy</button>
+        </div>
+        <p style="margin-top:8px">Or open directly in your browser:</p>
+        <div class="topic-box">
+          <a id="modal-web-link" href="#" target="_blank" style="color:var(--blue)"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-step">
+      <div class="sub-step-num">3</div>
+      <div class="sub-step-content">
+        <h4>That's it! 🎉</h4>
+        <p>You'll receive instant push notifications when this product restocks or drops in price.</p>
+        <p style="margin-top:8px; font-size:12px; color:var(--text2)">
+          💡 Want ALL product alerts? Subscribe to: <strong>twray-stock-monitor</strong>
+        </p>
       </div>
     </div>
   </div>
+</div>
 
-  <script>
-    let products = [];
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-links">
+    <a href="https://youtube.com/@techwithray" target="_blank">📺 Tech with Ray</a>
+    <a href="https://ntfy.sh/twray-stock-monitor" target="_blank">🔔 Master Notifications</a>
+    <a href="https://buymeacoffee.com/techwithray" target="_blank">☕ Buy Me a Coffee</a>
+    <a href="https://twray.dev" target="_blank">🌐 twray.dev</a>
+  </div>
+  <p>Powered by <a href="https://youtube.com/@techwithray" target="_blank">Tech with Ray</a> — Free, open, community-driven restock monitoring</p>
+</footer>
 
-    async function fetchJSON(url, opts) {
-      const res = await fetch(url, opts);
-      return res.json();
-    }
+<!-- Buy Me a Coffee Float -->
+<a href="https://buymeacoffee.com/techwithray" target="_blank" class="bmc-float">☕ Support</a>
 
-    function formatPrice(cents) {
-      if (!cents) return 'N/A';
-      return '$' + Number(cents).toLocaleString('en-US');
-    }
+<script>
+// --- Navigation ---
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.nav-links button').forEach(b => {
+    if (b.textContent.toLowerCase().includes(page === 'home' ? 'home' : page === 'status' ? 'status' : 'request')) b.classList.add('active');
+  });
+  window.scrollTo(0, 0);
+  if (page === 'status' || page === 'home') loadProducts();
+  if (page === 'request') loadRequests();
+}
 
-    function relativeTime(dateStr) {
-      if (!dateStr) return 'Never';
-      const diff = Date.now() - new Date(dateStr).getTime();
-      const secs = Math.floor(diff / 1000);
-      if (secs < 60) return 'just now';
-      const mins = Math.floor(secs / 60);
-      if (mins < 60) return mins + 'm ago';
-      const hrs = Math.floor(mins / 60);
-      if (hrs < 24) return hrs + 'h ago';
-      return Math.floor(hrs / 24) + 'd ago';
-    }
+// --- Products ---
+let productsData = [];
 
-    function formatDateTime(dateStr) {
-      if (!dateStr) return 'N/A';
-      return new Date(dateStr).toLocaleString('en-US', {
-        month: 'short', day: 'numeric',
-        hour: '2-digit', minute: '2-digit', second: '2-digit'
-      });
-    }
+async function loadProducts() {
+  try {
+    const res = await fetch('/api/products');
+    const json = await res.json();
+    productsData = json.data || [];
+    renderProducts('home-products');
+    renderProducts('status-products');
+  } catch(e) { console.error('Load error:', e); }
+}
 
-    function statusLabel(status) {
-      const map = {
-        'in_stock': 'In Stock',
-        'out_of_stock': 'Out of Stock',
-        'sold_out': 'Sold Out',
-        'notify_me': 'Notify Me',
-        'unknown': 'Unknown',
-        'error': 'Error'
-      };
-      return map[status] || status;
-    }
+function renderProducts(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  if (!productsData.length) {
+    container.innerHTML = '<p style="text-align:center;color:var(--text2);padding:40px">Loading products...</p>';
+    return;
+  }
+  container.innerHTML = productsData.map(p => {
+    const status = p.last_status || 'unknown';
+    const isStock = status === 'in_stock';
+    const isError = status === 'error' || status === 'unknown';
+    const isOOS = !isStock && !isError;
+    const badgeClass = isStock ? 'badge-stock' : isError ? 'badge-error' : 'badge-oos';
+    const badgeText = isStock ? '✅ In Stock' : isError ? '⏳ Checking...' : status === 'sold_out' ? '❌ Sold Out' : status === 'notify_me' ? '🔔 Notify Me' : '❌ Out of Stock';
+    const pulseClass = isStock ? 'pulse-green' : isError ? 'pulse-yellow' : 'pulse-red';
+    const lastCheck = p.last_check ? timeAgo(new Date(p.last_check)) : 'Never';
+    const priceText = p.last_price > 0 ? `$${p.last_price.toLocaleString()}` : '';
+    const imgHtml = p.image_url
+      ? `<img class="product-img" src="${p.image_url}" alt="${p.name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="product-img-placeholder" style="display:none">📦</div>`
+      : `<div class="product-img-placeholder">📦</div>`;
 
-    function statusIcon(status) {
-      if (status === 'in_stock') return '\u2705';
-      if (status === 'error') return '\u26a0\ufe0f';
-      if (status === 'notify_me') return '\ud83d\udd14';
-      return '\u274c';
-    }
-
-    function statusClass(status) {
-      if (status === 'in_stock') return 'in-stock';
-      if (status === 'sold_out' || status === 'out_of_stock') return 'sold-out';
-      if (status === 'notify_me') return 'notify-me';
-      if (status === 'error') return 'error';
-      return 'unknown';
-    }
-
-    function cardClass(status) {
-      if (status === 'in_stock') return 'in-stock';
-      if (status === 'sold_out' || status === 'out_of_stock') return 'out-of-stock';
-      if (status === 'error') return 'error';
-      return 'unknown';
-    }
-
-    function truncateUrl(url) {
-      try {
-        const u = new URL(url);
-        const path = u.pathname.length > 40 ? u.pathname.substring(0, 40) + '...' : u.pathname;
-        return u.hostname + path;
-      } catch { return url; }
-    }
-
-    async function loadProducts() {
-      try {
-        const res = await fetchJSON('/api/products');
-        products = res.data || [];
-        renderProducts();
-        renderStats();
-      } catch (err) {
-        document.getElementById('content').innerHTML =
-          '<div class="empty-state"><h3>Error loading products</h3><p>' + err.message + '</p></div>';
-      }
-      document.getElementById('lastRefresh').textContent = 'Updated ' + new Date().toLocaleTimeString();
-    }
-
-    function renderStats() {
-      const bar = document.getElementById('statsBar');
-      if (products.length === 0) { bar.style.display = 'none'; return; }
-      bar.style.display = 'flex';
-      const inStock = products.filter(p => p.last_status === 'in_stock').length;
-      const outOfStock = products.filter(p => ['out_of_stock', 'sold_out'].includes(p.last_status)).length;
-      const errors = products.filter(p => p.last_status === 'error').length;
-      bar.innerHTML = `
-        <div class="stat-item"><strong>${products.length}</strong> Products</div>
-        <div class="stat-item" style="color:#22c55e"><strong>${inStock}</strong> In Stock</div>
-        <div class="stat-item" style="color:#ef4444"><strong>${outOfStock}</strong> Out of Stock</div>
-        ${errors ? `<div class="stat-item" style="color:#f59e0b"><strong>${errors}</strong> Errors</div>` : ''}
-      `;
-    }
-
-    function renderProducts() {
-      const container = document.getElementById('content');
-
-      if (products.length === 0) {
-        container.innerHTML = `
-          <div class="empty-state">
-            <h3>No Products Yet</h3>
-            <p>Click "+ Add Product" to start monitoring.</p>
-          </div>`;
-        return;
-      }
-
-      container.innerHTML = '<div class="products-grid">' + products.map(p => `
-        <div class="product-card ${cardClass(p.last_status)}">
-          <div class="product-row">
-            <div class="product-info">
-              <div class="product-name">${escapeHtml(p.name)}</div>
-              <div class="product-url">
-                <a href="${escapeHtml(p.url)}" target="_blank" rel="noopener">${truncateUrl(p.url)}</a>
-              </div>
-            </div>
-            <span class="status-badge ${statusClass(p.last_status)}">
-              ${statusIcon(p.last_status)} ${statusLabel(p.last_status)}
-            </span>
-            <div class="product-price">${formatPrice(p.last_price)}</div>
-            <div class="product-meta">
-              <div>Last check: ${relativeTime(p.last_check)}</div>
-              <div>Every ${p.check_interval}min${p.target_price ? ' | Target: ' + formatPrice(p.target_price) : ''}</div>
-            </div>
-            <div class="product-actions">
-              <button class="btn btn-sm" onclick="checkNow(${p.id})" title="Check Now" id="checkBtn${p.id}">Check</button>
-              <button class="btn btn-sm" onclick="viewHistory(${p.id}, '${escapeHtml(p.name)}')" title="History">History</button>
-              <button class="btn btn-sm btn-icon" onclick="openEditModal(${p.id})" title="Edit">&#9998;</button>
-              <button class="btn btn-sm btn-icon btn-danger" onclick="deleteProduct(${p.id}, '${escapeHtml(p.name)}')" title="Delete">&#128465;</button>
-            </div>
+    return `
+      <div class="product-card">
+        ${imgHtml}
+        <div class="product-body">
+          <div class="product-name">${escHtml(p.name)}</div>
+          <div class="product-meta">
+            <span class="badge ${badgeClass}"><span class="pulse ${pulseClass}"></span>${badgeText}</span>
+            ${priceText ? `<span class="badge badge-price">${priceText}</span>` : ''}
+          </div>
+          <div class="product-time">Last checked: ${lastCheck}</div>
+          <div class="product-actions">
+            <button class="btn btn-primary" onclick="openSubscribe('${escAttr(p.name)}', '${escAttr(p.ntfy_topic)}')">🔔 Subscribe</button>
+            <a class="btn btn-secondary" href="${escAttr(p.url)}" target="_blank" style="display:flex;align-items:center;justify-content:center">🔗 View</a>
           </div>
         </div>
-      `).join('') + '</div>';
-    }
+      </div>`;
+  }).join('');
+}
 
-    function escapeHtml(str) {
-      const div = document.createElement('div');
-      div.textContent = str;
-      return div.innerHTML;
-    }
+function timeAgo(date) {
+  const s = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (s < 60) return 'just now';
+  if (s < 3600) return Math.floor(s/60) + 'm ago';
+  if (s < 86400) return Math.floor(s/3600) + 'h ago';
+  return Math.floor(s/86400) + 'd ago';
+}
 
-    // --- Add / Edit Modal ---
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escAttr(s) { return s.replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
 
-    function openAddModal() {
-      document.getElementById('modalTitle').textContent = 'Add Product';
-      document.getElementById('editId').value = '';
-      document.getElementById('pName').value = '';
-      document.getElementById('pUrl').value = '';
-      document.getElementById('pPrice').value = '';
-      document.getElementById('pInterval').value = '5';
-      document.getElementById('productModal').classList.add('active');
-    }
+// --- Subscribe Modal ---
+function openSubscribe(name, topic) {
+  document.getElementById('modal-product-name').textContent = name;
+  document.getElementById('modal-topic').textContent = topic;
+  const webLink = `https://ntfy.sh/${topic}`;
+  document.getElementById('modal-web-link').href = webLink;
+  document.getElementById('modal-web-link').textContent = webLink;
+  document.getElementById('subscribe-modal').classList.add('active');
+}
 
-    function openEditModal(id) {
-      const p = products.find(x => x.id === id);
-      if (!p) return;
-      document.getElementById('modalTitle').textContent = 'Edit Product';
-      document.getElementById('editId').value = id;
-      document.getElementById('pName').value = p.name;
-      document.getElementById('pUrl').value = p.url;
-      document.getElementById('pPrice').value = p.target_price || '';
-      document.getElementById('pInterval').value = p.check_interval;
-      document.getElementById('productModal').classList.add('active');
-    }
+function closeModal() {
+  document.getElementById('subscribe-modal').classList.remove('active');
+}
 
-    function closeModal() {
-      document.getElementById('productModal').classList.remove('active');
-    }
+function copyTopic() {
+  const topic = document.getElementById('modal-topic').textContent;
+  navigator.clipboard.writeText(topic).then(() => {
+    const btn = document.querySelector('.topic-box button');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
 
-    async function saveProduct(e) {
-      e.preventDefault();
-      const id = document.getElementById('editId').value;
-      const body = {
-        name: document.getElementById('pName').value,
-        url: document.getElementById('pUrl').value,
-        target_price: parseInt(document.getElementById('pPrice').value) || 0,
-        check_interval: parseInt(document.getElementById('pInterval').value) || 5
-      };
+document.getElementById('subscribe-modal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeModal();
+});
 
-      const saveBtn = document.getElementById('saveBtn');
-      saveBtn.disabled = true;
-      saveBtn.textContent = 'Saving...';
-
-      try {
-        if (id) {
-          await fetchJSON(`/api/products/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-          });
-        } else {
-          await fetchJSON('/api/products', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-          });
-        }
-        closeModal();
-        await loadProducts();
-      } catch (err) {
-        alert('Error: ' + err.message);
-      } finally {
-        saveBtn.disabled = false;
-        saveBtn.textContent = 'Save';
-      }
-    }
-
-    // --- Actions ---
-
-    async function checkNow(id) {
-      const btn = document.getElementById('checkBtn' + id);
-      if (!btn) return;
-      btn.disabled = true;
-      btn.textContent = 'Checking...';
-      try {
-        await fetchJSON(`/api/products/${id}/check`, { method: 'POST' });
-        await loadProducts();
-      } catch (err) {
-        alert('Check failed: ' + err.message);
-      } finally {
-        if (btn) {
-          btn.disabled = false;
-          btn.textContent = 'Check';
-        }
-      }
-    }
-
-    async function deleteProduct(id, name) {
-      if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
-      try {
-        await fetchJSON(`/api/products/${id}`, { method: 'DELETE' });
-        await loadProducts();
-      } catch (err) {
-        alert('Error: ' + err.message);
-      }
-    }
-
-    // --- History Modal ---
-
-    async function viewHistory(id, name) {
-      document.getElementById('historyTitle').textContent = name + ' - Check History';
-      document.getElementById('historyContent').innerHTML =
-        '<div class="loading"><div class="spinner"></div> Loading...</div>';
-      document.getElementById('historyModal').classList.add('active');
-
-      try {
-        const res = await fetchJSON(`/api/products/${id}/history?limit=100`);
-        const history = res.data || [];
-
-        if (history.length === 0) {
-          document.getElementById('historyContent').innerHTML =
-            '<p style="color:#475569;text-align:center;padding:20px">No check history yet.</p>';
-          return;
-        }
-
-        document.getElementById('historyContent').innerHTML = `
-          <div class="history-list">
-            ${history.map(h => `
-              <div class="history-item">
-                <div class="history-dot ${statusClass(h.status)}"></div>
-                <div class="history-time">${formatDateTime(h.checked_at)}</div>
-                <div class="history-status">${statusIcon(h.status)} ${statusLabel(h.status)}</div>
-                <div class="history-price">${h.price ? formatPrice(h.price) : ''}</div>
-              </div>
-            `).join('')}
-          </div>
-        `;
-      } catch (err) {
-        document.getElementById('historyContent').innerHTML =
-          '<p style="color:#ef4444">Error: ' + err.message + '</p>';
-      }
-    }
-
-    function closeHistoryModal() {
-      document.getElementById('historyModal').classList.remove('active');
-    }
-
-    // --- Close modals on backdrop click ---
-    document.getElementById('productModal').addEventListener('click', (e) => {
-      if (e.target === document.getElementById('productModal')) closeModal();
+// --- Request Form ---
+async function submitRequest(e) {
+  e.preventDefault();
+  const form = e.target;
+  const data = {
+    product_name: form.product_name.value,
+    product_url: form.product_url.value,
+    email: form.email.value,
+    notes: form.notes.value,
+  };
+  try {
+    const res = await fetch('/api/requests', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
     });
-    document.getElementById('historyModal').addEventListener('click', (e) => {
-      if (e.target === document.getElementById('historyModal')) closeHistoryModal();
-    });
+    if (res.ok) {
+      document.getElementById('request-form-card').style.display = 'none';
+      document.getElementById('request-success').classList.add('active');
+      loadRequests();
+    } else {
+      alert('Error submitting request. Please try again.');
+    }
+  } catch(e) { alert('Network error. Please try again.'); }
+}
 
-    // --- Init ---
-    loadProducts();
-    setInterval(loadProducts, 30000); // refresh UI every 30s
-  </script>
+function resetRequestForm() {
+  document.getElementById('request-form-card').style.display = 'block';
+  document.getElementById('request-success').classList.remove('active');
+  document.getElementById('request-form').reset();
+}
+
+async function loadRequests() {
+  try {
+    const res = await fetch('/api/requests');
+    const json = await res.json();
+    const list = json.data || [];
+    const container = document.getElementById('requests-container');
+    if (!list.length) {
+      container.innerHTML = '<p style="color:var(--text2);text-align:center;padding:20px">No requests yet. Be the first!</p>';
+      return;
+    }
+    container.innerHTML = list.map(r => `
+      <div class="request-item">
+        <div class="request-info">
+          <h4>${escHtml(r.product_name)}</h4>
+          <p>${r.notes ? escHtml(r.notes.substring(0, 80)) : 'No notes'} • ${timeAgo(new Date(r.created_at))}</p>
+        </div>
+        <button class="vote-btn" onclick="voteRequest(${r.id}, this)">👍 ${r.votes}</button>
+      </div>
+    `).join('');
+  } catch(e) { console.error('Load requests error:', e); }
+}
+
+async function voteRequest(id, btn) {
+  try {
+    const res = await fetch(`/api/requests/${id}/vote`, { method: 'POST' });
+    if (res.ok) {
+      const json = await res.json();
+      btn.innerHTML = `👍 ${json.data.votes}`;
+      btn.style.borderColor = 'var(--purple)';
+      btn.style.color = 'var(--purple)';
+    }
+  } catch(e) { /* ignore */ }
+}
+
+// --- Init ---
+loadProducts();
+setInterval(loadProducts, 30000);
+
+// Handle hash navigation
+if (location.hash) {
+  const page = location.hash.replace('#', '');
+  if (['home', 'status', 'request'].includes(page)) showPage(page);
+}
+</script>
 </body>
 </html>
