@@ -137,6 +137,7 @@ services:
     - NTFY_URL=${NTFY_URL:-https://ntfy.sh}
     - NTFY_TOPIC=${NTFY_TOPIC:-}
     - AUTOBUY_ENCRYPTION_KEY=${AUTOBUY_ENCRYPTION_KEY:-}
+      - AUTOBUY_ADMIN_PASSWORD=${AUTOBUY_ADMIN_PASSWORD:-ray2026}
     depends_on:
       postgres:
         condition: service_healthy
@@ -482,7 +483,34 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: lobsty-open-webui
+    restart: unless-stopped
+    ports:
+      - "8113:8080"
+    volumes:
+      - open-webui-data:/app/backend/data
+    environment:
+      - OLLAMA_BASE_URL=
+      - OPENAI_API_BASE_URLS=http://192.168.50.59:1234/v1;http://REPLACE_WITH_5090_IP:1234/v1
+      - OPENAI_API_KEYS=lm-studio;lm-studio
+      - WEBUI_AUTH=true
+      - WEBUI_NAME=Tech with Ray AI
+      - DEFAULT_LOCALE=en
+      - ENABLE_SIGNUP=true
+      - DEFAULT_USER_ROLE=pending
+      - ENABLE_LOGIN_FORM=true
+      - ENABLE_WEB_SEARCH=true
+      - WEB_SEARCH_ENGINE=duckduckgo
+      - ENABLE_COMMUNITY_SHARING=false
+      - ENABLE_MODEL_FILTER=false
+      - ENABLE_AUTOCOMPLETE_GENERATION=true
+      - AUTOCOMPLETE_GENERATION_INPUT_MAX_LENGTH=4096
+      - WEBUI_BANNERS=[{"id":"welcome","type":"info","title":"Welcome to Tech with Ray AI","content":"Powered by local models on Apple Silicon & NVIDIA GPUs","dismissible":true}]
 volumes:
+  open-webui-data:
+    driver: local
   pihole-etc:
     driver: local
   pihole-dnsmasq:
