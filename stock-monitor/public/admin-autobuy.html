@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auto-Buy Admin</title>
+  <style>
+    :root { --bg:#0a0a0f; --bg2:#12121a; --bg3:#1a1a2e; --blue:#00d4ff; --green:#22c55e; --red:#ef4444; --yellow:#eab308; --text:#e0e6ed; --text2:#8892a4; --glass:rgba(255,255,255,0.05); --glass-border:rgba(255,255,255,0.1); --radius:12px; }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:16px;max-width:800px;margin:0 auto}
+    h1{font-size:1.4rem;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+    h2{font-size:1.1rem;margin:20px 0 12px;color:var(--blue)}
+    .card{background:var(--bg2);border:1px solid var(--glass-border);border-radius:var(--radius);padding:16px;margin-bottom:12px}
+    .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+    input,select,textarea{width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--glass-border);border-radius:8px;color:var(--text);font-size:14px;margin-bottom:8px}
+    input:focus,select:focus{outline:none;border-color:var(--blue)}
+    label{display:block;font-size:12px;color:var(--text2);margin-bottom:4px}
+    .btn{padding:10px 20px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .2s}
+    .btn-primary{background:var(--blue);color:#000}
+    .btn-danger{background:var(--red);color:#fff}
+    .btn-success{background:var(--green);color:#000}
+    .btn-warning{background:var(--yellow);color:#000}
+    .btn-sm{padding:6px 12px;font-size:12px}
+    .btn:hover{opacity:0.9;transform:translateY(-1px)}
+    .btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+    .toggle{position:relative;width:48px;height:26px;display:inline-block}
+    .toggle input{display:none}
+    .toggle .slider{position:absolute;inset:0;background:var(--bg3);border-radius:13px;cursor:pointer;transition:.3s}
+    .toggle input:checked+.slider{background:var(--green)}
+    .toggle .slider:before{content:'';position:absolute;width:20px;height:20px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
+    .toggle input:checked+.slider:before{transform:translateX(22px)}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .status-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+    .status-success{background:rgba(34,197,94,0.2);color:var(--green)}
+    .status-failed{background:rgba(239,68,68,0.2);color:var(--red)}
+    .status-attempted{background:rgba(234,179,8,0.2);color:var(--yellow)}
+    .login-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;z-index:100}
+    .login-box{background:var(--bg2);border:1px solid var(--glass-border);border-radius:var(--radius);padding:32px;width:90%;max-width:360px;text-align:center}
+    .login-box h2{margin-top:0}
+    .tabs{display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--glass-border);padding-bottom:8px}
+    .tab{padding:8px 16px;border-radius:8px 8px 0 0;cursor:pointer;font-size:13px;color:var(--text2);transition:.2s}
+    .tab.active{background:var(--bg3);color:var(--blue)}
+    .hidden{display:none!important}
+    .kill-switch{position:fixed;bottom:20px;right:20px;z-index:50}
+    .order-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--glass-border)}
+    .order-row:last-child{border:none}
+    .order-info{flex:1}
+    .order-time{font-size:11px;color:var(--text2)}
+    .flex-between{display:flex;justify-content:space-between;align-items:center}
+    @media(max-width:500px){.grid-2{grid-template-columns:1fr}.tabs{overflow-x:auto}}
+  </style>
+</head>
+<body>
+  <!-- Login overlay -->
+  <div id="loginOverlay" class="login-overlay">
+    <div class="login-box">
+      <h2>🔒 Auto-Buy Admin</h2>
+      <p style="color:var(--text2);margin-bottom:16px;font-size:13px">Enter admin password</p>
+      <input type="password" id="loginPassword" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()">
+      <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="doLogin()">Login</button>
+      <p id="loginError" style="color:var(--red);margin-top:8px;font-size:12px" class="hidden"></p>
+    </div>
+  </div>
+
+  <h1>🤖 Auto-Buy Admin</h1>
+
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('products')">Products</div>
+    <div class="tab" onclick="showTab('profiles')">Profiles</div>
+    <div class="tab" onclick="showTab('orders')">Orders</div>
+  </div>
+
+  <!-- Products Tab -->
+  <div id="tab-products">
+    <div id="productsList"></div>
+  </div>
+
+  <!-- Profiles Tab -->
+  <div id="tab-profiles" class="hidden">
+    <button class="btn btn-primary btn-sm" onclick="showProfileForm()" style="margin-bottom:12px">+ New Profile</button>
+    <div id="profileForm" class="card hidden">
+      <h2 id="profileFormTitle">New Profile</h2>
+      <input type="hidden" id="pf-id">
+      <label>Profile Name</label>
+      <input id="pf-name" placeholder="Ray's Samsung Account">
+      <label>Retailer</label>
+      <select id="pf-retailer"><option value="samsung">Samsung</option><option value="bestbuy">Best Buy</option><option value="amazon">Amazon</option></select>
+      <div class="grid-2">
+        <div><label>Email</label><input id="pf-email" type="email" placeholder="email@example.com"></div>
+        <div><label>Password</label><input id="pf-password" type="password" placeholder="••••••••"></div>
+      </div>
+      <label>Shipping Name</label>
+      <input id="pf-ship-name" placeholder="Full Name">
+      <label>Address Line 1</label>
+      <input id="pf-addr1" placeholder="123 Main St">
+      <label>Address Line 2</label>
+      <input id="pf-addr2" placeholder="Apt 4B (optional)">
+      <div class="grid-2">
+        <div><label>City</label><input id="pf-city" placeholder="City"></div>
+        <div><label>State</label><input id="pf-state" placeholder="CA" maxlength="2"></div>
+      </div>
+      <div class="grid-2">
+        <div><label>ZIP</label><input id="pf-zip" placeholder="90210"></div>
+        <div><label>Phone</label><input id="pf-phone" placeholder="555-123-4567"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn btn-primary" onclick="saveProfile()">Save Profile</button>
+        <button class="btn btn-sm" style="background:var(--bg3)" onclick="hideProfileForm()">Cancel</button>
+      </div>
+    </div>
+    <div id="profilesList"></div>
+  </div>
+
+  <!-- Orders Tab -->
+  <div id="tab-orders" class="hidden">
+    <div id="ordersList"></div>
+  </div>
+
+  <!-- Kill Switch -->
+  <div class="kill-switch">
+    <button class="btn btn-danger" onclick="killSwitch()">🛑 KILL ALL</button>
+  </div>
+
+<script>
+let TOKEN = localStorage.getItem('autobuy_token') || '';
+const API = '/admin/autobuy/api';
+
+function headers() { return { 'Content-Type': 'application/json', 'X-Admin-Token': TOKEN }; }
+
+async function api(path, opts = {}) {
+  const res = await fetch(API + path, { headers: headers(), ...opts });
+  if (res.status === 401) { localStorage.removeItem('autobuy_token'); location.reload(); }
+  return res.json();
+}
+
+function doLogin() {
+  const pw = document.getElementById('loginPassword').value;
+  TOKEN = pw;
+  localStorage.setItem('autobuy_token', pw);
+  // Test auth
+  api('/profiles').then(r => {
+    if (r.error) { document.getElementById('loginError').textContent = 'Wrong password'; document.getElementById('loginError').classList.remove('hidden'); }
+    else { document.getElementById('loginOverlay').classList.add('hidden'); loadAll(); }
+  });
+}
+
+// Check if already logged in
+if (TOKEN) {
+  api('/profiles').then(r => {
+    if (!r.error) { document.getElementById('loginOverlay').classList.add('hidden'); loadAll(); }
+    else { localStorage.removeItem('autobuy_token'); TOKEN = ''; }
+  }).catch(() => {});
+}
+
+function showTab(name) {
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', t.textContent.toLowerCase().includes(name)));
+  ['products', 'profiles', 'orders'].forEach(t => document.getElementById('tab-' + t).classList.toggle('hidden', t !== name));
+}
+
+async function loadAll() { loadProducts(); loadProfiles(); loadOrders(); }
+
+async function loadProducts() {
+  const { data } = await api('/products');
+  const profiles = (await api('/profiles')).data || [];
+  const el = document.getElementById('productsList');
+  if (!data?.length) { el.innerHTML = '<p style="color:var(--text2)">No products</p>'; return; }
+  el.innerHTML = data.map(p => `
+    <div class="card">
+      <div class="flex-between">
+        <div>
+          <strong>${esc(p.name)}</strong>
+          <div style="font-size:12px;color:var(--text2)">${p.last_status || 'unknown'} | $${p.last_price || '?'}</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" ${p.autobuy_enabled ? 'checked' : ''} onchange="toggleAutobuy(${p.id}, this.checked)">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div style="margin-top:12px" class="grid-2">
+        <div>
+          <label>Max Price ($)</label>
+          <input type="number" value="${p.autobuy_max_price || 3000}" onchange="updateMaxPrice(${p.id}, this.value)" style="margin:0">
+        </div>
+        <div>
+          <label>Profile</label>
+          <select onchange="updateProfile(${p.id}, this.value)" style="margin:0">
+            <option value="">None</option>
+            ${profiles.map(pr => `<option value="${pr.id}" ${p.autobuy_profile_id == pr.id ? 'selected' : ''}>${esc(pr.name)}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:8px;display:flex;gap:8px">
+        <button class="btn btn-warning btn-sm" onclick="testCheckout(${p.id})">🧪 Test</button>
+        <button class="btn btn-success btn-sm" onclick="capturecookies(${p.autobuy_profile_id})">🍪 Capture Cookies</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function loadProfiles() {
+  const { data } = await api('/profiles');
+  const el = document.getElementById('profilesList');
+  if (!data?.length) { el.innerHTML = '<p style="color:var(--text2)">No profiles yet</p>'; return; }
+  el.innerHTML = data.map(p => `
+    <div class="card">
+      <div class="flex-between">
+        <div>
+          <strong>${esc(p.name)}</strong>
+          <div style="font-size:12px;color:var(--text2)">${p.retailer} · ${p.email} · ${p.shipping_city || ''}, ${p.shipping_state || ''}</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <label class="toggle">
+            <input type="checkbox" ${p.enabled ? 'checked' : ''} onchange="toggleProfile(${p.id}, this.checked)">
+            <span class="slider"></span>
+          </label>
+          <button class="btn btn-sm" style="background:var(--bg3)" onclick="editProfile(${JSON.stringify(p).replace(/"/g, '&quot;')})">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteProfile(${p.id})">🗑</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function loadOrders() {
+  const { data } = await api('/orders');
+  const el = document.getElementById('ordersList');
+  if (!data?.length) { el.innerHTML = '<p style="color:var(--text2)">No orders yet</p>'; return; }
+  el.innerHTML = data.map(o => `
+    <div class="order-row">
+      <div class="order-info">
+        <strong>${esc(o.product_name || 'Unknown')}</strong>
+        <span class="status-badge status-${o.status === 'success' ? 'success' : o.status === 'failed' ? 'failed' : 'attempted'}">${o.status}</span>
+        ${o.order_number ? `<span style="font-size:12px;margin-left:8px">#${esc(o.order_number)}</span>` : ''}
+        ${o.error_message ? `<div style="font-size:11px;color:var(--red);margin-top:2px">${esc(o.error_message)}</div>` : ''}
+        <div class="order-time">${new Date(o.attempted_at).toLocaleString()}</div>
+      </div>
+      ${o.screenshot_path ? `<a href="/admin/autobuy/screenshots/${o.screenshot_path.split('/').pop()}?token=${TOKEN}" target="_blank" class="btn btn-sm" style="background:var(--bg3)">📸</a>` : ''}
+    </div>
+  `).join('');
+}
+
+async function toggleAutobuy(id, enabled) {
+  await api('/products/' + id, { method: 'PUT', body: JSON.stringify({ autobuy_enabled: enabled }) });
+}
+
+async function updateMaxPrice(id, price) {
+  await api('/products/' + id, { method: 'PUT', body: JSON.stringify({ autobuy_max_price: parseInt(price) }) });
+}
+
+async function updateProfile(id, profileId) {
+  await api('/products/' + id, { method: 'PUT', body: JSON.stringify({ autobuy_profile_id: profileId ? parseInt(profileId) : null }) });
+}
+
+async function testCheckout(productId) {
+  if (!confirm('Run test checkout? (Will NOT place an order)')) return;
+  const btn = event.target; btn.disabled = true; btn.textContent = '⏳ Testing...';
+  try {
+    const r = await api('/test/' + productId, { method: 'POST' });
+    alert(r.data?.success ? '✅ Test completed!' : '❌ ' + (r.data?.error || r.error || 'Failed'));
+  } catch (e) { alert('Error: ' + e.message); }
+  btn.disabled = false; btn.textContent = '🧪 Test';
+  loadOrders();
+}
+
+async function capturecookies(profileId) {
+  if (!profileId) { alert('Assign a profile first'); return; }
+  const btn = event.target; btn.disabled = true; btn.textContent = '⏳ Capturing...';
+  try {
+    const r = await api('/capture-cookies', { method: 'POST', body: JSON.stringify({ profileId }) });
+    alert(r.success ? `✅ Captured ${r.cookieCount} cookies!` : '❌ ' + (r.error || 'Failed'));
+  } catch (e) { alert('Error: ' + e.message); }
+  btn.disabled = false; btn.textContent = '🍪 Capture Cookies';
+}
+
+async function killSwitch() {
+  if (!confirm('⚠️ DISABLE ALL AUTO-BUY?')) return;
+  await api('/kill-switch', { method: 'POST' });
+  alert('All auto-buy disabled');
+  loadProducts();
+}
+
+function showProfileForm() { document.getElementById('profileForm').classList.remove('hidden'); document.getElementById('profileFormTitle').textContent = 'New Profile'; document.getElementById('pf-id').value = ''; }
+function hideProfileForm() { document.getElementById('profileForm').classList.add('hidden'); }
+
+function editProfile(p) {
+  showProfileForm();
+  document.getElementById('profileFormTitle').textContent = 'Edit Profile';
+  document.getElementById('pf-id').value = p.id;
+  document.getElementById('pf-name').value = p.name || '';
+  document.getElementById('pf-retailer').value = p.retailer || 'samsung';
+  document.getElementById('pf-email').value = p.email || '';
+}
+
+async function saveProfile() {
+  const body = {
+    id: document.getElementById('pf-id').value || undefined,
+    name: document.getElementById('pf-name').value,
+    retailer: document.getElementById('pf-retailer').value,
+    email: document.getElementById('pf-email').value,
+    password: document.getElementById('pf-password').value || undefined,
+    shipping_name: document.getElementById('pf-ship-name').value,
+    shipping_address1: document.getElementById('pf-addr1').value,
+    shipping_address2: document.getElementById('pf-addr2').value,
+    shipping_city: document.getElementById('pf-city').value,
+    shipping_state: document.getElementById('pf-state').value,
+    shipping_zip: document.getElementById('pf-zip').value,
+    shipping_phone: document.getElementById('pf-phone').value,
+  };
+  await api('/profiles', { method: 'POST', body: JSON.stringify(body) });
+  hideProfileForm();
+  loadProfiles();
+  loadProducts();
+}
+
+async function toggleProfile(id, enabled) {
+  await api('/profiles', { method: 'POST', body: JSON.stringify({ id, enabled }) });
+}
+
+async function deleteProfile(id) {
+  if (!confirm('Delete this profile?')) return;
+  await api('/profiles/' + id, { method: 'DELETE' });
+  loadProfiles();
+}
+
+function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+</script>
+</body>
+</html>

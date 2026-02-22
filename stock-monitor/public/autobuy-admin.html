@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Auto-Buy Admin — Stock Monitor</title>
+<style>
+:root{--bg:#0a0a0f;--bg2:#12121a;--bg3:#1a1a2e;--blue:#00d4ff;--purple:#7c3aed;--green:#22c55e;--red:#ef4444;--yellow:#eab308;--text:#e0e6ed;--text2:#8892a4;--glass:rgba(255,255,255,.05);--glass-border:rgba(255,255,255,.1);--radius:14px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:16px;padding-bottom:80px}
+a{color:var(--blue);text-decoration:none}
+.header{text-align:center;padding:20px 0 12px}
+.header h1{font-size:24px;background:linear-gradient(135deg,var(--purple),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header p{color:var(--text2);font-size:14px;margin-top:4px}
+.tabs{display:flex;gap:8px;margin:16px 0;overflow-x:auto;padding-bottom:4px}
+.tab{padding:10px 18px;background:var(--glass);border:1px solid var(--glass-border);border-radius:10px;color:var(--text2);cursor:pointer;white-space:nowrap;font-size:14px;font-weight:500;transition:.2s}
+.tab.active{background:linear-gradient(135deg,rgba(124,58,237,.3),rgba(0,212,255,.3));color:var(--text);border-color:var(--purple)}
+.card{background:var(--bg2);border:1px solid var(--glass-border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.card h3{font-size:16px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.badge.on{background:rgba(34,197,94,.15);color:var(--green)}
+.badge.off{background:rgba(239,68,68,.15);color:var(--red)}
+.badge.pending{background:rgba(234,179,8,.15);color:var(--yellow)}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:13px;color:var(--text2);margin-bottom:6px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 14px;background:var(--bg3);border:1px solid var(--glass-border);border-radius:10px;color:var(--text);font-size:15px}
+.form-group textarea{min-height:80px;resize:vertical}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.btn{padding:12px 20px;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:.2s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:linear-gradient(135deg,var(--purple),var(--blue));color:#fff}
+.btn-danger{background:rgba(239,68,68,.2);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+.btn-success{background:rgba(34,197,94,.2);color:var(--green);border:1px solid rgba(34,197,94,.3)}
+.btn-warning{background:rgba(234,179,8,.2);color:var(--yellow);border:1px solid rgba(234,179,8,.3)}
+.btn-sm{padding:8px 14px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.kill-switch{background:var(--bg2);border:2px solid var(--red);border-radius:var(--radius);padding:20px;margin-bottom:16px;text-align:center}
+.kill-switch.safe{border-color:var(--green)}
+.kill-switch h3{justify-content:center}
+.order-item{padding:12px;border-bottom:1px solid var(--glass-border);font-size:14px}
+.order-item:last-child{border-bottom:none}
+.order-meta{color:var(--text2);font-size:12px;margin-top:4px}
+.product-row{display:flex;justify-content:space-between;align-items:center;padding:12px;border-bottom:1px solid var(--glass-border)}
+.product-row:last-child{border-bottom:none}
+.product-info{flex:1}
+.product-name{font-weight:600;font-size:15px}
+.product-status{font-size:12px;color:var(--text2)}
+.toggle{position:relative;width:50px;height:28px;cursor:pointer}
+.toggle input{opacity:0;width:0;height:0}
+.toggle .slider{position:absolute;top:0;left:0;right:0;bottom:0;background:var(--bg3);border-radius:28px;transition:.3s;border:1px solid var(--glass-border)}
+.toggle .slider:before{content:'';position:absolute;height:22px;width:22px;left:3px;bottom:2px;background:var(--text2);border-radius:50%;transition:.3s}
+.toggle input:checked+.slider{background:rgba(34,197,94,.3);border-color:var(--green)}
+.toggle input:checked+.slider:before{transform:translateX(21px);background:var(--green)}
+.section{display:none}
+.section.active{display:block}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--bg3);color:var(--text);padding:12px 24px;border-radius:10px;border:1px solid var(--glass-border);font-size:14px;z-index:1000;opacity:0;transition:.3s}
+.toast.show{opacity:1}
+.back-link{display:inline-block;margin-bottom:12px;font-size:14px;color:var(--text2)}
+</style>
+</head>
+<body>
+<a href="/" class="back-link">← Back to Stock Monitor</a>
+<div class="header">
+  <h1>🤖 Auto-Buy Admin</h1>
+  <p>Ray's personal auto-purchase engine</p>
+</div>
+
+<div id="killSwitch" class="kill-switch safe">
+  <h3>⚡ Auto-Buy Status: <span id="ksStatus">Loading...</span></h3>
+  <div class="btn-row" style="justify-content:center;margin-top:8px">
+    <button class="btn btn-danger btn-sm" onclick="toggleKillSwitch(true)">🛑 Kill All</button>
+    <button class="btn btn-success btn-sm" onclick="toggleKillSwitch(false)">✅ Enable</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('products')">📦 Products</div>
+  <div class="tab" onclick="showTab('profiles')">👤 Profiles</div>
+  <div class="tab" onclick="showTab('orders')">📋 Orders</div>
+  <div class="tab" onclick="showTab('addProfile')">➕ Add Profile</div>
+</div>
+
+<div id="products" class="section active">
+  <div class="card">
+    <h3>📦 Product Auto-Buy Settings</h3>
+    <div id="productList">Loading...</div>
+  </div>
+</div>
+
+<div id="profiles" class="section">
+  <div class="card">
+    <h3>👤 Retailer Profiles</h3>
+    <div id="profileList">Loading...</div>
+  </div>
+</div>
+
+<div id="orders" class="section">
+  <div class="card">
+    <h3>📋 Purchase History</h3>
+    <div id="orderList">Loading...</div>
+  </div>
+</div>
+
+<div id="addProfile" class="section">
+  <div class="card">
+    <h3>➕ Add/Edit Retailer Profile</h3>
+    <form id="profileForm" onsubmit="saveProfile(event)">
+      <input type="hidden" id="pf_id">
+      <div class="form-group">
+        <label>Retailer</label>
+        <select id="pf_retailer"><option value="samsung">Samsung</option><option value="bestbuy">Best Buy</option></select>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Email</label><input type="email" id="pf_email" placeholder="account@email.com"></div>
+        <div class="form-group"><label>Password</label><input type="password" id="pf_password" placeholder="••••••••"></div>
+      </div>
+      <div class="form-group"><label>Full Name</label><input id="pf_name" placeholder="Ray"></div>
+      <div class="form-group"><label>Shipping Address</label><textarea id="pf_address" placeholder="123 Main St, Apt 4"></textarea></div>
+      <div class="form-row">
+        <div class="form-group"><label>City</label><input id="pf_city"></div>
+        <div class="form-group"><label>State</label><input id="pf_state" maxlength="2" placeholder="CA"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>ZIP</label><input id="pf_zip" placeholder="90210"></div>
+        <div class="form-group"><label>Phone</label><input id="pf_phone" placeholder="555-123-4567"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Card Last 4</label><input id="pf_last4" maxlength="4" placeholder="1234"></div>
+        <div class="form-group"><label>Max Price ($)</label><input type="number" id="pf_maxprice" value="3000"></div>
+      </div>
+      <div class="btn-row">
+        <button type="submit" class="btn btn-primary">💾 Save Profile</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const API = '/admin/autobuy/api';
+
+function showTab(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+  if (id === 'orders') loadOrders();
+  if (id === 'profiles') loadProfiles();
+  if (id === 'products') loadProducts();
+}
+
+function toast(msg, ms = 3000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), ms);
+}
+
+async function api(path, opts = {}) {
+  const res = await fetch(API + path, {
+    ...opts,
+    headers: { 'Content-Type': 'application/json', ...opts.headers },
+    body: opts.body ? JSON.stringify(opts.body) : undefined,
+  });
+  return res.json();
+}
+
+async function loadConfig() {
+  const { data } = await api('/config');
+  const ks = data.kill_switch === 'true';
+  const el = document.getElementById('killSwitch');
+  const st = document.getElementById('ksStatus');
+  el.className = ks ? 'kill-switch' : 'kill-switch safe';
+  st.textContent = ks ? '🛑 DISABLED (Kill Switch ON)' : '✅ ACTIVE';
+  st.style.color = ks ? 'var(--red)' : 'var(--green)';
+}
+
+async function toggleKillSwitch(enabled) {
+  await api('/kill-switch', { method: 'POST', body: { enabled } });
+  toast(enabled ? '🛑 Auto-buy KILLED' : '✅ Auto-buy enabled');
+  loadConfig();
+}
+
+async function loadProducts() {
+  const { data } = await api('/products');
+  const profiles = (await api('/profiles')).data || [];
+  const el = document.getElementById('productList');
+  if (!data?.length) { el.innerHTML = '<p style="color:var(--text2)">No products tracked</p>'; return; }
+  el.innerHTML = data.map(p => `
+    <div class="product-row">
+      <div class="product-info">
+        <div class="product-name">${esc(p.name)}</div>
+        <div class="product-status">Status: ${p.last_status || 'unknown'} | Price: ${p.last_price ? '$' + p.last_price : 'N/A'}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <label class="toggle">
+          <input type="checkbox" ${p.autobuy_enabled ? 'checked' : ''} onchange="toggleProduct(${p.id})">
+          <span class="slider"></span>
+        </label>
+        <button class="btn btn-warning btn-sm" onclick="testBuy(${p.id})">🧪 Test</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function toggleProduct(id) {
+  await api(`/products/${id}/toggle`, { method: 'POST', body: {} });
+  toast('Toggled!');
+  loadProducts();
+}
+
+async function testBuy(productId) {
+  if (!confirm('Run a DRY RUN auto-buy test? (Will NOT place an order)')) return;
+  toast('🧪 Starting dry run...', 5000);
+  const { data, error } = await api(`/test/${productId}`, { method: 'POST', body: {} });
+  if (error) toast('❌ ' + error, 5000);
+  else toast(`✅ Dry run: ${data.status}`, 5000);
+}
+
+async function loadProfiles() {
+  const { data } = await api('/profiles');
+  const el = document.getElementById('profileList');
+  if (!data?.length) { el.innerHTML = '<p style="color:var(--text2)">No profiles yet. Add one!</p>'; return; }
+  el.innerHTML = data.map(p => `
+    <div class="card" style="margin-bottom:12px">
+      <h3>${esc(p.retailer)} <span class="badge ${p.enabled ? 'on' : 'off'}">${p.enabled ? 'Enabled' : 'Disabled'}</span></h3>
+      <p>Name: ${esc(p.shipping_name || 'Not set')} | City: ${esc(p.shipping_city || 'N/A')} | Max: $${p.max_price}</p>
+      <div class="btn-row">
+        <button class="btn btn-primary btn-sm" onclick="editProfile(${p.id})">✏️ Edit</button>
+        <button class="btn btn-success btn-sm" onclick="toggleProfileEnabled(${p.id})">🔄 Toggle</button>
+        <button class="btn btn-warning btn-sm" onclick="captureSession(${p.id})">🔐 Capture Session</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function toggleProfileEnabled(id) {
+  await api(`/profiles/${id}/toggle`, { method: 'POST' });
+  toast('Toggled!');
+  loadProfiles();
+}
+
+async function captureSession(id) {
+  if (!confirm('This will attempt to log in and capture session cookies. Continue?')) return;
+  toast('🔐 Capturing session...', 10000);
+  const { success, error, cookieCount } = await api(`/profiles/${id}/capture-session`, { method: 'POST', body: {} });
+  if (error) toast('❌ ' + error, 5000);
+  else toast(`✅ Session captured (${cookieCount} cookies)`, 5000);
+}
+
+function editProfile(id) {
+  // Pre-fill form and switch tab
+  showTab('addProfile');
+  document.getElementById('pf_id').value = id;
+  toast('Edit mode — fill in fields to update (blank fields are skipped)');
+}
+
+async function saveProfile(e) {
+  e.preventDefault();
+  const body = {
+    id: document.getElementById('pf_id').value || undefined,
+    retailer: document.getElementById('pf_retailer').value,
+    email: document.getElementById('pf_email').value || undefined,
+    password: document.getElementById('pf_password').value || undefined,
+    shipping_name: document.getElementById('pf_name').value || undefined,
+    shipping_address: document.getElementById('pf_address').value || undefined,
+    shipping_city: document.getElementById('pf_city').value || undefined,
+    shipping_state: document.getElementById('pf_state').value || undefined,
+    shipping_zip: document.getElementById('pf_zip').value || undefined,
+    shipping_phone: document.getElementById('pf_phone').value || undefined,
+    payment_last4: document.getElementById('pf_last4').value || undefined,
+    max_price: parseInt(document.getElementById('pf_maxprice').value) || 3000,
+  };
+  const { data, error } = await api('/profiles', { method: 'POST', body });
+  if (error) toast('❌ ' + error);
+  else { toast('✅ Profile saved!'); document.getElementById('profileForm').reset(); }
+}
+
+async function loadOrders() {
+  const { data } = await api('/orders');
+  const el = document.getElementById('orderList');
+  if (!data?.length) { el.innerHTML = '<p style="color:var(--text2)">No orders yet</p>'; return; }
+  el.innerHTML = data.map(o => {
+    const statusClass = o.status === 'success' ? 'on' : o.status.includes('dry') ? 'pending' : 'off';
+    const time = new Date(o.created_at).toLocaleString();
+    return `<div class="order-item">
+      <span class="badge ${statusClass}">${o.status}</span>
+      <strong>${esc(o.product_name || 'Unknown')}</strong>
+      ${o.order_number ? `— #${esc(o.order_number)}` : ''}
+      ${o.price ? `— $${o.price}` : ''}
+      ${o.dry_run ? ' (DRY RUN)' : ''}
+      ${o.screenshot_path ? `<a href="${o.screenshot_path}" target="_blank">📸</a>` : ''}
+      <div class="order-meta">${time}${o.error_message ? ' | Error: ' + esc(o.error_message) : ''}</div>
+    </div>`;
+  }).join('');
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+// Init
+loadConfig();
+loadProducts();
+</script>
+</body>
+</html>

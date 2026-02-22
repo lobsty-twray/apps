@@ -3,8 +3,6 @@ const { Pool } = require('pg');
 const cron = require('node-cron');
 const { chromium } = require('playwright');
 const path = require('path');
-const cookieParser = require('cookie-parser');
-const { encrypt, decrypt, attemptSamsungAutoBuy, checkAndTriggerAutoBuy } = require('./samsung-autobuy');
 const https = require('https');
 const http = require('http');
 
@@ -19,8 +17,6 @@ const pool = new Pool({ connectionString: DATABASE_URL });
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
-app.use(require('cookie-parser')());
-app.use(express.urlencoded({ extended: true }));
 
 // --- Product slug for ntfy topics ---
 function productSlug(name) {
@@ -82,48 +78,6 @@ async function initDb() {
         votes INTEGER DEFAULT 1,
         status VARCHAR(50) DEFAULT 'pending',
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-      )
-    `);
-    // Auto-buy tables
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS autobuy_profiles (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
-        retailer VARCHAR(50) NOT NULL DEFAULT 'samsung',
-        email VARCHAR(255),
-        password_encrypted TEXT,
-        shipping_name VARCHAR(255),
-        shipping_address1 VARCHAR(255),
-        shipping_address2 VARCHAR(255),
-        shipping_city VARCHAR(100),
-        shipping_state VARCHAR(50),
-        shipping_zip VARCHAR(20),
-        shipping_phone VARCHAR(30),
-        session_cookies TEXT,
-        enabled BOOLEAN DEFAULT true,
-        max_price NUMERIC DEFAULT 3000,
-        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-      )
-    `);
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS autobuy_orders (
-        id SERIAL PRIMARY KEY,
-        product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
-        profile_id INTEGER REFERENCES autobuy_profiles(id) ON DELETE SET NULL,
-        status VARCHAR(50) NOT NULL DEFAULT 'attempted',
-        order_number VARCHAR(255),
-        screenshot_path TEXT,
-        error_message TEXT,
-        attempted_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-      )
-    `);
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS product_autobuy (
-        product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
-        profile_id INTEGER REFERENCES autobuy_profiles(id) ON DELETE CASCADE,
-        enabled BOOLEAN DEFAULT false,
-        PRIMARY KEY (product_id, profile_id)
       )
     `);
     console.log('Database initialized');
@@ -604,7 +558,7 @@ async function scrapeProduct(product) {
   } catch(e) { console.error('DB error:', e.message); }
 
   // Alerts
-  await checkAlerts(product, result);
+  checkAlerts(product, result);
   console.log(`  -> ${product.name}: ${result.status} | ${result.priceText} | ${result.inStock ? 'IN STOCK' : 'OUT OF STOCK'}`);
   return result;
 }
@@ -635,7 +589,7 @@ async function scrapeGeneric(product) {
 }
 
 // --- Alert Logic ---
-async function checkAlerts(product, result) {
+function checkAlerts(product, result) {
   if (result.inStock && product.last_status !== 'in_stock') {
     sendProductAlert(product,
       `🚨 ${product.name} IN STOCK!`,
@@ -649,10 +603,6 @@ async function checkAlerts(product, result) {
     );
   }
   if (product.last_status && product.last_status !== result.status && result.status !== 'error' && result.status !== 'in_stock') {
-  // Trigger auto-buy if in stock
-  if (result.inStock) {
-    checkAndTriggerAutoBuy(pool, product).catch(e => console.error("[autobuy] trigger error:", e.message));
-  }
     console.log(`[Status Change] ${product.name}: ${product.last_status} -> ${result.status}`);
   }
 }
@@ -812,10 +762,6 @@ app.get('/api/products/:id/history', async (req, res) => {
     res.json({ data: result.rows });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
-
-// Auto-buy admin routes
-const { autobuyRoutes } = require('./autobuy-routes');
-app.use('/admin/autobuy', autobuyRoutes(pool));
 
 // SPA fallback — serve index.html for all non-API routes
 app.get('*', (req, res) => {

@@ -136,6 +136,7 @@ services:
     - BESTBUY_API_KEY=${BESTBUY_API_KEY:-}
     - NTFY_URL=${NTFY_URL:-https://ntfy.sh}
     - NTFY_TOPIC=${NTFY_TOPIC:-}
+    - AUTOBUY_ENCRYPTION_KEY=${AUTOBUY_ENCRYPTION_KEY:-}
     depends_on:
       postgres:
         condition: service_healthy
