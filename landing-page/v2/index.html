@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ray — Tech with Ray</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16x16.png">
+<link rel="apple-touch-icon" href="/favicons/apple-touch-icon.png">
+<link rel="manifest" href="/favicons/site.webmanifest">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0a0f;--text:#e8e8ed;--dim:#666;--accent:#4af;--red:#f22;--gold:#fa0;--surface:rgba(255,255,255,.04);--border:rgba(255,255,255,.08)}
+html{scroll-behavior:smooth;scroll-snap-type:y proximity;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body{background:var(--bg);overflow-x:hidden}
+
+/* Film grain overlay */
+.grain{position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.035}
+.grain::after{content:'';position:absolute;inset:-200%;width:400%;height:400%;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");animation:grain 0.5s steps(6) infinite}
+@keyframes grain{0%,100%{transform:translate(0)}10%{transform:translate(-5%,-10%)}30%{transform:translate(3%,2%)}50%{transform:translate(-2%,5%)}70%{transform:translate(7%,-3%)}90%{transform:translate(-3%,8%)}}
+
+/* Custom cursor */
+.cursor-glow{position:fixed;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(68,170,255,.07),transparent 70%);pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:opacity .3s;opacity:0}
+@media(hover:hover){.cursor-glow{opacity:1}}
+
+/* Sections */
+section{min-height:100vh;position:relative;display:flex;align-items:center;justify-content:center;scroll-snap-align:start;padding:2rem}
+
+/* Hero */
+.hero{flex-direction:column;gap:1.5rem;overflow:hidden}
+.hero-name{font-size:clamp(4rem,20vw,18rem);font-weight:900;letter-spacing:-.04em;line-height:.85;background:linear-gradient(135deg,#fff 0%,#4af 40%,#a855f7 70%,#f22 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;opacity:0;transform:translateY(60px) scale(.95);animation:heroReveal 1.2s cubic-bezier(.16,1,.3,1) .3s forwards}
+@keyframes heroReveal{to{opacity:1;transform:translateY(0) scale(1)}}
+.hero-sub{font-size:clamp(1rem,2.5vw,1.5rem);color:var(--dim);letter-spacing:.15em;text-transform:uppercase;opacity:0;animation:fadeUp .8s ease .8s forwards}
+.hero-links{display:flex;gap:1.5rem;flex-wrap:wrap;justify-content:center;opacity:0;animation:fadeUp .8s ease 1s forwards}
+.hero-links a{color:var(--dim);text-decoration:none;font-size:.9rem;letter-spacing:.05em;padding:.75rem 1.5rem;border:1px solid var(--border);border-radius:99px;transition:all .3s;min-height:44px;display:flex;align-items:center}
+.hero-links a:hover{color:#fff;border-color:rgba(255,255,255,.3);background:var(--surface)}
+.scroll-hint{position:absolute;bottom:2rem;opacity:0;animation:fadeUp .8s ease 1.4s forwards}
+.scroll-hint span{display:block;width:1px;height:40px;background:linear-gradient(to bottom,var(--dim),transparent);margin:0 auto;animation:scrollPulse 2s ease infinite}
+@keyframes scrollPulse{0%,100%{opacity:.3;transform:scaleY(1)}50%{opacity:1;transform:scaleY(1.3)}}
+@keyframes fadeUp{to{opacity:1;transform:translateY(0)}}
+[style*="fadeUp"]{transform:translateY(30px)}
+
+/* About */
+.about{flex-direction:column;gap:3rem;max-width:900px;margin:0 auto;text-align:center}
+.about h2{font-size:clamp(2rem,5vw,4rem);font-weight:800;letter-spacing:-.03em}
+.about p{font-size:clamp(1rem,1.8vw,1.25rem);color:var(--dim);line-height:1.8;max-width:700px}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:2rem;width:100%;max-width:700px}
+.stat{text-align:center}
+.stat-num{font-size:clamp(2rem,5vw,3.5rem);font-weight:900;background:linear-gradient(135deg,#4af,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-label{font-size:.8rem;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-top:.25rem}
+
+/* Animated elements */
+.reveal{opacity:0;transform:translateY(40px);transition:all .8s cubic-bezier(.16,1,.3,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal-delay-1{transition-delay:.1s}
+.reveal-delay-2{transition-delay:.2s}
+.reveal-delay-3{transition-delay:.3s}
+
+/* Projects horizontal scroll */
+.projects{flex-direction:column;align-items:flex-start;padding:0;scroll-snap-align:none;min-height:auto}
+.projects-header{padding:4rem 2rem 2rem;width:100%;max-width:1200px;margin:0 auto}
+.projects-header h2{font-size:clamp(2rem,5vw,4rem);font-weight:800;letter-spacing:-.03em}
+.projects-header p{color:var(--dim);margin-top:.5rem;font-size:1.1rem}
+.h-scroll-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2rem}
+.h-scroll-wrap::-webkit-scrollbar{display:none}
+.h-scroll-track{display:flex;gap:1.5rem;padding:0 calc(50vw - 600px);width:max-content}
+.project-card{flex:0 0 340px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;display:flex;flex-direction:column;gap:1rem;transition:all .3s;min-height:220px}
+.project-card:hover{border-color:rgba(255,255,255,.15);transform:translateY(-4px);background:rgba(255,255,255,.06)}
+.project-card h3{font-size:1.2rem;font-weight:700}
+.project-card p{color:var(--dim);font-size:.9rem;line-height:1.6;flex:1}
+.project-card .tag{font-size:.7rem;color:var(--accent);text-transform:uppercase;letter-spacing:.1em}
+@media(max-width:768px){
+  .h-scroll-track{flex-direction:column;width:100%;padding:0 1rem}
+  .project-card{flex:none;width:100%}
+  .h-scroll-wrap{overflow-x:visible;padding:1rem}
+}
+
+/* Tech stack */
+.tech-pills{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;max-width:700px}
+.tech-pills span{padding:.5rem 1rem;border:1px solid var(--border);border-radius:99px;font-size:.8rem;color:var(--dim);transition:all .3s;min-height:44px;display:flex;align-items:center}
+.tech-pills span:hover{color:#fff;border-color:rgba(255,255,255,.2)}
+
+/* Setup section */
+.setup{flex-direction:column;gap:3rem;padding:6rem 2rem}
+.setup h2{font-size:clamp(2rem,5vw,4rem);font-weight:800;letter-spacing:-.03em;text-align:center}
+.setup-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;max-width:1100px;width:100%}
+.setup-item{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;transition:all .4s}
+.setup-item:hover{border-color:rgba(255,255,255,.15);transform:scale(1.02)}
+.setup-item .emoji{font-size:2rem;margin-bottom:1rem}
+.setup-item h3{font-size:1.1rem;font-weight:700;margin-bottom:.5rem}
+.setup-item p{color:var(--dim);font-size:.85rem;line-height:1.6}
+
+/* YouTube */
+.youtube{flex-direction:column;gap:2rem;background:linear-gradient(180deg,var(--bg) 0%,rgba(255,0,0,.03) 50%,var(--bg) 100%);text-align:center}
+.youtube h2{font-size:clamp(2rem,5vw,4rem);font-weight:800;letter-spacing:-.03em}
+.youtube p{color:var(--dim);font-size:1.1rem;max-width:600px;line-height:1.7}
+.yt-btn{display:inline-flex;align-items:center;gap:.75rem;background:#f22;color:#fff;text-decoration:none;padding:1rem 2.5rem;border-radius:99px;font-weight:700;font-size:1rem;transition:all .3s;min-height:44px}
+.yt-btn:hover{background:#ff3333;transform:scale(1.05)}
+.yt-btn svg{width:24px;height:24px}
+
+/* Store */
+.store{flex-direction:column;gap:2rem;text-align:center}
+.store h2{font-size:clamp(2rem,5vw,4rem);font-weight:800;letter-spacing:-.03em}
+.store p{color:var(--dim);font-size:1.1rem;max-width:500px}
+.store-btn{display:inline-flex;align-items:center;gap:.5rem;color:#fff;text-decoration:none;padding:1rem 2.5rem;border:1px solid rgba(255,255,255,.2);border-radius:99px;font-weight:600;transition:all .3s;min-height:44px}
+.store-btn:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.4)}
+
+/* Footer */
+footer{padding:4rem 2rem;text-align:center;border-top:1px solid var(--border)}
+footer .footer-links{display:flex;gap:2rem;justify-content:center;flex-wrap:wrap;margin-bottom:2rem}
+footer a{color:var(--dim);text-decoration:none;font-size:.9rem;transition:color .3s;min-height:44px;display:inline-flex;align-items:center}
+footer a:hover{color:#fff}
+footer .copy{color:rgba(255,255,255,.2);font-size:.8rem}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+<div class="cursor-glow" id="cursorGlow"></div>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-name">RAY</div>
+  <div class="hero-sub">Content Creator · Software Engineer · Hardware Enthusiast</div>
+  <div class="hero-links">
+    <a href="https://youtube.com/@techwithray">YouTube</a>
+    <a href="https://github.com/lobsty-twray">GitHub</a>
+    <a href="https://twitter.com/techwithray">X / Twitter</a>
+    <a href="https://techwithray.com">Store</a>
+  </div>
+  <div class="scroll-hint"><span></span></div>
+</section>
+
+<!-- About -->
+<section class="about">
+  <h2 class="reveal">About</h2>
+  <p class="reveal reveal-delay-1">I build software, review hardware, and create videos about the tech I love. From custom PCs with RTX 5090s to 22TB NAS setups, I go deep so you don't have to.</p>
+  <div class="stats reveal reveal-delay-2">
+    <div class="stat"><div class="stat-num" data-target="25">0</div><div class="stat-label">Apps Built</div></div>
+    <div class="stat"><div class="stat-num" data-target="22">0</div><div class="stat-label">TB Storage</div></div>
+    <div class="stat"><div class="stat-num" data-target="6">0</div><div class="stat-label">Cameras</div></div>
+    <div class="stat"><div class="stat-num" data-target="10">0</div><div class="stat-label">Tech Stack</div></div>
+  </div>
+  <div class="tech-pills reveal reveal-delay-3">
+    <span>TypeScript</span><span>React</span><span>Next.js</span><span>Node.js</span><span>PostgreSQL</span><span>Docker</span><span>Python</span><span>Linux</span><span>Cloudflare</span><span>FFmpeg</span>
+  </div>
+</section>
+
+<!-- Projects -->
+<div class="projects">
+  <div class="projects-header reveal">
+    <h2>Projects</h2>
+    <p>Self-hosted apps running on my infrastructure</p>
+  </div>
+  <div class="h-scroll-wrap">
+    <div class="h-scroll-track">
+      <div class="project-card"><div class="tag">Dashboard</div><h3>App Hub</h3><p>Central navigation for 25+ self-hosted apps, all running on Docker with Cloudflare tunnels.</p></div>
+      <div class="project-card"><div class="tag">Productivity</div><h3>Kanban Board</h3><p>Full-featured kanban board with drag-and-drop, document linking, and real-time updates.</p></div>
+      <div class="project-card"><div class="tag">Finance</div><h3>Budget Tracker</h3><p>Personal budget management with category tracking, charts, and monthly summaries.</p></div>
+      <div class="project-card"><div class="tag">Content</div><h3>YouTube Studio</h3><p>Custom YouTube analytics dashboard for tracking video performance and content planning.</p></div>
+      <div class="project-card"><div class="tag">Automation</div><h3>Video Pipeline</h3><p>End-to-end video production workflow from script to upload with FFmpeg processing.</p></div>
+      <div class="project-card"><div class="tag">E-Commerce</div><h3>Restock Monitor</h3><p>Real-time stock monitoring with auto-buy capabilities for high-demand tech products.</p></div>
+      <div class="project-card"><div class="tag">Docs</div><h3>Docs Platform</h3><p>Notion-like documentation system with Google OAuth, sharing, and rich text editing.</p></div>
+      <div class="project-card"><div class="tag">Hardware</div><h3>Gear Inventory</h3><p>Complete catalog of cameras, lenses, and tech gear with specs and usage tracking.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- Setup -->
+<section class="setup">
+  <h2 class="reveal">The Setup</h2>
+  <div class="setup-grid">
+    <div class="setup-item reveal"><div class="emoji">🖥️</div><h3>RTX 5090 + Ryzen 9950X3D</h3><p>Mini ITX powerhouse. Main rig for gaming, editing, and AI workloads.</p></div>
+    <div class="setup-item reveal reveal-delay-1"><div class="emoji">💾</div><h3>UGreen DXP6800 Pro NAS</h3><p>22TB RAID 5, 32GB RAM, 4TB NVMe. Runs all self-hosted apps via Docker.</p></div>
+    <div class="setup-item reveal reveal-delay-2"><div class="emoji">🍎</div><h3>M4 Max Mac Studio</h3><p>64GB RAM. Local LLMs via LM Studio, video editing, development.</p></div>
+    <div class="setup-item reveal"><div class="emoji">🎥</div><h3>Sony Cinema Kit</h3><p>FX3, A7 IV, A7S III. 16-35mm GM2, 24-70mm GM2, 35mm f/1.4 GM2.</p></div>
+    <div class="setup-item reveal reveal-delay-1"><div class="emoji">🖨️</div><h3>Bambu 3D Printers</h3><p>H2D and P1S. Custom mounts, enclosures, and accessories for every project.</p></div>
+    <div class="setup-item reveal reveal-delay-2"><div class="emoji">🏎️</div><h3>Sim Rig</h3><p>Full racing sim powered by a custom water-cooled RTX 3090 + 5900X build.</p></div>
+    <div class="setup-item reveal"><div class="emoji">📱</div><h3>Foldable Phones</h3><p>Samsung Z Tri-Fold, Z Fold 7, Pixel 9 Pro Fold. Always testing the latest.</p></div>
+    <div class="setup-item reveal reveal-delay-1"><div class="emoji">🖥️</div><h3>Display Wall</h3><p>Apple Studio Display, 27" 4K OLED 240Hz, 32" 4K OLED 240Hz, 4K LCD 144Hz.</p></div>
+  </div>
+</section>
+
+<!-- YouTube -->
+<section class="youtube">
+  <h2 class="reveal">Tech with Ray</h2>
+  <p class="reveal reveal-delay-1">Deep dives into hardware, honest reviews, and real-world testing. No fluff, just tech.</p>
+  <a href="https://youtube.com/@techwithray" class="yt-btn reveal reveal-delay-2" target="_blank" rel="noopener">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2 31.9 31.9 0 000 12a31.9 31.9 0 00.5 5.8 3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1A31.9 31.9 0 0024 12a31.9 31.9 0 00-.5-5.8zM9.5 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
+    Subscribe on YouTube
+  </a>
+</section>
+
+<!-- Store -->
+<section class="store">
+  <h2 class="reveal">Shop</h2>
+  <p class="reveal reveal-delay-1">Curated picks, merch, and the exact gear I use every day.</p>
+  <a href="https://techwithray.com" class="store-btn reveal reveal-delay-2" target="_blank" rel="noopener">Visit the Store →</a>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-links">
+    <a href="https://youtube.com/@techwithray">YouTube</a>
+    <a href="https://github.com/lobsty-twray">GitHub</a>
+    <a href="https://twitter.com/techwithray">X</a>
+    <a href="https://techwithray.com">Store</a>
+  </div>
+  <div class="copy">© 2026 Ray · twray.dev</div>
+</footer>
+
+<script>
+// Cursor glow
+const glow=document.getElementById('cursorGlow');
+if(matchMedia('(hover:hover)').matches){
+  document.addEventListener('mousemove',e=>{glow.style.left=e.clientX+'px';glow.style.top=e.clientY+'px'})
+}
+
+// Reveal on scroll
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}})
+},{threshold:.15});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+// Counter animation
+let counted=false;
+const counterObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting&&!counted){
+      counted=true;
+      document.querySelectorAll('.stat-num[data-target]').forEach(el=>{
+        const target=+el.dataset.target;let cur=0;
+        const step=()=>{cur+=Math.ceil(target/40);if(cur>=target){el.textContent=target+'+';return}el.textContent=cur;requestAnimationFrame(step)};step()
+      })
+    }
+  })
+},{threshold:.3});
+const statsEl=document.querySelector('.stats');
+if(statsEl)counterObs.observe(statsEl);
+</script>
+</body>
+</html>

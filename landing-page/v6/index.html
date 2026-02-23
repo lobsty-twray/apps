@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ray — twray.dev</title>
+<meta name="description" content="Ray — Content creator, software engineer, and hardware enthusiast.">
+<meta property="og:title" content="Ray — twray.dev">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://twray.dev/v6/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0c1220;--bg2:#101829;--fg:#f0ece4;--muted:#6b7a94;--gold:#c9a84c;--gold-dim:rgba(201,168,76,0.15);--navy:#1a2744}
+html{font-size:16px;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--fg);font-family:'Montserrat',sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--gold);color:var(--bg)}
+
+/* Gold line decorations */
+.gold-line{width:40px;height:1px;background:linear-gradient(90deg,var(--gold),transparent)}
+
+/* Nav */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:24px 32px;display:flex;justify-content:space-between;align-items:center;backdrop-filter:blur(24px);background:rgba(12,18,32,0.85);border-bottom:1px solid var(--gold-dim)}
+nav .logo{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;color:var(--gold);letter-spacing:0.05em}
+nav .nav-links{display:flex;gap:28px}
+nav .nav-links a{font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);font-weight:500;transition:color 0.3s}
+nav .nav-links a:hover{color:var(--gold)}
+
+/* Hero */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:120px 32px 80px;position:relative}
+.hero::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(201,168,76,0.05) 0%,transparent 70%);pointer-events:none}
+.hero-content{position:relative;z-index:1}
+.hero .overline{font-size:0.65rem;letter-spacing:0.4em;text-transform:uppercase;color:var(--gold);margin-bottom:32px;font-weight:500}
+.hero h1{font-family:'Cormorant Garamond',serif;font-size:clamp(3rem,9vw,6.5rem);font-weight:300;line-height:1.05;letter-spacing:-0.02em;margin-bottom:28px}
+.hero h1 strong{font-weight:600;color:var(--gold)}
+.hero .desc{font-size:1rem;font-weight:300;color:var(--muted);max-width:480px;margin:0 auto;line-height:1.8;letter-spacing:0.02em}
+.hero .scroll-hint{margin-top:60px;font-size:0.65rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--muted);animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(8px)}}
+
+/* Sections */
+.section{max-width:960px;margin:0 auto;padding:100px 32px}
+.section-divider{max-width:960px;margin:0 auto;padding:0 32px}
+.section-divider hr{border:none;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent)}
+
+.section-header{text-align:center;margin-bottom:60px}
+.section-header .label{font-size:0.65rem;letter-spacing:0.4em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;font-weight:500}
+.section-header h2{font-family:'Cormorant Garamond',serif;font-size:2.5rem;font-weight:300}
+
+/* About */
+.about-text{font-family:'Cormorant Garamond',serif;font-size:clamp(1.4rem,3vw,2rem);font-weight:300;line-height:1.7;text-align:center;color:var(--fg);max-width:700px;margin:0 auto}
+.about-text em{font-style:italic;color:var(--gold)}
+
+/* Bento grid */
+.bento{display:grid;grid-template-columns:1fr;gap:16px}
+@media(min-width:480px){.bento{grid-template-columns:1fr 1fr}}
+@media(min-width:768px){.bento{grid-template-columns:1fr 1fr 1fr}}
+.bento-card{background:var(--bg2);border:1px solid var(--gold-dim);border-radius:12px;padding:32px 28px;transition:all 0.4s;position:relative;overflow:hidden}
+.bento-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0;transition:opacity 0.4s}
+.bento-card:hover{transform:translateY(-4px);border-color:rgba(201,168,76,0.3)}
+.bento-card:hover::before{opacity:1}
+.bento-card .b-icon{font-size:1.5rem;margin-bottom:16px}
+.bento-card .b-cat{font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;font-weight:500}
+.bento-card .b-name{font-family:'Cormorant Garamond',serif;font-size:1.25rem;font-weight:400;margin-bottom:4px}
+.bento-card .b-desc{font-size:0.75rem;color:var(--muted);font-weight:300}
+
+/* Interests */
+.interest-row{display:flex;flex-wrap:wrap;justify-content:center;gap:16px}
+.i-chip{padding:14px 28px;border:1px solid var(--gold-dim);border-radius:100px;font-size:0.8rem;font-weight:400;color:var(--muted);letter-spacing:0.05em;transition:all 0.3s}
+.i-chip:hover{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,0.05)}
+
+/* CTA links */
+.cta-links{display:grid;grid-template-columns:1fr;gap:12px;max-width:600px;margin:0 auto}
+.cta{display:flex;align-items:center;justify-content:space-between;padding:20px 28px;background:var(--bg2);border:1px solid var(--gold-dim);border-radius:12px;min-height:64px;transition:all 0.3s}
+.cta:hover{border-color:var(--gold);background:rgba(201,168,76,0.05);transform:translateX(4px)}
+.cta .cta-left{display:flex;align-items:center;gap:16px}
+.cta .cta-icon{width:36px;height:36px;border-radius:8px;background:var(--gold-dim);display:flex;align-items:center;justify-content:center;font-size:0.9rem}
+.cta .cta-name{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:400}
+.cta .cta-url{font-size:0.7rem;color:var(--muted);font-weight:300}
+.cta .cta-arrow{color:var(--gold);font-size:1rem;transition:transform 0.3s}
+.cta:hover .cta-arrow{transform:translateX(4px)}
+
+/* Footer */
+footer{text-align:center;padding:100px 32px 40px}
+footer .f-logo{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:var(--gold);margin-bottom:16px;letter-spacing:0.05em}
+footer .f-line{width:40px;height:1px;background:var(--gold);margin:0 auto 16px}
+footer p{font-size:0.7rem;color:var(--muted);letter-spacing:0.15em;text-transform:uppercase}
+
+/* Fade */
+.fade{opacity:0;transform:translateY(24px);transition:opacity 1s cubic-bezier(0.16,1,0.3,1),transform 1s cubic-bezier(0.16,1,0.3,1)}
+.fade.visible{opacity:1;transform:none}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">Ray</div>
+  <div class="nav-links">
+    <a href="#about">About</a>
+    <a href="#gear">Gear</a>
+    <a href="#connect">Connect</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-content fade">
+    <div class="overline">Content Creator • Engineer • Enthusiast</div>
+    <h1>Tech with<br><strong>Ray</strong></h1>
+    <p class="desc">Deep dives into technology, hardware reviews, and everything in between. Exploring the bleeding edge so you don't have to.</p>
+    <div class="scroll-hint">↓ Explore</div>
+  </div>
+</section>
+
+<div class="section-divider"><hr></div>
+
+<section id="about" class="section fade">
+  <div class="section-header">
+    <div class="label">About</div>
+    <h2>The Vision</h2>
+  </div>
+  <p class="about-text">From <em>custom water-cooled builds</em> to local AI models, from sim racing rigs to 3D printing — I document the journey of pushing technology to its limits.</p>
+</section>
+
+<section class="section fade">
+  <div class="section-header">
+    <div class="label">Passions</div>
+    <h2>What Drives Me</h2>
+  </div>
+  <div class="interest-row">
+    <span class="i-chip">Gaming</span>
+    <span class="i-chip">Local AI Models</span>
+    <span class="i-chip">3D Printing</span>
+    <span class="i-chip">Foldable Phones</span>
+    <span class="i-chip">Sim Racing</span>
+    <span class="i-chip">Water Cooling</span>
+    <span class="i-chip">Cinematography</span>
+  </div>
+</section>
+
+<div class="section-divider"><hr></div>
+
+<section id="gear" class="section fade">
+  <div class="section-header">
+    <div class="label">Arsenal</div>
+    <h2>Featured Gear</h2>
+  </div>
+  <div class="bento">
+    <div class="bento-card">
+      <div class="b-icon">⚡</div>
+      <div class="b-cat">Graphics</div>
+      <div class="b-name">RTX 5090</div>
+      <div class="b-desc">Flagship performance</div>
+    </div>
+    <div class="bento-card">
+      <div class="b-icon">🎬</div>
+      <div class="b-cat">Cinema</div>
+      <div class="b-name">Sony FX3</div>
+      <div class="b-desc">Full-frame cinema line</div>
+    </div>
+    <div class="bento-card">
+      <div class="b-icon">💧</div>
+      <div class="b-cat">Custom Build</div>
+      <div class="b-name">Water Loop PC</div>
+      <div class="b-desc">Hardline custom cooling</div>
+    </div>
+    <div class="bento-card">
+      <div class="b-icon">🖨</div>
+      <div class="b-cat">Fabrication</div>
+      <div class="b-name">Bambu H2D</div>
+      <div class="b-desc">Multi-color 3D printing</div>
+    </div>
+    <div class="bento-card">
+      <div class="b-icon">🥽</div>
+      <div class="b-cat">Spatial</div>
+      <div class="b-name">Apple Vision Pro</div>
+      <div class="b-desc">Mixed reality headset</div>
+    </div>
+    <div class="bento-card">
+      <div class="b-icon">📷</div>
+      <div class="b-cat">Photography</div>
+      <div class="b-name">Sony A7 IV</div>
+      <div class="b-desc">Hybrid stills & video</div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"><hr></div>
+
+<section id="connect" class="section fade">
+  <div class="section-header">
+    <div class="label">Connect</div>
+    <h2>Find Me</h2>
+  </div>
+  <div class="cta-links">
+    <a href="https://youtube.com/@techwithray" target="_blank" class="cta">
+      <div class="cta-left">
+        <div class="cta-icon">▶</div>
+        <div><div class="cta-name">YouTube</div><div class="cta-url">Tech with Ray</div></div>
+      </div>
+      <span class="cta-arrow">→</span>
+    </a>
+    <a href="https://techwithray.com" target="_blank" class="cta">
+      <div class="cta-left">
+        <div class="cta-icon">🛍</div>
+        <div><div class="cta-name">Store</div><div class="cta-url">techwithray.com</div></div>
+      </div>
+      <span class="cta-arrow">→</span>
+    </a>
+    <a href="https://twitter.com/techwithray" target="_blank" class="cta">
+      <div class="cta-left">
+        <div class="cta-icon">𝕏</div>
+        <div><div class="cta-name">Twitter / X</div><div class="cta-url">@techwithray</div></div>
+      </div>
+      <span class="cta-arrow">→</span>
+    </a>
+    <a href="https://discord.gg/techwithray" target="_blank" class="cta">
+      <div class="cta-left">
+        <div class="cta-icon">💬</div>
+        <div><div class="cta-name">Discord</div><div class="cta-url">Join the community</div></div>
+      </div>
+      <span class="cta-arrow">→</span>
+    </a>
+    <a href="https://github.com/techwithray" target="_blank" class="cta">
+      <div class="cta-left">
+        <div class="cta-icon">⌨</div>
+        <div><div class="cta-name">GitHub</div><div class="cta-url">Open source projects</div></div>
+      </div>
+      <span class="cta-arrow">→</span>
+    </a>
+  </div>
+</section>
+
+<footer class="fade">
+  <div class="f-logo">Tech with Ray</div>
+  <div class="f-line"></div>
+  <p>© 2026 — twray.dev</p>
+</footer>
+
+<script>
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}})},{threshold:0.1});
+document.querySelectorAll('.fade').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>

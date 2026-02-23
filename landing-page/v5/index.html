@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAY // TWRAY.DEV</title>
+<meta name="description" content="Ray — Content creator, software engineer, and hardware enthusiast.">
+<meta property="og:title" content="RAY // TWRAY.DEV">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://twray.dev/v5/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#000;--green:#00ff41;--magenta:#ff00ff;--cyan:#00e5ff;--dim:#003300;--grid:rgba(0,255,65,0.03)}
+html{font-size:16px}
+body{background:var(--bg);color:var(--green);font-family:'JetBrains Mono',monospace;overflow-x:hidden;position:relative}
+body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,65,0.015) 2px,rgba(0,255,65,0.015) 4px);pointer-events:none;z-index:9999}
+a{color:var(--green);text-decoration:none}
+::selection{background:var(--green);color:var(--bg)}
+
+.container{max-width:800px;margin:0 auto;padding:0 20px}
+
+/* Scanline overlay */
+.crt{position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:9998;background:radial-gradient(ellipse at center,transparent 60%,rgba(0,0,0,0.4) 100%)}
+
+/* Glitch title */
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:80px 0;position:relative}
+.prompt{font-size:0.8rem;color:var(--dim);margin-bottom:16px}
+.prompt .blink{animation:blink 1s infinite}
+@keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}
+.hero h1{font-family:'Orbitron',sans-serif;font-size:clamp(2.5rem,9vw,5.5rem);font-weight:900;line-height:1;text-transform:uppercase;position:relative;text-shadow:0 0 20px rgba(0,255,65,0.3),0 0 60px rgba(0,255,65,0.1)}
+.hero h1 .glitch{position:relative;display:inline-block}
+.hero h1 .glitch::before,.hero h1 .glitch::after{content:attr(data-text);position:absolute;top:0;left:0;width:100%;height:100%}
+.hero h1 .glitch::before{color:var(--magenta);clip-path:inset(0 0 65% 0);animation:glitch1 3s infinite}
+.hero h1 .glitch::after{color:var(--cyan);clip-path:inset(65% 0 0 0);animation:glitch2 3s infinite}
+@keyframes glitch1{0%,95%{transform:none}96%{transform:translate(-3px,-1px)}97%{transform:translate(3px,1px)}98%{transform:translate(-1px,2px)}100%{transform:none}}
+@keyframes glitch2{0%,95%{transform:none}96%{transform:translate(3px,1px)}97%{transform:translate(-3px,-1px)}98%{transform:translate(1px,-2px)}100%{transform:none}}
+
+.hero .tagline{margin-top:24px;font-size:0.85rem;color:var(--dim);border-left:2px solid var(--green);padding-left:12px;max-width:500px;line-height:1.8}
+.hero .tagline span{color:var(--green)}
+
+/* Status bar */
+.status-bar{display:flex;gap:24px;flex-wrap:wrap;margin-top:40px;padding:16px;border:1px solid rgba(0,255,65,0.15);background:rgba(0,255,65,0.02)}
+.stat{font-size:0.7rem}
+.stat .label{color:var(--dim);text-transform:uppercase}
+.stat .val{color:var(--green)}
+
+/* Section */
+.sec{padding:60px 0;border-top:1px solid rgba(0,255,65,0.1)}
+.sec-head{font-family:'Orbitron',sans-serif;font-size:0.7rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--magenta);margin-bottom:32px;display:flex;align-items:center;gap:8px}
+.sec-head::before{content:'>';color:var(--green)}
+
+/* Terminal blocks */
+.term-block{background:rgba(0,255,65,0.02);border:1px solid rgba(0,255,65,0.1);padding:20px;margin-bottom:12px;font-size:0.85rem;line-height:1.8;transition:border-color 0.3s,background 0.3s}
+.term-block:hover{border-color:var(--green);background:rgba(0,255,65,0.05)}
+.term-block .key{color:var(--magenta);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em}
+.term-block .value{color:var(--green);font-weight:700}
+
+/* Gear list */
+.gear-list .g-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid rgba(0,255,65,0.05);font-size:0.85rem}
+.g-row .g-id{color:var(--dim);font-size:0.7rem;width:32px}
+.g-row .g-name{flex:1;color:var(--green)}
+.g-row .g-type{color:var(--magenta);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em}
+
+/* Links */
+.link-row{display:block;padding:16px;border:1px solid rgba(0,255,65,0.1);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;min-height:52px;transition:all 0.2s}
+.link-row:hover{background:var(--green);color:var(--bg);border-color:var(--green)}
+.link-row:hover .link-arrow{color:var(--bg)}
+.link-row .link-name{font-size:0.9rem;font-weight:700}
+.link-row .link-url{font-size:0.7rem;color:var(--dim)}
+.link-row:hover .link-url{color:var(--bg)}
+.link-arrow{color:var(--magenta);font-family:'Orbitron',sans-serif}
+
+/* Footer */
+footer{padding:60px 0 30px;text-align:center;font-size:0.7rem;color:var(--dim)}
+footer .neon{color:var(--green);text-shadow:0 0 10px rgba(0,255,65,0.5)}
+
+/* Matrix rain (subtle) */
+#matrix{position:fixed;top:0;left:0;z-index:-1;opacity:0.04}
+
+.fade{opacity:0;transform:translateY(16px);transition:opacity 0.6s,transform 0.6s}
+.fade.visible{opacity:1;transform:none}
+</style>
+</head>
+<body>
+<div class="crt"></div>
+<canvas id="matrix"></canvas>
+
+<div class="container">
+  <section class="hero fade">
+    <div class="prompt">ray@twray.dev:~$ <span class="blink">█</span></div>
+    <h1><span class="glitch" data-text="RAY">RAY</span></h1>
+    <div class="tagline">
+      <span>Content creator</span>, software engineer, and hardware enthusiast. Deep dives into tech, hardware reviews, and everything in between.
+    </div>
+    <div class="status-bar">
+      <div class="stat"><span class="label">Status </span><span class="val">ONLINE</span></div>
+      <div class="stat"><span class="label">Brand </span><span class="val">TECH WITH RAY</span></div>
+      <div class="stat"><span class="label">Domain </span><span class="val">TWRAY.DEV</span></div>
+    </div>
+  </section>
+
+  <section class="sec fade">
+    <div class="sec-head">System Profile</div>
+    <div class="term-block">
+      <div class="key">// Interests</div>
+      <div class="value" style="margin-top:8px">
+        Gaming • Local AI Models • 3D Printing<br>
+        Foldable Phones • Sim Racing • Water Cooling
+      </div>
+    </div>
+    <div class="term-block">
+      <div class="key">// Mission</div>
+      <div class="value" style="margin-top:8px">
+        Exploring the bleeding edge of consumer technology.<br>
+        Building, breaking, and reviewing — so you don't have to.
+      </div>
+    </div>
+  </section>
+
+  <section class="sec fade">
+    <div class="sec-head">Hardware Registry</div>
+    <div class="gear-list">
+      <div class="g-row"><span class="g-id">01</span><span class="g-name">NVIDIA RTX 5090</span><span class="g-type">GPU</span></div>
+      <div class="g-row"><span class="g-id">02</span><span class="g-name">Custom Water-Cooled PC</span><span class="g-type">Build</span></div>
+      <div class="g-row"><span class="g-id">03</span><span class="g-name">Sony FX3</span><span class="g-type">Cinema</span></div>
+      <div class="g-row"><span class="g-id">04</span><span class="g-name">Sony A7 IV</span><span class="g-type">Photo</span></div>
+      <div class="g-row"><span class="g-id">05</span><span class="g-name">Bambu H2D</span><span class="g-type">3D Print</span></div>
+      <div class="g-row"><span class="g-id">06</span><span class="g-name">Apple Vision Pro</span><span class="g-type">XR</span></div>
+      <div class="g-row"><span class="g-id">07</span><span class="g-name">Sony A7S III</span><span class="g-type">B-Cam</span></div>
+    </div>
+  </section>
+
+  <section class="sec fade">
+    <div class="sec-head">Network Links</div>
+    <a href="https://youtube.com/@techwithray" target="_blank" class="link-row">
+      <div><div class="link-name">YouTube</div><div class="link-url">youtube.com/@techwithray</div></div>
+      <span class="link-arrow">[→]</span>
+    </a>
+    <a href="https://techwithray.com" target="_blank" class="link-row">
+      <div><div class="link-name">Store</div><div class="link-url">techwithray.com</div></div>
+      <span class="link-arrow">[→]</span>
+    </a>
+    <a href="https://twitter.com/techwithray" target="_blank" class="link-row">
+      <div><div class="link-name">Twitter / X</div><div class="link-url">@techwithray</div></div>
+      <span class="link-arrow">[→]</span>
+    </a>
+    <a href="https://discord.gg/techwithray" target="_blank" class="link-row">
+      <div><div class="link-name">Discord</div><div class="link-url">discord.gg/techwithray</div></div>
+      <span class="link-arrow">[→]</span>
+    </a>
+    <a href="https://github.com/techwithray" target="_blank" class="link-row">
+      <div><div class="link-name">GitHub</div><div class="link-url">github.com/techwithray</div></div>
+      <span class="link-arrow">[→]</span>
+    </a>
+  </section>
+
+  <footer class="fade">
+    <p class="neon">RAY // TECH WITH RAY</p>
+    <p style="margin-top:8px">© 2026 — ALL SYSTEMS OPERATIONAL</p>
+  </footer>
+</div>
+
+<script>
+// Matrix rain
+const c=document.getElementById('matrix'),ctx=c.getContext('2d');
+function resize(){c.width=window.innerWidth;c.height=window.innerHeight}
+resize();window.addEventListener('resize',resize);
+const cols=Math.floor(c.width/14),drops=Array(cols).fill(1);
+const chars='01アイウエオカキクケコ'.split('');
+function draw(){ctx.fillStyle='rgba(0,0,0,0.05)';ctx.fillRect(0,0,c.width,c.height);ctx.fillStyle='#00ff41';ctx.font='12px monospace';for(let i=0;i<drops.length;i++){const t=chars[Math.floor(Math.random()*chars.length)];ctx.fillText(t,i*14,drops[i]*14);if(drops[i]*14>c.height&&Math.random()>0.975)drops[i]=0;drops[i]++}}
+setInterval(draw,50);
+
+// Fade
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}})},{threshold:0.1});
+document.querySelectorAll('.fade').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ray — Tech with Ray</title>
+<meta name="description" content="Ray — Content creator, software engineer, and hardware enthusiast.">
+<meta property="og:title" content="Ray — Tech with Ray">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://twray.dev/v4/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#1a1410;--bg2:#211a14;--fg:#f5efe6;--muted:#8a7e6e;--amber:#d4943a;--terra:#c4654a;--cream:#f5efe6}
+html{font-size:16px;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--fg);font-family:'Source Sans 3',sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+
+/* Nav */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:20px 24px;display:flex;justify-content:space-between;align-items:center;backdrop-filter:blur(20px);background:rgba(26,20,16,0.8)}
+nav .logo{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--amber)}
+nav .nav-links{display:flex;gap:24px}
+nav .nav-links a{font-size:0.8rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);transition:color 0.3s}
+nav .nav-links a:hover{color:var(--amber)}
+
+/* Hero */
+.hero{min-height:100vh;display:flex;align-items:center;padding:120px 24px 80px;position:relative}
+.hero-inner{max-width:900px;margin:0 auto;width:100%}
+.hero .issue{font-size:0.75rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--terra);margin-bottom:32px;font-weight:600}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(3rem,10vw,6rem);line-height:1;font-weight:700;margin-bottom:24px}
+.hero h1 em{font-style:italic;color:var(--amber);font-weight:400}
+.hero .subtitle{font-size:1.25rem;font-weight:300;color:var(--muted);max-width:500px;line-height:1.7}
+.hero .line{width:60px;height:2px;background:var(--amber);margin-top:40px}
+
+/* Editorial Grid */
+.editorial{max-width:900px;margin:0 auto;padding:0 24px}
+.ed-section{padding:80px 0;border-top:1px solid rgba(212,148,58,0.15)}
+.ed-section .col-label{font-size:0.7rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--terra);margin-bottom:12px}
+.ed-section h2{font-family:'Playfair Display',serif;font-size:2rem;margin-bottom:24px;font-weight:400}
+
+/* Two col */
+.two-col{display:grid;grid-template-columns:1fr;gap:40px}
+@media(min-width:768px){.two-col{grid-template-columns:200px 1fr}}
+.two-col .left{font-size:0.7rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--terra);padding-top:4px}
+
+/* Quote block */
+.quote{font-family:'Playfair Display',serif;font-size:clamp(1.5rem,4vw,2.5rem);line-height:1.4;font-style:italic;color:var(--cream);position:relative;padding-left:24px;border-left:2px solid var(--amber)}
+
+/* Gear cards */
+.gear-cards{display:grid;grid-template-columns:1fr;gap:16px}
+@media(min-width:480px){.gear-cards{grid-template-columns:1fr 1fr}}
+@media(min-width:768px){.gear-cards{grid-template-columns:1fr 1fr 1fr}}
+.g-card{background:var(--bg2);border:1px solid rgba(212,148,58,0.1);padding:28px 24px;border-radius:4px;transition:border-color 0.3s}
+.g-card:hover{border-color:var(--amber)}
+.g-card .g-cat{font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--terra);margin-bottom:8px}
+.g-card .g-name{font-family:'Playfair Display',serif;font-size:1.1rem}
+
+/* Interests */
+.interest-list{display:flex;flex-wrap:wrap;gap:12px}
+.interest-pill{padding:12px 24px;border:1px solid rgba(212,148,58,0.2);border-radius:2px;font-size:0.85rem;color:var(--muted);letter-spacing:0.05em;transition:all 0.3s}
+.interest-pill:hover{background:var(--amber);color:var(--bg);border-color:var(--amber)}
+
+/* CTA Links */
+.cta-grid{display:grid;grid-template-columns:1fr;gap:0}
+.cta-link{display:flex;justify-content:space-between;align-items:center;padding:24px 0;border-bottom:1px solid rgba(212,148,58,0.1);min-height:60px;transition:all 0.3s}
+.cta-link:hover{padding-left:16px}
+.cta-link .cta-name{font-family:'Playfair Display',serif;font-size:1.25rem}
+.cta-link .cta-desc{font-size:0.8rem;color:var(--muted)}
+.cta-link .cta-arrow{color:var(--amber);font-size:1.5rem;transition:transform 0.3s}
+.cta-link:hover .cta-arrow{transform:translateX(6px)}
+
+/* Footer */
+footer{text-align:center;padding:80px 24px 40px}
+footer .footer-logo{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--amber);margin-bottom:12px}
+footer p{font-size:0.75rem;color:var(--muted);letter-spacing:0.1em}
+
+/* Fade */
+.fade{opacity:0;transform:translateY(24px);transition:opacity 0.9s ease,transform 0.9s ease}
+.fade.visible{opacity:1;transform:none}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">TWR</div>
+  <div class="nav-links">
+    <a href="#about">About</a>
+    <a href="#gear">Gear</a>
+    <a href="#links">Connect</a>
+  </div>
+</nav>
+
+<section class="hero fade">
+  <div class="hero-inner">
+    <div class="issue">Est. 2024 — Vol. III</div>
+    <h1>Tech<br>with <em>Ray</em></h1>
+    <p class="subtitle">Content creator, software engineer, and hardware enthusiast. Deep dives into tech, hardware reviews, and everything in between.</p>
+    <div class="line"></div>
+  </div>
+</section>
+
+<div class="editorial">
+  <section id="about" class="ed-section fade">
+    <div class="two-col">
+      <div class="left">The Story</div>
+      <div>
+        <p class="quote">I explore the bleeding edge of technology — from custom water-cooled PCs to local AI models — so you don't have to.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="ed-section fade">
+    <div class="two-col">
+      <div class="left">Interests</div>
+      <div>
+        <div class="interest-list">
+          <span class="interest-pill">Gaming</span>
+          <span class="interest-pill">Local AI Models</span>
+          <span class="interest-pill">3D Printing</span>
+          <span class="interest-pill">Foldable Phones</span>
+          <span class="interest-pill">Sim Racing</span>
+          <span class="interest-pill">Water Cooling</span>
+          <span class="interest-pill">Content Creation</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="gear" class="ed-section fade">
+    <div class="col-label">The Arsenal</div>
+    <h2>Featured Gear</h2>
+    <div class="gear-cards">
+      <div class="g-card"><div class="g-cat">Graphics</div><div class="g-name">RTX 5090</div></div>
+      <div class="g-card"><div class="g-cat">Cinema</div><div class="g-name">Sony FX3</div></div>
+      <div class="g-card"><div class="g-cat">Build</div><div class="g-name">Custom Water Loop</div></div>
+      <div class="g-card"><div class="g-cat">Print</div><div class="g-name">Bambu H2D</div></div>
+      <div class="g-card"><div class="g-cat">XR</div><div class="g-name">Apple Vision Pro</div></div>
+      <div class="g-card"><div class="g-cat">Photo</div><div class="g-name">Sony A7 IV</div></div>
+    </div>
+  </section>
+
+  <section id="links" class="ed-section fade">
+    <div class="col-label">Connect</div>
+    <h2>Find Me Here</h2>
+    <div class="cta-grid">
+      <a href="https://youtube.com/@techwithray" target="_blank" class="cta-link">
+        <div><div class="cta-name">YouTube</div><div class="cta-desc">Tech with Ray — videos & reviews</div></div>
+        <span class="cta-arrow">→</span>
+      </a>
+      <a href="https://techwithray.com" target="_blank" class="cta-link">
+        <div><div class="cta-name">Store</div><div class="cta-desc">techwithray.com — merch & gear</div></div>
+        <span class="cta-arrow">→</span>
+      </a>
+      <a href="https://twitter.com/techwithray" target="_blank" class="cta-link">
+        <div><div class="cta-name">Twitter / X</div><div class="cta-desc">Hot takes & updates</div></div>
+        <span class="cta-arrow">→</span>
+      </a>
+      <a href="https://discord.gg/techwithray" target="_blank" class="cta-link">
+        <div><div class="cta-name">Discord</div><div class="cta-desc">Join the community</div></div>
+        <span class="cta-arrow">→</span>
+      </a>
+      <a href="https://github.com/techwithray" target="_blank" class="cta-link">
+        <div><div class="cta-name">GitHub</div><div class="cta-desc">Open source & projects</div></div>
+        <span class="cta-arrow">→</span>
+      </a>
+    </div>
+  </section>
+</div>
+
+<footer class="fade">
+  <div class="footer-logo">Tech with Ray</div>
+  <p>© 2026 — TWRAY.DEV</p>
+</footer>
+
+<script>
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}})},{threshold:0.1});
+document.querySelectorAll('.fade').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>

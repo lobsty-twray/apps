@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ray — twray.dev</title>
+<meta name="description" content="Ray — Content creator, software engineer, and hardware enthusiast.">
+<meta property="og:title" content="Ray — twray.dev">
+<meta property="og:description" content="Content creator, software engineer, and hardware enthusiast.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://twray.dev/v3/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0a0a;--fg:#e8e8e8;--muted:#666;--accent:#fff;--border:#1a1a1a}
+html{font-size:16px;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--fg);font-family:'Inter',sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:var(--fg);text-decoration:none}
+.container{max-width:720px;margin:0 auto;padding:0 24px}
+
+/* Hero */
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:80px 0}
+.hero .label{font-size:0.75rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:24px;font-weight:600}
+.hero h1{font-size:clamp(2.5rem,8vw,5rem);font-weight:800;line-height:1.05;letter-spacing:-0.03em;margin-bottom:32px}
+.hero h1 .thin{font-weight:300;color:var(--muted)}
+.hero p{font-size:1.125rem;color:var(--muted);max-width:480px;line-height:1.7}
+
+/* Divider */
+.divider{width:48px;height:1px;background:var(--border);margin:80px 0}
+.divider.wide{width:100%}
+
+/* Section */
+section{padding:40px 0}
+.section-label{font-size:0.7rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted);margin-bottom:40px;font-weight:600}
+
+/* About */
+.about-text{font-size:1.5rem;font-weight:300;line-height:1.6;letter-spacing:-0.01em}
+.about-text strong{font-weight:600;color:var(--accent)}
+
+/* Interests */
+.tags{display:flex;flex-wrap:wrap;gap:12px}
+.tag{padding:10px 20px;border:1px solid var(--border);border-radius:100px;font-size:0.85rem;color:var(--muted);transition:all 0.3s}
+.tag:hover{border-color:var(--fg);color:var(--fg)}
+
+/* Gear grid */
+.gear-grid{display:grid;grid-template-columns:1fr;gap:1px;background:var(--border)}
+.gear-item{background:var(--bg);padding:24px 0;display:flex;justify-content:space-between;align-items:baseline}
+.gear-item .name{font-size:0.95rem;font-weight:600}
+.gear-item .cat{font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em}
+
+/* Links */
+.links{display:flex;flex-direction:column;gap:0}
+.link-item{display:flex;align-items:center;justify-content:space-between;padding:20px 0;border-bottom:1px solid var(--border);min-height:60px;transition:padding-left 0.3s}
+.link-item:hover{padding-left:12px}
+.link-item .name{font-size:1rem;font-weight:600}
+.link-item .arrow{font-size:1.25rem;color:var(--muted);transition:transform 0.3s}
+.link-item:hover .arrow{transform:translateX(4px);color:var(--fg)}
+
+/* Footer */
+footer{padding:80px 0 40px;text-align:center}
+footer p{font-size:0.75rem;color:var(--muted);letter-spacing:0.1em}
+
+/* Fade in */
+.fade{opacity:0;transform:translateY(20px);transition:opacity 0.8s,transform 0.8s}
+.fade.visible{opacity:1;transform:none}
+
+@media(min-width:768px){
+  .gear-grid{grid-template-columns:1fr 1fr}
+  .gear-item{padding:24px 16px}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <header class="hero fade">
+    <div class="label">twray.dev</div>
+    <h1>Ray<br><span class="thin">builds things</span></h1>
+    <p>Content creator, software engineer, and hardware enthusiast. Deep dives into tech, hardware reviews, and everything in between.</p>
+  </header>
+
+  <div class="divider wide fade"></div>
+
+  <section class="fade">
+    <div class="section-label">About</div>
+    <p class="about-text">I make videos about <strong>tech</strong> that matters. From custom water-cooled PCs to local AI models, I explore the bleeding edge so you don't have to.</p>
+  </section>
+
+  <div class="divider fade"></div>
+
+  <section class="fade">
+    <div class="section-label">Interests</div>
+    <div class="tags">
+      <span class="tag">Gaming</span>
+      <span class="tag">Local AI Models</span>
+      <span class="tag">3D Printing</span>
+      <span class="tag">Foldable Phones</span>
+      <span class="tag">Sim Racing</span>
+      <span class="tag">Hardware Reviews</span>
+      <span class="tag">Water Cooling</span>
+    </div>
+  </section>
+
+  <div class="divider fade"></div>
+
+  <section class="fade">
+    <div class="section-label">Gear</div>
+    <div class="gear-grid">
+      <div class="gear-item"><span class="name">RTX 5090</span><span class="cat">GPU</span></div>
+      <div class="gear-item"><span class="name">Sony FX3</span><span class="cat">Camera</span></div>
+      <div class="gear-item"><span class="name">Custom Loop PC</span><span class="cat">Build</span></div>
+      <div class="gear-item"><span class="name">Bambu H2D</span><span class="cat">3D Print</span></div>
+      <div class="gear-item"><span class="name">Apple Vision Pro</span><span class="cat">XR</span></div>
+      <div class="gear-item"><span class="name">Sony A7S III</span><span class="cat">Camera</span></div>
+    </div>
+  </section>
+
+  <div class="divider fade"></div>
+
+  <section class="fade">
+    <div class="section-label">Links</div>
+    <div class="links">
+      <a href="https://youtube.com/@techwithray" target="_blank" class="link-item">
+        <span class="name">YouTube</span><span class="arrow">→</span>
+      </a>
+      <a href="https://techwithray.com" target="_blank" class="link-item">
+        <span class="name">Store</span><span class="arrow">→</span>
+      </a>
+      <a href="https://twitter.com/techwithray" target="_blank" class="link-item">
+        <span class="name">Twitter / X</span><span class="arrow">→</span>
+      </a>
+      <a href="https://discord.gg/techwithray" target="_blank" class="link-item">
+        <span class="name">Discord</span><span class="arrow">→</span>
+      </a>
+      <a href="https://github.com/techwithray" target="_blank" class="link-item">
+        <span class="name">GitHub</span><span class="arrow">→</span>
+      </a>
+    </div>
+  </section>
+
+  <footer class="fade">
+    <p>© 2026 RAY — TECH WITH RAY</p>
+  </footer>
+</div>
+
+<script>
+const obs=new IntersectionObserver((entries)=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}})},{threshold:0.1});
+document.querySelectorAll('.fade').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>
