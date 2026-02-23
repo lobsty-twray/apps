@@ -14,3 +14,4 @@ COPY favicons/ /usr/share/nginx/html/v3/favicons/
 COPY favicons/ /usr/share/nginx/html/v4/favicons/
 COPY favicons/ /usr/share/nginx/html/v5/favicons/
 COPY favicons/ /usr/share/nginx/html/v6/favicons/
+COPY v7/index.html /usr/share/nginx/html/v7/index.html

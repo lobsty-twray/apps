@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Custom Web App Development | Tech with Ray</title>
+<meta name="description" content="Replace your Excel spreadsheets with custom web apps. 25+ production apps built. Book a free consultation with Ray.">
+<meta name="keywords" content="custom web app development, Excel replacement, internal tools, business software, React, Node.js">
+<meta property="og:title" content="Custom Web App Development | Tech with Ray">
+<meta property="og:description" content="Still running your business on Excel? Get a custom web app built by an engineer with 25+ production apps.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#111116;--bg2:#1a1a22;--bg3:#23232e;--surface:#2a2a36;
+--text:#e8e8ed;--text2:#9d9daa;--text3:#6b6b78;
+--amber:#f59e0b;--amber-glow:rgba(245,158,11,.15);--amber-dark:#b47408;
+--teal:#14b8a6;--teal-glow:rgba(20,184,166,.12);
+--radius:12px;--radius-lg:20px;
+}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+
+/* Utility */
+.container{max-width:1120px;margin:0 auto;padding:0 20px}
+.section{padding:80px 0}
+@media(max-width:768px){.section{padding:56px 0}}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:100px;font-size:.75rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.badge--amber{background:var(--amber-glow);color:var(--amber);border:1px solid rgba(245,158,11,.2)}
+.badge--teal{background:var(--teal-glow);color:var(--teal);border:1px solid rgba(20,184,166,.2)}
+
+/* Scroll animations */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* Nav */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 0;transition:background .3s,backdrop-filter .3s}
+nav.scrolled{background:rgba(17,17,22,.85);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.06)}
+nav .container{display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-size:1.1rem;font-weight:700;letter-spacing:-.02em}
+.nav-logo span{color:var(--amber)}
+.nav-links{display:flex;gap:28px;align-items:center}
+.nav-links a{font-size:.85rem;color:var(--text2);font-weight:500;transition:color .2s}
+.nav-links a:hover{color:var(--text)}
+.nav-cta{background:var(--amber);color:#111;padding:8px 20px;border-radius:100px;font-weight:600;font-size:.85rem;transition:transform .2s,box-shadow .2s}
+.nav-cta:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(245,158,11,.3)}
+@media(max-width:768px){.nav-links a:not(.nav-cta){display:none}}
+
+/* Hero */
+.hero{padding:140px 0 80px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-40%;left:50%;transform:translateX(-50%);width:800px;height:800px;background:radial-gradient(circle,rgba(245,158,11,.06) 0%,transparent 70%);pointer-events:none}
+.hero h1{font-size:clamp(2.2rem,5.5vw,4rem);font-weight:800;letter-spacing:-.03em;line-height:1.1;margin-bottom:20px;max-width:780px;margin-left:auto;margin-right:auto}
+.hero h1 em{font-style:normal;color:var(--amber);position:relative}
+.hero .subtitle{font-size:clamp(1.05rem,2vw,1.25rem);color:var(--text2);max-width:560px;margin:0 auto 36px;line-height:1.6;font-weight:400}
+.hero-ctas{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;border-radius:100px;font-weight:600;font-size:.95rem;transition:all .25s;border:none;cursor:pointer}
+.btn--primary{background:var(--amber);color:#111}
+.btn--primary:hover{box-shadow:0 6px 30px rgba(245,158,11,.35);transform:translateY(-2px)}
+.btn--outline{background:transparent;color:var(--text);border:1.5px solid rgba(255,255,255,.15)}
+.btn--outline:hover{border-color:var(--amber);color:var(--amber)}
+.hero-stats{display:flex;gap:40px;justify-content:center;margin-top:56px;flex-wrap:wrap}
+.hero-stat{text-align:center}
+.hero-stat .num{font-size:2rem;font-weight:800;color:var(--amber)}
+.hero-stat .label{font-size:.8rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+
+/* Problem */
+.problem{background:var(--bg2)}
+.section-header{text-align:center;margin-bottom:48px}
+.section-header h2{font-size:clamp(1.6rem,3.5vw,2.4rem);font-weight:700;letter-spacing:-.02em;margin-bottom:12px}
+.section-header p{color:var(--text2);max-width:520px;margin:0 auto;font-size:1rem}
+.pain-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
+.pain-card{background:var(--bg);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);padding:28px 24px;transition:border-color .3s}
+.pain-card:hover{border-color:rgba(245,158,11,.2)}
+.pain-icon{font-size:1.6rem;margin-bottom:12px}
+.pain-card h3{font-size:1rem;font-weight:600;margin-bottom:6px}
+.pain-card p{font-size:.88rem;color:var(--text2);line-height:1.55}
+
+/* Solution */
+.solution-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+@media(max-width:768px){.solution-grid{grid-template-columns:1fr;gap:32px}}
+.solution-features{display:flex;flex-direction:column;gap:20px}
+.sol-feat{display:flex;gap:14px;align-items:flex-start}
+.sol-feat .icon{width:40px;height:40px;border-radius:10px;background:var(--amber-glow);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.1rem}
+.sol-feat h4{font-size:.95rem;font-weight:600;margin-bottom:2px}
+.sol-feat p{font-size:.85rem;color:var(--text2)}
+.solution-visual{background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius-lg);padding:40px;text-align:center;aspect-ratio:4/3;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.solution-visual::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(245,158,11,.04),rgba(20,184,166,.04));pointer-events:none}
+.solution-visual .mock-ui{width:100%;max-width:340px}
+.mock-bar{height:8px;border-radius:4px;margin-bottom:10px}
+.mock-bar.w1{width:100%;background:rgba(245,158,11,.25)}
+.mock-bar.w2{width:75%;background:rgba(20,184,166,.2)}
+.mock-bar.w3{width:60%;background:rgba(255,255,255,.08)}
+.mock-bar.w4{width:85%;background:rgba(245,158,11,.15)}
+.mock-cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:16px}
+.mock-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:8px;height:60px}
+
+/* Portfolio */
+.portfolio{background:var(--bg2)}
+.app-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+.app-card{background:var(--bg);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);padding:28px 24px;transition:all .3s;position:relative;overflow:hidden}
+.app-card:hover{border-color:rgba(245,158,11,.25);transform:translateY(-3px)}
+.app-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--amber),var(--teal));opacity:0;transition:opacity .3s}
+.app-card:hover::after{opacity:1}
+.app-card .app-type{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--teal);font-weight:600;margin-bottom:8px}
+.app-card h3{font-size:1.05rem;font-weight:600;margin-bottom:6px}
+.app-card p{font-size:.85rem;color:var(--text2);line-height:1.5}
+.app-card .app-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.app-card .app-tags span{font-size:.7rem;padding:3px 8px;background:rgba(255,255,255,.05);border-radius:4px;color:var(--text3)}
+
+/* Pricing */
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;margin-top:8px}
+.price-card{background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius-lg);padding:36px 28px;transition:all .35s;position:relative}
+.price-card:hover{border-color:rgba(245,158,11,.25);transform:translateY(-4px)}
+.price-card.featured{border-color:var(--amber);background:linear-gradient(180deg,rgba(245,158,11,.06),var(--bg2))}
+.price-card.featured::before{content:'MOST POPULAR';position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--amber);color:#111;font-size:.65rem;font-weight:700;letter-spacing:.08em;padding:4px 14px;border-radius:100px}
+.price-card .tier{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--teal);font-weight:600}
+.price-card h3{font-size:1.3rem;font-weight:700;margin:8px 0 4px}
+.price-card .price{font-size:2rem;font-weight:800;color:var(--amber);margin:12px 0 4px}
+.price-card .price span{font-size:.85rem;font-weight:400;color:var(--text3)}
+.price-card .price-desc{font-size:.85rem;color:var(--text2);margin-bottom:20px}
+.price-card ul{list-style:none;margin-bottom:24px}
+.price-card li{font-size:.88rem;color:var(--text2);padding:6px 0;display:flex;align-items:flex-start;gap:8px}
+.price-card li::before{content:'✓';color:var(--amber);font-weight:700;flex-shrink:0}
+.price-card .btn{width:100%;justify-content:center}
+
+/* About */
+.about-grid{display:grid;grid-template-columns:auto 1fr;gap:48px;align-items:center}
+@media(max-width:768px){.about-grid{grid-template-columns:1fr;text-align:center}}
+.about-photo{width:200px;height:200px;border-radius:50%;background:linear-gradient(135deg,var(--surface),var(--bg3));border:3px solid rgba(245,158,11,.2);display:flex;align-items:center;justify-content:center;font-size:3rem;margin:0 auto}
+.about-text h2{font-size:1.8rem;font-weight:700;margin-bottom:12px}
+.about-text p{color:var(--text2);margin-bottom:16px;font-size:.95rem;line-height:1.65}
+.about-text .about-links{display:flex;gap:12px;flex-wrap:wrap}
+@media(max-width:768px){.about-text .about-links{justify-content:center}}
+
+/* Ventures */
+.ventures-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:600px){.ventures-grid{grid-template-columns:1fr}}
+.venture-card{background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);padding:32px 28px;transition:all .3s}
+.venture-card:hover{border-color:rgba(20,184,166,.25);transform:translateY(-2px)}
+.venture-card .v-icon{font-size:2rem;margin-bottom:12px}
+.venture-card h3{font-size:1.1rem;font-weight:600;margin-bottom:6px}
+.venture-card p{font-size:.88rem;color:var(--text2);margin-bottom:16px;line-height:1.55}
+
+/* Tech Stack */
+.tech{background:var(--bg2)}
+.tech-grid{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+.tech-pill{padding:10px 20px;border-radius:100px;background:var(--bg);border:1px solid rgba(255,255,255,.06);font-size:.85rem;font-weight:500;color:var(--text2);transition:all .25s}
+.tech-pill:hover{border-color:var(--amber);color:var(--amber)}
+
+/* Final CTA */
+.final-cta{text-align:center;position:relative;overflow:hidden}
+.final-cta::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(245,158,11,.06),transparent 70%);pointer-events:none}
+.final-cta h2{font-size:clamp(1.8rem,4vw,2.6rem);font-weight:800;margin-bottom:14px;letter-spacing:-.02em}
+.final-cta p{color:var(--text2);max-width:480px;margin:0 auto 32px;font-size:1.05rem}
+
+/* Footer */
+footer{border-top:1px solid rgba(255,255,255,.06);padding:32px 0}
+footer .container{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
+.footer-links{display:flex;gap:20px}
+.footer-links a{font-size:.85rem;color:var(--text3);transition:color .2s}
+.footer-links a:hover{color:var(--amber)}
+.footer-copy{font-size:.8rem;color:var(--text3)}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav id="nav">
+<div class="container">
+<a href="#" class="nav-logo">tech<span>with</span>ray</a>
+<div class="nav-links">
+<a href="#services">Services</a>
+<a href="#work">Work</a>
+<a href="#pricing">Pricing</a>
+<a href="#about">About</a>
+<a href="mailto:ray@twray.dev" class="nav-cta">Book a Call</a>
+</div>
+</div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+<div class="container">
+<div class="badge badge--amber reveal">🚀 Now Accepting New Clients</div>
+<h1 class="reveal" style="margin-top:20px">Still Running Your Business on <em>Excel?</em></h1>
+<p class="subtitle reveal">I build custom web apps that replace your spreadsheets — faster, collaborative, mobile-ready, and built exactly for how your team works.</p>
+<div class="hero-ctas reveal">
+<a href="mailto:ray@twray.dev" class="btn btn--primary">Book a Free Consultation →</a>
+<a href="#work" class="btn btn--outline">See My Work</a>
+</div>
+<div class="hero-stats reveal">
+<div class="hero-stat"><div class="num">25+</div><div class="label">Apps Built</div></div>
+<div class="hero-stat"><div class="num">100%</div><div class="label">In Production</div></div>
+<div class="hero-stat"><div class="num">6.8K</div><div class="label">YouTube Subs</div></div>
+</div>
+</div>
+</section>
+
+<!-- Problem -->
+<section class="section problem" id="services">
+<div class="container">
+<div class="section-header reveal">
+<div class="badge badge--amber" style="margin-bottom:16px">The Problem</div>
+<h2>Excel Wasn't Built for This</h2>
+<p>Your team is outgrowing spreadsheets. You already know it.</p>
+</div>
+<div class="pain-grid">
+<div class="pain-card reveal"><div class="pain-icon">🐌</div><h3>Painfully Slow</h3><p>Giant spreadsheets freeze, crash, and take minutes to load. Your team wastes hours waiting.</p></div>
+<div class="pain-card reveal"><div class="pain-icon">🔀</div><h3>Version Chaos</h3><p>"Final_v3_REAL_USE_THIS.xlsx" — sound familiar? No single source of truth, just confusion.</p></div>
+<div class="pain-card reveal"><div class="pain-icon">🚫</div><h3>Not Mobile-Friendly</h3><p>Your team works from everywhere. Excel on a phone is a nightmare. Business shouldn't stop at a desk.</p></div>
+<div class="pain-card reveal"><div class="pain-icon">💥</div><h3>One Wrong Formula</h3><p>Someone deletes a row, breaks a formula, and your entire Q4 report is wrong. No undo. No audit trail.</p></div>
+</div>
+</div>
+</section>
+
+<!-- Solution -->
+<section class="section">
+<div class="container">
+<div class="section-header reveal">
+<div class="badge badge--teal" style="margin-bottom:16px">The Solution</div>
+<h2>A Web App Built for Your Workflow</h2>
+<p>Not a generic SaaS tool. A custom app that fits your business like a glove.</p>
+</div>
+<div class="solution-grid reveal">
+<div class="solution-features">
+<div class="sol-feat"><div class="icon">🔐</div><div><h4>Secure Authentication</h4><p>Role-based access. Your data stays yours, with proper login and permissions.</p></div></div>
+<div class="sol-feat"><div class="icon">📱</div><div><h4>Works on Every Device</h4><p>Responsive design built mobile-first. Use it on your phone, tablet, or desktop.</p></div></div>
+<div class="sol-feat"><div class="icon">⚡</div><div><h4>Real-Time Data</h4><p>Live updates, instant sync. No more emailing spreadsheets back and forth.</p></div></div>
+<div class="sol-feat"><div class="icon">📊</div><div><h4>Built-In Dashboards</h4><p>Charts, reports, and insights baked right in. No separate BI tool needed.</p></div></div>
+<div class="sol-feat"><div class="icon">🔄</div><div><h4>Automations</h4><p>Auto-notifications, scheduled reports, workflow triggers. Let the app do the busy work.</p></div></div>
+</div>
+<div class="solution-visual">
+<div class="mock-ui">
+<div class="mock-bar w1"></div>
+<div class="mock-bar w2"></div>
+<div class="mock-bar w3"></div>
+<div class="mock-bar w4"></div>
+<div class="mock-cards"><div class="mock-card"></div><div class="mock-card"></div><div class="mock-card"></div><div class="mock-card"></div><div class="mock-card"></div><div class="mock-card"></div></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- Portfolio -->
+<section class="section portfolio" id="work">
+<div class="container">
+<div class="section-header reveal">
+<div class="badge badge--amber" style="margin-bottom:16px">Proof of Work</div>
+<h2>25+ Apps. All in Production.</h2>
+<p>These aren't mockups. These are real apps I built and run every day.</p>
+</div>
+<div class="app-grid">
+<div class="app-card reveal">
+<div class="app-type">Project Management</div>
+<h3>Kanban Board</h3>
+<p>Drag-and-drop task management with document linking, labels, and team collaboration.</p>
+<div class="app-tags"><span>React</span><span>PostgreSQL</span><span>Real-time</span></div>
+</div>
+<div class="app-card reveal">
+<div class="app-type">Finance</div>
+<h3>Budget Tracker</h3>
+<p>Income & expense tracking with category breakdowns, charts, and monthly reporting.</p>
+<div class="app-tags"><span>TypeScript</span><span>Charts</span><span>Auth</span></div>
+</div>
+<div class="app-card reveal">
+<div class="app-type">Operations</div>
+<h3>Inventory Manager</h3>
+<p>Full gear catalog with search, filtering, specs tracking, and status management.</p>
+<div class="app-tags"><span>Node.js</span><span>REST API</span><span>Mobile</span></div>
+</div>
+<div class="app-card reveal">
+<div class="app-type">Knowledge Base</div>
+<h3>Document System</h3>
+<p>Notion-style docs with Google OAuth, real-time editing, sharing, and role permissions.</p>
+<div class="app-tags"><span>OAuth</span><span>Rich Text</span><span>Sharing</span></div>
+</div>
+<div class="app-card reveal">
+<div class="app-type">Analytics</div>
+<h3>Admin Dashboard</h3>
+<p>Centralized admin panel with user management, analytics, and system monitoring.</p>
+<div class="app-tags"><span>Dashboard</span><span>Google Auth</span><span>Charts</span></div>
+</div>
+<div class="app-card reveal">
+<div class="app-type">Automation</div>
+<h3>Monitoring Tools</h3>
+<p>Real-time stock monitoring with auto-buy, alerts, and ntfy push notifications.</p>
+<div class="app-tags"><span>Playwright</span><span>Automation</span><span>Alerts</span></div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- Pricing -->
+<section class="section" id="pricing">
+<div class="container">
+<div class="section-header reveal">
+<div class="badge badge--teal" style="margin-bottom:16px">Pricing</div>
+<h2>Simple, Transparent Pricing</h2>
+<p>No hourly billing surprises. Fixed-scope projects with clear deliverables.</p>
+</div>
+<div class="pricing-grid">
+<div class="price-card reveal">
+<div class="tier">Starter</div>
+<h3>Excel → Web App</h3>
+<div class="price">$2K–5K</div>
+<div class="price-desc">One-time project</div>
+<ul>
+<li>Migrate your spreadsheet to a real web app</li>
+<li>User authentication & roles</li>
+<li>Mobile-responsive design</li>
+<li>Hosted & deployed for you</li>
+<li>2 weeks of post-launch support</li>
+</ul>
+<a href="mailto:ray@twray.dev?subject=Starter%20Plan%20Inquiry" class="btn btn--outline">Get Started</a>
+</div>
+<div class="price-card featured reveal">
+<div class="tier">Professional</div>
+<h3>Custom Internal Tool</h3>
+<div class="price">$5K–15K</div>
+<div class="price-desc">One-time project</div>
+<ul>
+<li>Everything in Starter</li>
+<li>Custom dashboard & reporting</li>
+<li>Third-party integrations (APIs, email, etc.)</li>
+<li>Advanced workflows & automations</li>
+<li>Database design & optimization</li>
+<li>30 days of post-launch support</li>
+</ul>
+<a href="mailto:ray@twray.dev?subject=Professional%20Plan%20Inquiry" class="btn btn--primary">Book a Call</a>
+</div>
+<div class="price-card reveal">
+<div class="tier">Retainer</div>
+<h3>Ongoing Partnership</h3>
+<div class="price">$500–2K <span>/month</span></div>
+<div class="price-desc">Ongoing support</div>
+<ul>
+<li>Continuous feature development</li>
+<li>Bug fixes & maintenance</li>
+<li>Performance monitoring</li>
+<li>Priority response time</li>
+<li>Monthly strategy calls</li>
+</ul>
+<a href="mailto:ray@twray.dev?subject=Retainer%20Plan%20Inquiry" class="btn btn--outline">Let's Talk</a>
+</div>
+</div>
+</div>
+</section>
+
+<!-- About -->
+<section class="section" id="about">
+<div class="container">
+<div class="about-grid reveal">
+<div class="about-photo">👨‍💻</div>
+<div class="about-text">
+<h2>Hey, I'm Ray.</h2>
+<p>I'm a full-stack software engineer based in Jersey City, NJ. I've spent years building production web applications — not just prototypes, but real tools that real people use every day. I run 25+ of them myself.</p>
+<p>I also create tech content on YouTube (6.8K subscribers), run a custom 3D printing store, and love diving deep into hardware and software. When I build your app, you get someone who actually <em>uses</em> their own tools.</p>
+<div class="about-links">
+<a href="https://youtube.com/@techwithray" target="_blank" class="btn btn--outline" style="padding:10px 20px;font-size:.85rem">▶ YouTube</a>
+<a href="https://github.com/rayovims" target="_blank" class="btn btn--outline" style="padding:10px 20px;font-size:.85rem">GitHub</a>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- Ventures -->
+<section class="section" style="background:var(--bg2)">
+<div class="container">
+<div class="section-header reveal">
+<h2>Beyond Web Apps</h2>
+<p>Building isn't just my job — it's everything I do.</p>
+</div>
+<div class="ventures-grid reveal">
+<div class="venture-card">
+<div class="v-icon">🎬</div>
+<h3>Tech with Ray — YouTube</h3>
+<p>6,800+ subscribers and 79 videos covering tech reviews, builds, 3D printing, and software development.</p>
+<a href="https://youtube.com/@techwithray" target="_blank" class="btn btn--outline" style="padding:10px 20px;font-size:.85rem">Watch →</a>
+</div>
+<div class="venture-card">
+<div class="v-icon">🖨️</div>
+<h3>Custom 3D Print Store</h3>
+<p>Made-to-order 3D printed products on Shopify. From functional parts to creative designs — all printed in-house.</p>
+<a href="https://techwithray.com" target="_blank" class="btn btn--outline" style="padding:10px 20px;font-size:.85rem">Shop →</a>
+</div>
+</div>
+</div>
+</section>
+
+<!-- Tech Stack -->
+<section class="section tech">
+<div class="container">
+<div class="section-header reveal">
+<h2>Tech Stack</h2>
+<p>Modern, battle-tested technologies for reliable applications.</p>
+</div>
+<div class="tech-grid reveal">
+<div class="tech-pill">React</div>
+<div class="tech-pill">TypeScript</div>
+<div class="tech-pill">Node.js</div>
+<div class="tech-pill">PostgreSQL</div>
+<div class="tech-pill">Python</div>
+<div class="tech-pill">Docker</div>
+<div class="tech-pill">Express</div>
+<div class="tech-pill">REST APIs</div>
+<div class="tech-pill">OAuth 2.0</div>
+<div class="tech-pill">Playwright</div>
+<div class="tech-pill">Linux</div>
+<div class="tech-pill">Nginx</div>
+<div class="tech-pill">GitHub Actions</div>
+<div class="tech-pill">Cloudflare</div>
+</div>
+</div>
+</section>
+
+<!-- Final CTA -->
+<section class="section final-cta">
+<div class="container reveal">
+<div class="badge badge--amber" style="margin-bottom:16px">Free Consultation</div>
+<h2>Ready to Ditch the Spreadsheets?</h2>
+<p>Book a free 30-minute call. Tell me what you're building in Excel, and I'll show you what it could look like as a web app.</p>
+<a href="mailto:ray@twray.dev?subject=Free%20Consultation%20Request" class="btn btn--primary" style="font-size:1.05rem;padding:16px 40px">Book Your Free Call →</a>
+<p style="margin-top:16px;font-size:.8rem;color:var(--text3)">No commitment. No pressure. Just a conversation.</p>
+</div>
+</section>
+
+<!-- Footer -->
+<footer>
+<div class="container">
+<div class="footer-links">
+<a href="https://github.com/rayovims" target="_blank">GitHub</a>
+<a href="https://youtube.com/@techwithray" target="_blank">YouTube</a>
+<a href="https://techwithray.com" target="_blank">Store</a>
+<a href="mailto:ray@twray.dev">ray@twray.dev</a>
+</div>
+<div class="footer-copy">© 2026 Tech with Ray. Jersey City, NJ.</div>
+</div>
+</footer>
+
+<script>
+// Nav scroll
+const nav=document.getElementById('nav');
+window.addEventListener('scroll',()=>{nav.classList.toggle('scrolled',window.scrollY>40)});
+
+// Reveal on scroll
+const obs=new IntersectionObserver((entries)=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}})},{threshold:.15,rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>
