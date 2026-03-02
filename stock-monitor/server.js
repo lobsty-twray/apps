@@ -19,7 +19,7 @@ const pool = new Pool({ connectionString: DATABASE_URL });
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
-app.use(require('cookie-parser')());
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 // --- Product slug for ntfy topics ---
@@ -825,6 +825,107 @@ app.get('*', (req, res) => {
 });
 
 // --- Seed ---
+// Cookie parser middleware
+const ADMIN_PASS = process.env.AUTOBUY_ADMIN_PASSWORD || 'ray2026';
+function adminAuth(req, res, next) {
+  const token = req.query.token || req.headers['x-admin-token'] || req.cookies?.autobuy_token;
+  if (token === ADMIN_PASS) { res.cookie('autobuy_token', token, { httpOnly: true, maxAge: 86400000 }); return next(); }
+  if (req.method === 'POST' && req.body?.password === ADMIN_PASS) { res.cookie('autobuy_token', ADMIN_PASS, { httpOnly: true, maxAge: 86400000 }); return next(); }
+  if (req.method === 'GET') return res.send(adminLoginHTML());
+  res.status(401).json({ error: 'Unauthorized' });
+}
+
+// Login page
+function adminLoginHTML() {
+  return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Auto-Buy Admin</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0a0a0f;color:#e0e0e0;display:flex;align-items:center;justify-content:center;min-height:100vh}.login{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:2rem;width:90%;max-width:400px;text-align:center}h1{font-size:1.5rem;margin-bottom:1rem;background:linear-gradient(135deg,#00d4ff,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent}input{width:100%;padding:12px 16px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#fff;font-size:1rem;margin:0.5rem 0}button{width:100%;padding:12px;background:linear-gradient(135deg,#00d4ff,#7c3aed);border:none;border-radius:8px;color:#fff;font-size:1rem;cursor:pointer;margin-top:0.5rem}button:hover{opacity:0.9}</style></head><body><div class="login"><h1>🛒 Auto-Buy Admin</h1><p style="color:#888;margin-bottom:1rem">Enter admin password</p><form method="POST"><input type="password" name="password" placeholder="Password" autofocus><button type="submit">Login</button></form></div></body></html>';
+}
+
+// Dashboard
+app.get('/admin/autobuy', adminAuth, async (req, res) => {
+  try {
+    const profiles = (await pool.query("SELECT * FROM autobuy_profiles WHERE name != '__global_kill_switch__' ORDER BY id")).rows;
+    const products = (await pool.query('SELECT * FROM products ORDER BY id')).rows;
+    const pab = (await pool.query('SELECT * FROM product_autobuy')).rows;
+    const orders = (await pool.query("SELECT o.*, p.name as product_name FROM autobuy_orders o LEFT JOIN products p ON o.product_id = p.id ORDER BY o.attempted_at DESC LIMIT 20")).rows;
+    res.send(dashboardHTML(profiles, products, pab, orders));
+  } catch(e) { res.status(500).send('Error: ' + e.message); }
+});
+app.post('/admin/autobuy', adminAuth, (req, res) => res.redirect('/admin/autobuy?token=' + ADMIN_PASS));
+
+// Setup form
+app.get('/admin/autobuy/setup', adminAuth, async (req, res) => { res.send(setupHTML(null)); });
+app.get('/admin/autobuy/edit/:id', adminAuth, async (req, res) => {
+  const p = (await pool.query('SELECT * FROM autobuy_profiles WHERE id=$1',[req.params.id])).rows[0];
+  res.send(setupHTML(p));
+});
+
+// Save profile
+app.post('/admin/autobuy/profiles', adminAuth, async (req, res) => {
+  const { id, name, retailer, email, password, max_price, shipping_name, shipping_address1, shipping_address2, shipping_city, shipping_state, shipping_zip, shipping_phone } = req.body;
+  const mp = parseInt(max_price) || 3000;
+  if (id) {
+    let q = 'UPDATE autobuy_profiles SET name=$1,retailer=$2,email=$3,max_price=$4,shipping_name=$5,shipping_address1=$6,shipping_address2=$7,shipping_city=$8,shipping_state=$9,shipping_zip=$10,shipping_phone=$11,updated_at=NOW()';
+    let params = [name,retailer,email,mp,shipping_name,shipping_address1,shipping_address2,shipping_city,shipping_state,shipping_zip,shipping_phone];
+    if (password) { q += ',password_encrypted=$12 WHERE id=$13'; params.push(encrypt(password), id); }
+    else { q += ' WHERE id=$12'; params.push(id); }
+    await pool.query(q, params);
+  } else {
+    await pool.query('INSERT INTO autobuy_profiles(name,retailer,email,password_encrypted,max_price,shipping_name,shipping_address1,shipping_address2,shipping_city,shipping_state,shipping_zip,shipping_phone) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)',
+      [name,retailer,email,password?encrypt(password):'',mp,shipping_name,shipping_address1,shipping_address2,shipping_city,shipping_state,shipping_zip,shipping_phone]);
+  }
+  res.redirect('/admin/autobuy?token=' + ADMIN_PASS);
+});
+
+// Toggle auto-buy for a product
+app.post('/admin/autobuy/toggle/:productId', adminAuth, async (req, res) => {
+  const pid = req.params.productId;
+  const existing = (await pool.query('SELECT * FROM product_autobuy WHERE product_id=$1',[pid])).rows[0];
+  if (existing) {
+    await pool.query('UPDATE product_autobuy SET enabled = NOT enabled WHERE product_id=$1',[pid]);
+  } else {
+    const profile = (await pool.query("SELECT id FROM autobuy_profiles WHERE name != '__global_kill_switch__' LIMIT 1")).rows[0];
+    if (profile) await pool.query('INSERT INTO product_autobuy(product_id,profile_id,enabled) VALUES($1,$2,true)',[pid,profile.id]);
+  }
+  res.redirect('/admin/autobuy?token=' + ADMIN_PASS);
+});
+
+// Toggle profile
+app.post('/admin/autobuy/toggle-profile/:id', adminAuth, async (req, res) => {
+  await pool.query('UPDATE autobuy_profiles SET enabled = NOT enabled WHERE id=$1',[req.params.id]);
+  res.redirect('/admin/autobuy?token=' + ADMIN_PASS);
+});
+
+// Test (dry run)
+app.post('/admin/autobuy/test/:productId', adminAuth, async (req, res) => {
+  const product = (await pool.query('SELECT * FROM products WHERE id=$1',[req.params.productId])).rows[0];
+  if (!product) return res.redirect('/admin/autobuy?token=' + ADMIN_PASS);
+  const retailer = product.url.includes('samsung.com') ? 'samsung' : 'bestbuy';
+  const profile = (await pool.query("SELECT * FROM autobuy_profiles WHERE retailer=$1 AND enabled=true AND name != '__global_kill_switch__' LIMIT 1",[retailer])).rows[0];
+  if (!profile) return res.redirect('/admin/autobuy?token=' + ADMIN_PASS);
+  attemptSamsungAutoBuy(pool, product, profile, true).catch(e => console.error('[test]', e.message));
+  res.redirect('/admin/autobuy?token=' + ADMIN_PASS);
+});
+
+// Orders API
+app.get('/admin/autobuy/orders', adminAuth, async (req, res) => {
+  const orders = (await pool.query("SELECT o.*, p.name as product_name FROM autobuy_orders o LEFT JOIN products p ON o.product_id = p.id ORDER BY o.attempted_at DESC LIMIT 50")).rows;
+  res.json(orders);
+});
+function dashboardHTML(profiles, products, pab, orders) {
+  const css = `*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0a0a0f;color:#e0e0e0;padding:1rem;max-width:800px;margin:0 auto}h1{font-size:1.8rem;text-align:center;margin:1rem 0;background:linear-gradient(135deg,#00d4ff,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent}h2{font-size:1.2rem;color:#00d4ff;margin:1.5rem 0 .5rem;border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:.5rem}.card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:1rem;margin:.5rem 0}.card:hover{border-color:rgba(0,212,255,.3)}.card-header{display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;flex-wrap:wrap}.card-header h3{font-size:1rem}.badge{padding:2px 8px;border-radius:12px;font-size:.75rem;font-weight:600}.bg{background:rgba(34,197,94,.2);color:#22c55e}.br{background:rgba(239,68,68,.2);color:#ef4444}.by{background:rgba(234,179,8,.2);color:#eab308}.actions{display:flex;gap:.5rem;margin-top:.5rem;flex-wrap:wrap}.btn{padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;font-size:.85rem;text-decoration:none;display:inline-block}.btn:hover{background:rgba(255,255,255,.15)}.bb{border-color:rgba(0,212,255,.4);color:#00d4ff}.by2{border-color:rgba(234,179,8,.4);color:#eab308}.bg2{border-color:rgba(34,197,94,.4);color:#22c55e;font-size:1rem;padding:10px 20px}p{color:#aaa;font-size:.9rem;margin:.25rem 0}.err{color:#ef4444}.time{color:#666;font-size:.8rem;margin-left:auto}a{color:#00d4ff}`;
+  const AP = process.env.AUTOBUY_ADMIN_PASSWORD || 'ray2026';
+  const pc = profiles.map(p => `<div class="card"><div class="card-header"><span class="badge ${p.enabled?'bg':'br'}">${p.enabled?'Active':'Disabled'}</span><h3>${p.name}</h3></div><p>Retailer: ${p.retailer} | Email: ${p.email||'Not set'}</p><p>Shipping: ${p.shipping_name||'Not configured'} | Max: $${p.max_price||'No limit'}</p><div class="actions"><form method="POST" action="/admin/autobuy/toggle-profile/${p.id}?token=${AP}" style="display:inline"><button class="btn">${p.enabled?'Disable':'Enable'}</button></form><a href="/admin/autobuy/edit/${p.id}?token=${AP}" class="btn bb">Edit</a></div></div>`).join('');
+  const prc = products.map(p => { const ab = pab.find(x=>x.product_id===p.id); const en = ab?.enabled||false; return `<div class="card"><div class="card-header"><span class="badge ${en?'bg':'br'}">${en?'Auto-Buy ON':'Auto-Buy OFF'}</span><h3>${p.name}</h3></div><p>Status: ${p.last_status} | Price: ${p.last_price?'$'+p.last_price:'N/A'} | ${p.active?'Tracking':'Paused'}</p><div class="actions"><form method="POST" action="/admin/autobuy/toggle/${p.id}?token=${AP}" style="display:inline"><button class="btn">${en?'Disable':'Enable'} Auto-Buy</button></form><form method="POST" action="/admin/autobuy/test/${p.id}?token=${AP}" style="display:inline"><button class="btn by2">🧪 Test</button></form></div></div>`; }).join('');
+  const oc = orders.map(o => `<div class="card"><div class="card-header"><span class="badge ${o.status==='success'?'bg':o.status==='failed'?'br':'by'}">${o.status}</span><span class="time">${new Date(o.attempted_at).toLocaleString()}</span></div><p>${o.product_name||'Product #'+o.product_id}${o.order_number?' | Order #'+o.order_number:''}</p>${o.error_message?'<p class="err">'+o.error_message+'</p>':''}${o.screenshot_path?'<a href="/'+o.screenshot_path+'" target="_blank" class="btn bb">📸 Screenshot</a>':''}</div>`).join('') || '<p style="color:#666">No orders yet</p>';
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Auto-Buy Admin</title><style>${css}</style></head><body><h1>🛒 Auto-Buy Admin</h1><a href="/admin/autobuy/setup?token=${AP}" class="btn bg2" style="display:block;text-align:center;margin:1rem 0">+ Add/Edit Profile</a><h2>📋 Profiles</h2>${pc||'<p style="color:#666">No profiles. Add one above!</p>'}<h2>📦 Products</h2>${prc}<h2>📜 Order History</h2>${oc}<div style="text-align:center;margin-top:2rem"><a href="/" class="btn">← Back to Monitor</a></div></body></html>`;
+}
+
+function setupHTML(profile) {
+  const p = profile || {};
+  const AP = process.env.AUTOBUY_ADMIN_PASSWORD || 'ray2026';
+  const css = `*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0a0a0f;color:#e0e0e0;padding:1rem;max-width:600px;margin:0 auto}h1{font-size:1.5rem;text-align:center;margin:1rem 0;background:linear-gradient(135deg,#00d4ff,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent}label{display:block;color:#aaa;font-size:.85rem;margin:.75rem 0 .25rem}input,select{width:100%;padding:10px 14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;font-size:.95rem}input:focus,select:focus{border-color:#00d4ff;outline:none}.row{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}button{width:100%;padding:12px;background:linear-gradient(135deg,#00d4ff,#7c3aed);border:none;border-radius:8px;color:#fff;font-size:1rem;cursor:pointer;margin-top:1.5rem}button:hover{opacity:.9}h2{font-size:1.1rem;color:#00d4ff;margin:1.5rem 0 .5rem}a{color:#00d4ff}`;
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Auto-Buy Setup</title><style>${css}</style></head><body><h1>🛒 Profile Setup</h1><form method="POST" action="/admin/autobuy/profiles?token=${AP}"><input type="hidden" name="id" value="${p.id||''}"><h2>Account</h2><label>Profile Name</label><input name="name" value="${p.name||''}" placeholder="My Samsung Account" required><label>Retailer</label><select name="retailer"><option value="samsung" ${p.retailer==='samsung'?'selected':''}>Samsung</option><option value="bestbuy" ${p.retailer==='bestbuy'?'selected':''}>Best Buy</option></select><label>Account Email</label><input name="email" type="email" value="${p.email||''}" placeholder="your@email.com"><label>Account Password</label><input name="password" type="password" placeholder="${p.id?'(unchanged if empty)':'Enter password'}"><label>Max Price ($)</label><input name="max_price" type="number" value="${p.max_price||3000}" placeholder="3000"><h2>Shipping</h2><label>Full Name</label><input name="shipping_name" value="${p.shipping_name||''}" placeholder="Your Name"><label>Address Line 1</label><input name="shipping_address1" value="${p.shipping_address1||''}" placeholder="123 Main St"><label>Address Line 2</label><input name="shipping_address2" value="${p.shipping_address2||''}" placeholder="Apt 4B"><div class="row"><div><label>City</label><input name="shipping_city" value="${p.shipping_city||''}" placeholder="Jersey City"></div><div><label>State</label><input name="shipping_state" value="${p.shipping_state||''}" placeholder="NJ"></div></div><div class="row"><div><label>ZIP</label><input name="shipping_zip" value="${p.shipping_zip||''}" placeholder="07302"></div><div><label>Phone</label><input name="shipping_phone" value="${p.shipping_phone||''}" placeholder="201-555-1234"></div></div><button type="submit">💾 Save Profile</button></form><div style="text-align:center;margin-top:1rem"><a href="/admin/autobuy?token=${AP}">← Back to Dashboard</a></div></body></html>`;
+}
 async function seedProducts() {
   const client = await pool.connect();
   try {
