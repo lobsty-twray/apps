@@ -7,7 +7,7 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const pool = new Pool({
+const pool = process.env.DATABASE_URL ? new Pool({ connectionString: process.env.DATABASE_URL }) : new Pool({
   host: process.env.DB_HOST || 'lobsty-postgres',
   port: process.env.DB_PORT || 5432,
   database: process.env.DB_NAME || 'content_ideas',
@@ -83,6 +83,16 @@ app.get('/api/ideas', async (req, res) => {
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch ideas' });
+  }
+});
+
+// Get random idea (not published)
+app.get("/api/ideas/random", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM ideas WHERE status != 'published' ORDER BY RANDOM() LIMIT 1");
+    res.json(result.rows[0] || null);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch random idea" });
   }
 });
 
@@ -171,6 +181,17 @@ app.get('/api/stats', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Failed to get stats' });
   }
+});
+
+
+// Global search endpoint (internal, no auth)
+app.get("/api/search", async (req, res) => {
+  try {
+    const q = (req.query.q || "").trim();
+    if (!q || q.length < 2) return res.json([]);
+    const result = await pool.query("SELECT id, title, description, category, status FROM ideas WHERE title ILIKE $1 OR description ILIKE $1 ORDER BY created_at DESC LIMIT 10", ["%" + q + "%"]);
+    res.json(result.rows);
+  } catch (error) { res.json([]); }
 });
 
 app.listen(PORT, '0.0.0.0', () => {

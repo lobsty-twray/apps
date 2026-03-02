@@ -87,6 +87,23 @@ app.post("/api/gear", upload.single("image"), async (req, res) => {
   }
 });
 
+// Stats endpoint
+app.get("/api/gear/stats", async (req, res) => {
+  try {
+    const total = await pool.query("SELECT COUNT(*) as count, COALESCE(SUM(purchase_price::numeric),0) as value FROM gear");
+    const byCat = await pool.query("SELECT category, COUNT(*) as count, COALESCE(SUM(purchase_price::numeric),0) as value FROM gear GROUP BY category ORDER BY value DESC");
+    const recent = await pool.query("SELECT name, category, purchase_price, purchase_date FROM gear ORDER BY created_at DESC LIMIT 5");
+    const expiring = await pool.query("SELECT name, warranty_until FROM gear WHERE warranty_until IS NOT NULL AND warranty_until > NOW() AND warranty_until < NOW() + interval '90 days' ORDER BY warranty_until");
+    res.json({
+      total_items: parseInt(total.rows[0].count),
+      total_value: parseFloat(total.rows[0].value),
+      by_category: byCat.rows,
+      recent: recent.rows,
+      expiring_warranty: expiring.rows
+    });
+  } catch(e) { res.status(500).json({error:"Failed"}); }
+});
+
 // Update gear
 app.put("/api/gear/:id", upload.single("image"), async (req, res) => {
   try {

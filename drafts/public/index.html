@@ -1,46 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="stylesheet" href="http://shared-assets:3000/design-tokens.css">
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Drafts Hub</title>
   <style>
     :root {
-      --bg: #ffffff;
-      --bg-secondary: #f7f7f5;
-      --bg-tertiary: #f0f0ee;
-      --border: #e8e8e5;
-      --text: #37352f;
-      --text-secondary: #787774;
-      --text-tertiary: #b4b4b0;
-      --accent: #6366f1;
-      --accent-light: #eef2ff;
-      --green: #16a34a;
-      --green-light: #dcfce7;
-      --red: #dc2626;
-      --red-light: #fee2e2;
-      --orange: #ea580c;
-      --orange-light: #fff7ed;
-      --blue: #2563eb;
-      --blue-light: #dbeafe;
-      --purple: #7c3aed;
-      --purple-light: #f3e8ff;
-      --yellow: #ca8a04;
-      --yellow-light: #fefce8;
-      --shadow: 0 1px 3px rgba(0,0,0,0.08);
-      --shadow-lg: 0 4px 12px rgba(0,0,0,0.1);
-      --radius: 8px;
-      --radius-sm: 6px;
-    }
+      --bg-base: #0a0a0f;
+      --bg-elevated: rgba(255,255,255,0.04);
+      --bg-glass: rgba(255,255,255,0.06);
+      --bg-glass-hover: rgba(255,255,255,0.10);
+      --bg-glass-active: rgba(255,255,255,0.12);
+      --border-glass: rgba(255,255,255,0.08);
+      --border-glass-hover: rgba(255,255,255,0.15);
+      --text-primary: #e8e8f0;
+      --text-secondary: #888899;
+      --text-tertiary: #55556a;
+      --accent-glow: rgba(124,58,237,0.25);
+      --accent-dim: rgba(124,58,237,0.12);
+      --green-dim: rgba(52,211,153,0.12);
+      --red-dim: rgba(248,113,113,0.12);
+      --orange: #fb923c;
+      --orange-dim: rgba(251,146,60,0.12);
+      --blue: #60a5fa;
+      --blue-dim: rgba(96,165,250,0.12);
+      --purple: #a78bfa;
+      --purple-dim: rgba(167,139,250,0.12);
+      --yellow-dim: rgba(251,191,36,0.12);
+      --glass-blur: 20px;
+      --radius: 16px;
+      --radius-xs: 6px;
+      --shadow-glass: 0 8px 32px rgba(0,0,0,0.3);
+      --shadow-glow: 0 0 40px rgba(124,58,237,0.08);
+      --transition-fast: 0.15s cubic-bezier(0.4,0,0.2,1);
+      --transition-smooth: 0.3s cubic-bezier(0.4,0,0.2,1);
+      --transition-spring: 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    html { overflow-x: hidden; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--bg-secondary);
-      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-base);
+      color: var(--text-primary);
       line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: hidden;
     }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(124,58,237,0.08), transparent),
+        radial-gradient(ellipse 60% 50% at 80% 90%, rgba(96,165,250,0.05), transparent),
+        radial-gradient(ellipse 40% 40% at 50% 50%, rgba(167,139,250,0.03), transparent);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 
     /* ─── Login ─────────────────────────── */
     .login-screen {
@@ -49,30 +75,45 @@
       justify-content: center;
       min-height: 100vh;
       padding: 20px;
+      position: relative;
+      z-index: 1;
     }
 
     .login-card {
-      background: var(--bg);
-      border-radius: 12px;
-      padding: 40px;
+      background: var(--bg-glass);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius);
+      padding: 40px 32px;
       width: 100%;
-      max-width: 380px;
-      box-shadow: var(--shadow-lg);
+      max-width: 400px;
+      box-shadow: var(--shadow-glass);
+      animation: fadeSlideUp 0.5s ease;
     }
 
-    .login-card h1 {
-      font-size: 24px;
-      font-weight: 700;
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .login-logo {
+      font-size: 28px;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
       margin-bottom: 4px;
     }
 
     .login-card p {
       color: var(--text-secondary);
-      margin-bottom: 24px;
+      margin-bottom: 28px;
       font-size: 14px;
     }
 
-    .login-card .quick-login {
+    .quick-login {
       display: flex;
       gap: 10px;
       margin-bottom: 20px;
@@ -80,29 +121,36 @@
 
     .quick-login button {
       flex: 1;
-      padding: 10px;
-      border: 2px solid var(--border);
-      border-radius: var(--radius);
-      background: var(--bg);
+      padding: 12px;
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius-sm);
+      background: var(--bg-glass);
+      backdrop-filter: blur(10px);
       cursor: pointer;
       font-size: 14px;
-      font-weight: 500;
-      transition: all 0.15s;
+      font-weight: 600;
+      transition: var(--transition-fast);
+      color: var(--text-primary);
+      min-height: 44px;
+      font-family: inherit;
     }
 
-    .quick-login button:hover {
-      border-color: var(--accent);
-      background: var(--accent-light);
+    .quick-login button:hover, .quick-login button:active {
+      background: var(--bg-glass-hover);
+      border-color: var(--border-glass-hover);
+      transform: translateY(-1px);
     }
 
-    .quick-login .lobsty-btn { color: #8b5cf6; }
-    .quick-login .ray-btn { color: #3b82f6; }
+    .quick-login .lobsty-btn { border-color: rgba(139,92,246,0.3); }
+    .quick-login .lobsty-btn:hover { border-color: rgba(139,92,246,0.5); box-shadow: 0 0 20px rgba(139,92,246,0.1); }
+    .quick-login .ray-btn { border-color: rgba(59,130,246,0.3); }
+    .quick-login .ray-btn:hover { border-color: rgba(59,130,246,0.5); box-shadow: 0 0 20px rgba(59,130,246,0.1); }
 
     .divider {
       text-align: center;
       color: var(--text-tertiary);
       font-size: 12px;
-      margin: 16px 0;
+      margin: 20px 0;
       position: relative;
     }
 
@@ -112,94 +160,113 @@
       top: 50%;
       width: 40%;
       height: 1px;
-      background: var(--border);
+      background: var(--border-glass);
     }
 
     .divider::before { left: 0; }
     .divider::after { right: 0; }
 
-    .form-group {
-      margin-bottom: 14px;
-    }
+    .form-group { margin-bottom: 16px; }
 
     .form-group label {
       display: block;
-      font-size: 13px;
-      font-weight: 500;
+      font-size: 12px;
+      font-weight: 600;
       color: var(--text-secondary);
-      margin-bottom: 4px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .form-group input, .form-group select, .form-group textarea {
       width: 100%;
-      padding: 8px 12px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius-xs);
       font-size: 14px;
       font-family: inherit;
       outline: none;
-      transition: border-color 0.15s;
-      background: var(--bg);
+      transition: var(--transition-fast);
+      background: var(--bg-glass);
+      color: var(--text-primary);
+      min-height: 44px;
+    }
+
+    .form-group input::placeholder, .form-group textarea::placeholder {
+      color: var(--text-tertiary);
     }
 
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
       border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--accent-light);
+      box-shadow: 0 0 0 3px var(--accent-dim);
     }
 
-    .form-group textarea { resize: vertical; min-height: 100px; }
+    .form-group textarea { resize: vertical; min-height: 120px; }
 
     .btn {
-      padding: 8px 16px;
+      padding: 10px 20px;
       border: none;
-      border-radius: var(--radius-sm);
+      border-radius: var(--radius-xs);
       font-size: 14px;
-      font-weight: 500;
+      font-weight: 600;
       cursor: pointer;
-      transition: all 0.15s;
+      transition: var(--transition-fast);
       font-family: inherit;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
+
+    .btn:active { transform: scale(0.97); }
 
     .btn-primary {
-      background: var(--accent);
+      background: linear-gradient(135deg, var(--accent), #6558e6);
       color: white;
+      box-shadow: 0 4px 15px var(--accent-glow);
     }
 
-    .btn-primary:hover { background: #4f46e5; }
+    .btn-primary:hover { box-shadow: 0 6px 25px var(--accent-glow); transform: translateY(-1px); }
 
-    .btn-full { width: 100%; padding: 10px; }
+    .btn-full { width: 100%; }
 
     .btn-ghost {
-      background: transparent;
+      background: var(--bg-glass);
       color: var(--text-secondary);
-      border: 1px solid var(--border);
+      border: 1px solid var(--border-glass);
     }
 
-    .btn-ghost:hover { background: var(--bg-secondary); }
+    .btn-ghost:hover { background: var(--bg-glass-hover); color: var(--text-primary); }
 
-    .btn-green { background: var(--green); color: white; }
-    .btn-green:hover { background: #15803d; }
+    .btn-green { background: rgba(52,211,153,0.15); color: var(--green); border: 1px solid rgba(52,211,153,0.2); }
+    .btn-green:hover { background: rgba(52,211,153,0.25); }
 
-    .btn-red { background: var(--red); color: white; }
-    .btn-red:hover { background: #b91c1c; }
+    .btn-red { background: rgba(248,113,113,0.15); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+    .btn-red:hover { background: rgba(248,113,113,0.25); }
 
-    .btn-sm { padding: 4px 10px; font-size: 13px; }
+    .btn-sm { padding: 6px 14px; font-size: 13px; min-height: 36px; }
 
     .login-error {
       color: var(--red);
       font-size: 13px;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       display: none;
+      padding: 10px;
+      background: var(--red-dim);
+      border-radius: var(--radius-xs);
     }
 
     /* ─── Layout ────────────────────────── */
-    .app { display: none; min-height: 100vh; }
+    .app { display: none; min-height: 100vh; position: relative; z-index: 1; }
 
     .topbar {
-      background: var(--bg);
-      border-bottom: 1px solid var(--border);
-      padding: 0 24px;
-      height: 52px;
+      background: rgba(10,10,15,0.8);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border-bottom: 1px solid var(--border-glass);
+      padding: 0 20px;
+      height: 56px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -215,27 +282,35 @@
     }
 
     .topbar-left h1 {
-      font-size: 16px;
+      font-size: 17px;
       font-weight: 700;
+      background: linear-gradient(135deg, var(--accent), var(--blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     .topbar-left .app-badge {
-      font-size: 11px;
-      padding: 2px 8px;
+      font-size: 10px;
+      padding: 3px 8px;
       border-radius: 10px;
-      background: var(--accent-light);
+      background: var(--accent-dim);
       color: var(--accent);
-      font-weight: 600;
+      font-weight: 700;
     }
 
     .menu-toggle {
       display: none;
       background: none;
       border: none;
-      font-size: 20px;
+      font-size: 22px;
       cursor: pointer;
-      padding: 4px 8px;
-      color: var(--text);
+      padding: 8px;
+      color: var(--text-primary);
+      min-width: 44px;
+      min-height: 44px;
+      align-items: center;
+      justify-content: center;
     }
 
     .topbar-right {
@@ -248,16 +323,17 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 4px 12px 4px 4px;
-      border-radius: 20px;
-      background: var(--bg-secondary);
+      padding: 4px 14px 4px 4px;
+      border-radius: 24px;
+      background: var(--bg-glass);
+      border: 1px solid var(--border-glass);
       font-size: 13px;
       font-weight: 500;
     }
 
     .avatar {
-      width: 28px;
-      height: 28px;
+      width: 30px;
+      height: 30px;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -265,6 +341,7 @@
       color: white;
       font-weight: 700;
       font-size: 12px;
+      flex-shrink: 0;
     }
 
     .logout-btn {
@@ -273,20 +350,30 @@
       color: var(--text-tertiary);
       cursor: pointer;
       font-size: 13px;
+      padding: 8px;
+      min-width: 44px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-fast);
+      font-family: inherit;
     }
 
     .logout-btn:hover { color: var(--red); }
 
     .main-layout {
       display: flex;
-      min-height: calc(100vh - 52px);
+      min-height: calc(100vh - 56px);
     }
 
     /* ─── Sidebar ───────────────────────── */
     .sidebar {
-      width: 240px;
-      background: var(--bg);
-      border-right: 1px solid var(--border);
+      width: 250px;
+      background: rgba(10,10,15,0.6);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border-right: 1px solid var(--border-glass);
       padding: 16px 0;
       flex-shrink: 0;
       overflow-y: auto;
@@ -294,62 +381,69 @@
 
     .sidebar-section {
       padding: 0 12px;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
 
     .sidebar-section h3 {
-      font-size: 11px;
-      font-weight: 600;
+      font-size: 10px;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 1px;
       color: var(--text-tertiary);
-      padding: 4px 8px;
+      padding: 4px 12px;
       margin-bottom: 4px;
     }
 
     .sidebar-item {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 6px 8px;
+      gap: 10px;
+      padding: 8px 12px;
       border-radius: var(--radius-sm);
       cursor: pointer;
       font-size: 14px;
       color: var(--text-secondary);
-      transition: all 0.1s;
+      transition: var(--transition-fast);
       border: none;
       background: none;
       width: 100%;
       text-align: left;
       font-family: inherit;
+      min-height: 44px;
     }
 
-    .sidebar-item:hover { background: var(--bg-secondary); color: var(--text); }
-    .sidebar-item.active { background: var(--accent-light); color: var(--accent); font-weight: 500; }
+    .sidebar-item:hover { background: var(--bg-glass-hover); color: var(--text-primary); }
+
+    .sidebar-item.active {
+      background: var(--accent-dim);
+      color: var(--accent);
+      font-weight: 600;
+    }
 
     .sidebar-item .count {
       margin-left: auto;
-      font-size: 12px;
+      font-size: 11px;
       color: var(--text-tertiary);
-      background: var(--bg-secondary);
-      padding: 1px 6px;
+      background: var(--bg-glass);
+      padding: 2px 8px;
       border-radius: 10px;
-      min-width: 20px;
+      min-width: 22px;
       text-align: center;
+      font-weight: 600;
     }
 
     .sidebar-item.active .count {
-      background: white;
+      background: rgba(124,58,237,0.2);
       color: var(--accent);
     }
 
-    .sidebar-item .icon { font-size: 16px; width: 20px; text-align: center; }
+    .sidebar-item .icon { font-size: 16px; width: 22px; text-align: center; }
 
     /* ─── Content ───────────────────────── */
     .content {
       flex: 1;
       padding: 24px;
-      max-width: 1000px;
+      max-width: 960px;
       min-width: 0;
     }
 
@@ -363,58 +457,134 @@
     }
 
     .content-header h2 {
-      font-size: 20px;
+      font-size: 22px;
       font-weight: 700;
     }
 
     .search-bar {
       display: flex;
       gap: 8px;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
       flex-wrap: wrap;
     }
 
     .search-input {
       flex: 1;
-      min-width: 200px;
-      padding: 8px 12px;
-      border: 1px solid var(--border);
+      min-width: 180px;
+      padding: 10px 14px;
+      border: 1px solid var(--border-glass);
       border-radius: var(--radius-sm);
       font-size: 14px;
       outline: none;
-      background: var(--bg);
+      background: var(--bg-glass);
+      color: var(--text-primary);
+      transition: var(--transition-fast);
+      min-height: 44px;
+      font-family: inherit;
     }
+
+    .search-input::placeholder { color: var(--text-tertiary); }
 
     .search-input:focus {
       border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--accent-light);
+      box-shadow: 0 0 0 3px var(--accent-dim);
     }
 
     .filter-select {
-      padding: 8px 12px;
-      border: 1px solid var(--border);
+      padding: 10px 14px;
+      border: 1px solid var(--border-glass);
       border-radius: var(--radius-sm);
       font-size: 13px;
       outline: none;
-      background: var(--bg);
+      background: var(--bg-glass);
+      color: var(--text-secondary);
       cursor: pointer;
+      min-height: 44px;
+      font-family: inherit;
+      transition: var(--transition-fast);
     }
 
+    .filter-select:focus { border-color: var(--accent); }
+    .filter-select option { background: #1a1a2e; color: var(--text-primary); }
+
     /* ─── Draft Cards ───────────────────── */
-    .draft-list { display: flex; flex-direction: column; gap: 8px; }
+    .draft-list { display: flex; flex-direction: column; gap: 10px; }
 
     .draft-card {
-      background: var(--bg);
-      border: 1px solid var(--border);
+      background: var(--bg-glass);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-glass);
       border-radius: var(--radius);
-      padding: 16px;
+      padding: 16px 18px;
       cursor: pointer;
-      transition: all 0.15s;
+      transition: var(--transition-smooth);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .draft-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.02), transparent);
+      pointer-events: none;
     }
 
     .draft-card:hover {
-      border-color: var(--accent);
-      box-shadow: var(--shadow);
+      border-color: var(--border-glass-hover);
+      background: var(--bg-glass-hover);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-glass);
+    }
+
+    .draft-card:active { transform: translateY(0); }
+
+    /* Swipe container */
+    .draft-card-swipe {
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--radius);
+      margin-bottom: 0;
+    }
+
+    .swipe-actions {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      z-index: 1;
+    }
+
+    .swipe-actions-left {
+      left: 0;
+      padding-left: 16px;
+      background: linear-gradient(90deg, rgba(52,211,153,0.3), transparent);
+      border-radius: var(--radius) 0 0 var(--radius);
+      width: 80px;
+      justify-content: flex-start;
+    }
+
+    .swipe-actions-right {
+      right: 0;
+      padding-right: 16px;
+      background: linear-gradient(270deg, rgba(251,146,60,0.3), transparent);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      width: 80px;
+      justify-content: flex-end;
+    }
+
+    .swipe-icon {
+      font-size: 20px;
+      opacity: 0.8;
+    }
+
+    .draft-card-inner {
+      position: relative;
+      z-index: 2;
+      transition: transform 0.2s ease;
     }
 
     .draft-card-top {
@@ -422,48 +592,68 @@
       align-items: flex-start;
       justify-content: space-between;
       gap: 12px;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
     }
 
     .draft-card-title {
       font-size: 15px;
       font-weight: 600;
       flex: 1;
+      line-height: 1.4;
     }
 
     .draft-card-meta {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       flex-wrap: wrap;
+      flex-shrink: 0;
     }
 
     .badge {
       display: inline-flex;
       align-items: center;
-      padding: 2px 8px;
-      border-radius: 10px;
+      padding: 3px 10px;
+      border-radius: 20px;
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 700;
       white-space: nowrap;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
     }
 
-    .badge-draft { background: var(--bg-tertiary); color: var(--text-secondary); }
-    .badge-review { background: var(--orange-light); color: var(--orange); }
-    .badge-approved { background: var(--green-light); color: var(--green); }
-    .badge-done { background: var(--blue-light); color: var(--blue); }
-    .badge-rejected { background: var(--red-light); color: var(--red); }
+    .badge-draft { background: var(--bg-glass-active); color: var(--text-secondary); }
+    .badge-review { background: var(--orange-dim); color: var(--orange); }
+    .badge-approved { background: var(--green-dim); color: var(--green); }
+    .badge-done { background: var(--blue-dim); color: var(--blue); }
+    .badge-rejected { background: var(--red-dim); color: var(--red); }
 
-    .badge-email { background: var(--blue-light); color: var(--blue); }
-    .badge-todo { background: var(--green-light); color: var(--green); }
-    .badge-idea { background: var(--yellow-light); color: var(--yellow); }
-    .badge-note { background: var(--purple-light); color: var(--purple); }
-    .badge-script { background: var(--bg-tertiary); color: var(--text-secondary); }
+    .badge-email { background: var(--blue-dim); color: var(--blue); }
+    .badge-todo { background: var(--green-dim); color: var(--green); }
+    .badge-idea { background: var(--yellow-dim); color: var(--yellow); }
+    .badge-note { background: var(--purple-dim); color: var(--purple); }
+    .badge-script { background: var(--bg-glass-active); color: var(--text-secondary); }
 
-    .badge-low { background: var(--bg-tertiary); color: var(--text-secondary); }
-    .badge-medium { background: var(--blue-light); color: var(--blue); }
-    .badge-high { background: var(--orange-light); color: var(--orange); }
-    .badge-urgent { background: var(--red-light); color: var(--red); }
+    .badge-low { background: var(--bg-glass-active); color: var(--text-tertiary); }
+    .badge-medium { background: var(--blue-dim); color: var(--blue); }
+    .badge-high { background: var(--orange-dim); color: var(--orange); }
+    .badge-urgent { background: var(--red-dim); color: var(--red); border: 1px solid rgba(248,113,113,0.2); animation: urgentPulse 2s infinite; }
+
+    @keyframes urgentPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(248,113,113,0.2); }
+      50% { box-shadow: 0 0 8px 2px rgba(248,113,113,0.15); }
+    }
+
+    .draft-card-preview {
+      font-size: 13px;
+      color: var(--text-tertiary);
+      margin-bottom: 10px;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      line-height: 1.5;
+    }
 
     .draft-card-bottom {
       display: flex;
@@ -477,12 +667,14 @@
       display: flex;
       gap: 4px;
       flex-wrap: wrap;
+      margin-top: 8px;
     }
 
     .tag {
-      background: var(--bg-secondary);
-      padding: 1px 6px;
-      border-radius: 4px;
+      background: var(--bg-glass);
+      border: 1px solid var(--border-glass);
+      padding: 2px 8px;
+      border-radius: 6px;
       font-size: 11px;
       color: var(--text-secondary);
     }
@@ -490,18 +682,30 @@
     .comment-count {
       display: flex;
       align-items: center;
-      gap: 3px;
+      gap: 4px;
     }
+
+    /* Type indicator line */
+    .draft-card[data-type="email"] { border-left: 3px solid var(--blue); }
+    .draft-card[data-type="todo"] { border-left: 3px solid var(--green); }
+    .draft-card[data-type="idea"] { border-left: 3px solid var(--yellow); }
+    .draft-card[data-type="note"] { border-left: 3px solid var(--purple); }
+    .draft-card[data-type="script"] { border-left: 3px solid var(--text-tertiary); }
 
     /* ─── Empty State ───────────────────── */
     .empty-state {
       text-align: center;
-      padding: 60px 20px;
+      padding: 80px 20px;
       color: var(--text-tertiary);
     }
 
-    .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
-    .empty-state h3 { font-size: 16px; color: var(--text-secondary); margin-bottom: 4px; }
+    .empty-state .icon {
+      font-size: 56px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    .empty-state h3 { font-size: 18px; color: var(--text-secondary); margin-bottom: 6px; }
     .empty-state p { font-size: 14px; }
 
     /* ─── Modal ─────────────────────────── */
@@ -509,75 +713,88 @@
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.4);
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
       z-index: 200;
       align-items: flex-start;
       justify-content: center;
-      padding: 40px 20px;
+      padding: 40px 16px;
       overflow-y: auto;
     }
 
     .modal-overlay.open { display: flex; }
 
     .modal {
-      background: var(--bg);
-      border-radius: 12px;
+      background: rgba(20,20,30,0.95);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius);
       width: 100%;
       max-width: 640px;
-      box-shadow: var(--shadow-lg);
-      animation: modalIn 0.2s ease;
+      box-shadow: var(--shadow-glass), var(--shadow-glow);
+      animation: modalSlideIn 0.3s var(--transition-smooth);
     }
 
-    @keyframes modalIn {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
+    @keyframes modalSlideIn {
+      from { opacity: 0; transform: translateY(-20px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
     .modal-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--border);
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--border-glass);
     }
 
-    .modal-header h3 { font-size: 16px; font-weight: 600; }
+    .modal-header h3 { font-size: 17px; font-weight: 700; }
 
     .modal-close {
-      background: none;
-      border: none;
-      font-size: 20px;
+      background: var(--bg-glass);
+      border: 1px solid var(--border-glass);
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
       cursor: pointer;
       color: var(--text-tertiary);
-      padding: 4px;
+      transition: var(--transition-fast);
     }
 
-    .modal-close:hover { color: var(--text); }
+    .modal-close:hover { color: var(--text-primary); background: var(--bg-glass-hover); }
 
-    .modal-body { padding: 20px; }
+    .modal-body { padding: 22px; }
 
     .modal-footer {
       display: flex;
       justify-content: flex-end;
-      gap: 8px;
-      padding: 16px 20px;
-      border-top: 1px solid var(--border);
+      gap: 10px;
+      padding: 16px 22px;
+      border-top: 1px solid var(--border-glass);
     }
 
     /* ─── Detail View ───────────────────── */
-    .detail-view { display: none; }
+    .detail-view { display: none; animation: fadeSlideUp 0.3s ease; }
 
     .detail-back {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
       font-size: 13px;
       color: var(--text-secondary);
       cursor: pointer;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
       background: none;
       border: none;
       font-family: inherit;
+      padding: 8px 0;
+      min-height: 44px;
+      transition: var(--transition-fast);
     }
 
     .detail-back:hover { color: var(--accent); }
@@ -592,9 +809,10 @@
     }
 
     .detail-title {
-      font-size: 24px;
-      font-weight: 700;
+      font-size: 26px;
+      font-weight: 800;
       flex: 1;
+      line-height: 1.3;
     }
 
     .detail-actions {
@@ -612,28 +830,30 @@
     }
 
     .detail-content {
-      background: var(--bg);
-      border: 1px solid var(--border);
+      background: var(--bg-glass);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-glass);
       border-radius: var(--radius);
-      padding: 20px;
-      margin-bottom: 24px;
+      padding: 24px;
+      margin-bottom: 28px;
       white-space: pre-wrap;
       font-size: 14px;
-      line-height: 1.7;
-      min-height: 120px;
+      line-height: 1.8;
+      min-height: 140px;
+      color: var(--text-secondary);
     }
 
     .detail-section {
-      margin-bottom: 24px;
+      margin-bottom: 28px;
     }
 
     .detail-section h3 {
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 12px;
-      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      color: var(--text-tertiary);
       text-transform: uppercase;
-      letter-spacing: 0.3px;
+      letter-spacing: 1px;
     }
 
     .comment-list {
@@ -644,19 +864,22 @@
 
     .comment-item {
       display: flex;
-      gap: 10px;
-      padding: 10px;
-      background: var(--bg-secondary);
+      gap: 12px;
+      padding: 14px;
+      background: var(--bg-glass);
+      border: 1px solid var(--border-glass);
       border-radius: var(--radius-sm);
+      transition: var(--transition-fast);
     }
 
-    .comment-item .avatar { width: 30px; height: 30px; font-size: 11px; flex-shrink: 0; }
+    .comment-item:hover { background: var(--bg-glass-hover); }
 
     .comment-body { flex: 1; min-width: 0; }
 
     .comment-author {
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 700;
+      color: var(--text-primary);
     }
 
     .comment-time {
@@ -668,43 +891,49 @@
 
     .comment-text {
       font-size: 14px;
-      margin-top: 2px;
+      margin-top: 4px;
       word-wrap: break-word;
+      color: var(--text-secondary);
     }
 
     .comment-form {
       display: flex;
       gap: 8px;
-      margin-top: 10px;
+      margin-top: 12px;
     }
 
     .comment-form input {
       flex: 1;
-      padding: 8px 12px;
-      border: 1px solid var(--border);
+      padding: 10px 14px;
+      border: 1px solid var(--border-glass);
       border-radius: var(--radius-sm);
       font-size: 14px;
       outline: none;
       font-family: inherit;
+      background: var(--bg-glass);
+      color: var(--text-primary);
+      min-height: 44px;
+      transition: var(--transition-fast);
     }
 
-    .comment-form input:focus {
-      border-color: var(--accent);
-    }
+    .comment-form input::placeholder { color: var(--text-tertiary); }
+    .comment-form input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
 
-    .history-list { display: flex; flex-direction: column; gap: 6px; }
+    .history-list { display: flex; flex-direction: column; gap: 0; }
 
     .history-item {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-size: 13px;
       color: var(--text-secondary);
-      padding: 6px 0;
-      border-bottom: 1px solid var(--bg-secondary);
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-glass);
     }
 
-    .history-item .avatar { width: 22px; height: 22px; font-size: 10px; }
+    .history-item:last-child { border-bottom: none; }
+
+    .history-item .avatar { width: 24px; height: 24px; font-size: 10px; }
 
     .history-action { flex: 1; }
     .history-time { font-size: 11px; color: var(--text-tertiary); white-space: nowrap; }
@@ -720,38 +949,85 @@
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
     }
 
     .export-hint button {
-      padding: 6px 12px;
+      padding: 8px 14px;
       font-size: 12px;
-      border: 1px dashed var(--border);
-      border-radius: var(--radius-sm);
-      background: var(--bg);
+      border: 1px dashed var(--border-glass);
+      border-radius: var(--radius-xs);
+      background: var(--bg-glass);
       cursor: pointer;
       color: var(--text-secondary);
       font-family: inherit;
+      min-height: 36px;
+      transition: var(--transition-fast);
     }
 
     .export-hint button:hover {
       border-color: var(--accent);
       color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    /* ─── Status Flow Indicator ─────────── */
+    .status-flow {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 24px;
+      padding: 16px;
+      background: var(--bg-glass);
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius);
+      overflow-x: auto;
+    }
+
+    .status-step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      color: var(--text-tertiary);
+      transition: var(--transition-smooth);
+    }
+
+    .status-step.active { color: var(--text-primary); }
+    .status-step.active.step-draft { background: var(--bg-glass-active); }
+    .status-step.active.step-review { background: var(--orange-dim); color: var(--orange); }
+    .status-step.active.step-approved { background: var(--green-dim); color: var(--green); }
+    .status-step.active.step-done { background: var(--blue-dim); color: var(--blue); }
+
+    .status-step-arrow {
+      color: var(--text-tertiary);
+      font-size: 14px;
+      padding: 0 4px;
+      opacity: 0.4;
     }
 
     /* ─── Responsive ────────────────────── */
+    @media (max-width: 1024px) {
+      .content { padding: 20px; }
+    }
+
     @media (max-width: 768px) {
-      .menu-toggle { display: block; }
+      .menu-toggle { display: flex; }
 
       .sidebar {
         position: fixed;
-        top: 52px;
+        top: 56px;
         left: 0;
         bottom: 0;
         z-index: 90;
         transform: translateX(-100%);
-        transition: transform 0.2s ease;
-        box-shadow: var(--shadow-lg);
+        transition: transform var(--transition-smooth);
+        box-shadow: var(--shadow-glass);
+        width: 280px;
       }
 
       .sidebar.open { transform: translateX(0); }
@@ -760,8 +1036,8 @@
         display: none;
         position: fixed;
         inset: 0;
-        top: 52px;
-        background: rgba(0,0,0,0.3);
+        top: 56px;
+        background: rgba(0,0,0,0.5);
         z-index: 89;
       }
 
@@ -771,38 +1047,261 @@
 
       .content-header { flex-direction: column; align-items: stretch; }
 
+      .content-header .btn-primary { width: 100%; }
+
       .search-bar { flex-direction: column; }
 
-      .detail-header { flex-direction: column; }
+      .filter-select { width: 100%; }
 
-      .modal { margin: 20px; }
+      .detail-header { flex-direction: column; }
+      .detail-title { font-size: 22px; }
+      .detail-actions { width: 100%; }
+      .detail-actions .btn { flex: 1; }
+
+      .modal { margin: 10px; border-radius: var(--radius-sm); }
+      .modal-overlay { padding: 20px 10px; }
 
       .topbar { padding: 0 12px; }
+
+      .draft-card-top { flex-direction: column; gap: 8px; }
+      .draft-card-meta { align-self: flex-start; }
+
+      .status-flow { padding: 12px; }
+      .status-step { padding: 6px 10px; font-size: 11px; }
+    }
+
+    @media (max-width: 480px) {
+      .content { padding: 12px; }
+
+      .draft-card { padding: 14px; }
+
+      .quick-login { flex-direction: column; }
+
+      .login-card { padding: 32px 24px; }
+
+      .detail-content { padding: 18px; }
+
+      .topbar-left h1 { font-size: 15px; }
+      .user-pill span { display: none; }
+    }
+
+    @media (max-width: 360px) {
+      .content { padding: 10px; }
+      .topbar { padding: 0 8px; }
+      .login-card { padding: 28px 20px; }
+    }
+
+    /* ─── Animations ────────────────────── */
+    .draft-card {
+      animation: cardFadeIn 0.3s ease both;
+    }
+
+    @keyframes cardFadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .draft-list .draft-card:nth-child(1) { animation-delay: 0s; }
+    .draft-list .draft-card:nth-child(2) { animation-delay: 0.03s; }
+    .draft-list .draft-card:nth-child(3) { animation-delay: 0.06s; }
+    .draft-list .draft-card:nth-child(4) { animation-delay: 0.09s; }
+    .draft-list .draft-card:nth-child(5) { animation-delay: 0.12s; }
+    .draft-list .draft-card:nth-child(6) { animation-delay: 0.15s; }
+    .draft-list .draft-card:nth-child(7) { animation-delay: 0.18s; }
+    .draft-list .draft-card:nth-child(8) { animation-delay: 0.21s; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(30,30,45,0.95);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-glass);
+      color: var(--text-primary);
+      padding: 12px 24px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 300;
+      transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+      box-shadow: var(--shadow-glass);
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ─── Templates ─────────────────────── */
+    .templates-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+    }
+
+    .template-card {
+      background: var(--bg-glass);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius);
+      padding: 18px;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      position: relative;
+      animation: cardFadeIn 0.3s ease both;
+    }
+
+    .template-card:hover {
+      border-color: var(--border-glass-hover);
+      background: var(--bg-glass-hover);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-glass);
+    }
+
+    .template-card-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .template-card-category {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--accent);
+      background: var(--accent-dim);
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 10px;
+    }
+
+    .template-card-preview {
+      font-size: 13px;
+      color: var(--text-tertiary);
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    .template-card-preview .tpl-var {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .template-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--text-tertiary);
+    }
+
+    .template-card-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .template-card-actions button {
+      background: var(--bg-glass);
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius-xs);
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-family: inherit;
+      min-height: 32px;
+      min-width: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-fast);
+    }
+
+    .template-card-actions button:hover {
+      background: var(--bg-glass-hover);
+      color: var(--text-primary);
+    }
+
+    .template-card-actions button.delete-btn:hover {
+      color: var(--red);
+      border-color: rgba(248,113,113,0.3);
+    }
+
+    .template-category-filter {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .template-category-chip {
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid var(--border-glass);
+      background: var(--bg-glass);
+      color: var(--text-secondary);
+      transition: var(--transition-fast);
+      min-height: 36px;
+      display: inline-flex;
+      align-items: center;
+      font-family: inherit;
+    }
+
+    .template-category-chip:hover { background: var(--bg-glass-hover); color: var(--text-primary); }
+
+    .template-category-chip.active {
+      background: var(--accent-dim);
+      color: var(--accent);
+      border-color: rgba(124,58,237,0.3);
+    }
+
+    @media (max-width: 480px) {
+      .templates-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
-<link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg"><link rel="icon" type="image/x-icon" href="/favicons/favicon.ico"><link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png"></head>
+  <link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicons/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png">
+</head>
 <body>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
 
 <!-- Login Screen -->
 <div class="login-screen" id="loginScreen">
   <div class="login-card">
-    <h1>Drafts Hub</h1>
+    <div class="login-logo">Drafts Hub</div>
     <p>Sign in to manage drafts, ideas, and more</p>
     <div class="quick-login">
-      <button class="lobsty-btn" onclick="quickLogin('lobsty', '***REMOVED***')">Sign in as Lobsty</button>
-      <button class="ray-btn" onclick="quickLogin('ray', 'ray2026')">Sign in as Ray</button>
+      <button class="lobsty-btn" onclick="quickLogin('lobsty', 'lobsty2026')">&#128025; Lobsty</button>
+      <button class="ray-btn" onclick="quickLogin('ray', 'ray2026')">&#9889; Ray</button>
     </div>
     <div class="divider">or</div>
     <div class="login-error" id="loginError"></div>
     <div class="form-group">
       <label>Username</label>
-      <input type="text" id="loginUsername" placeholder="Username">
+      <input type="text" id="loginUsername" placeholder="Enter username" autocomplete="username">
     </div>
     <div class="form-group">
       <label>Password</label>
-      <input type="password" id="loginPassword" placeholder="Password" onkeydown="if(event.key==='Enter') doLogin()">
+      <input type="password" id="loginPassword" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter') doLogin()">
     </div>
-    <button class="btn btn-primary btn-full" onclick="doLogin()" style="margin-top:8px">Sign In</button>
+    <button class="btn btn-primary btn-full" onclick="doLogin()" style="margin-top:12px">Sign In</button>
   </div>
 </div>
 
@@ -812,14 +1311,14 @@
     <div class="topbar-left">
       <button class="menu-toggle" onclick="toggleSidebar()">&#9776;</button>
       <h1>Drafts Hub</h1>
-      <span class="app-badge">v1.0</span>
+      <span class="app-badge">v2.0</span>
     </div>
     <div class="topbar-right">
       <div class="user-pill" id="userPill">
         <div class="avatar" id="userAvatar"></div>
         <span id="userName"></span>
       </div>
-      <button class="logout-btn" onclick="logout()">Sign out</button>
+      <button class="logout-btn" onclick="logout()">&#x2716;</button>
     </div>
   </div>
 
@@ -839,7 +1338,7 @@
         </button>
       </div>
       <div class="sidebar-section">
-        <h3>By Status</h3>
+        <h3>Status</h3>
         <button class="sidebar-item" data-view="draft" onclick="setView('draft')">
           <span class="icon">&#9998;</span> Drafts <span class="count" id="countDraft">0</span>
         </button>
@@ -854,7 +1353,13 @@
         </button>
       </div>
       <div class="sidebar-section">
-        <h3>By Type</h3>
+        <h3>Tools</h3>
+        <button class="sidebar-item" data-view="templates" onclick="setView('templates')">
+          <span class="icon">&#128220;</span> Templates <span class="count" id="countTemplates">0</span>
+        </button>
+      </div>
+      <div class="sidebar-section">
+        <h3>Type</h3>
         <button class="sidebar-item" data-view="type-email" onclick="setView('type-email')">
           <span class="icon">&#9993;</span> Emails
         </button>
@@ -881,10 +1386,10 @@
           <button class="btn btn-primary" onclick="openCreateModal()">+ New Draft</button>
         </div>
         <div class="search-bar">
-          <input type="text" class="search-input" id="searchInput" placeholder="Search drafts..." oninput="debounceSearch()">
+          <input type="text" class="search-input" id="searchInput" placeholder="&#128269; Search drafts..." oninput="debounceSearch()">
           <select class="filter-select" id="filterPriority" onchange="loadDrafts()">
             <option value="">All Priorities</option>
-            <option value="urgent">Urgent</option>
+            <option value="urgent">&#128293; Urgent</option>
             <option value="high">High</option>
             <option value="medium">Medium</option>
             <option value="low">Low</option>
@@ -901,7 +1406,10 @@
 
       <!-- Detail View -->
       <div class="detail-view" id="detailView">
-        <button class="detail-back" onclick="closeDetail()">&larr; Back to list</button>
+        <button class="detail-back" onclick="closeDetail()">&#8592; Back to list</button>
+
+        <div class="status-flow" id="statusFlow"></div>
+
         <div class="detail-header">
           <h2 class="detail-title" id="detailTitle"></h2>
           <div class="detail-actions" id="detailActions"></div>
@@ -911,12 +1419,12 @@
         <div class="detail-content" id="detailContent"></div>
 
         <div class="export-hint" id="exportHint">
-          <button onclick="exportCopy()">Copy to clipboard</button>
-          <button onclick="exportText()">Download as .txt</button>
+          <button onclick="exportCopy()">&#128203; Copy to clipboard</button>
+          <button onclick="exportText()">&#128190; Download as .txt</button>
         </div>
 
         <div class="detail-section">
-          <h3>Comments</h3>
+          <h3>&#128172; Comments</h3>
           <div class="comment-list" id="commentList"></div>
           <div class="comment-form">
             <input type="text" id="commentInput" placeholder="Add a comment..." onkeydown="if(event.key==='Enter') addComment()">
@@ -925,7 +1433,7 @@
         </div>
 
         <div class="detail-section">
-          <h3>History</h3>
+          <h3>&#128337; History</h3>
           <div class="history-list" id="historyList"></div>
         </div>
       </div>
@@ -941,6 +1449,12 @@
       <button class="modal-close" onclick="closeModal()">&times;</button>
     </div>
     <div class="modal-body">
+      <div class="form-group" id="templatePickerGroup">
+        <label>Start from Template</label>
+        <select id="templatePicker" onchange="applyTemplate()" style="width:100%">
+          <option value="">— Blank draft —</option>
+        </select>
+      </div>
       <div class="form-group">
         <label>Title *</label>
         <input type="text" id="draftTitleInput" placeholder="Draft title">
@@ -949,11 +1463,11 @@
         <div class="form-group" style="flex:1">
           <label>Type *</label>
           <select id="draftTypeInput">
-            <option value="email">Email</option>
-            <option value="todo">Todo</option>
-            <option value="idea">Idea</option>
-            <option value="note" selected>Note</option>
-            <option value="script">Script</option>
+            <option value="email">&#9993; Email</option>
+            <option value="todo">&#9744; Todo</option>
+            <option value="idea">&#128161; Idea</option>
+            <option value="note" selected>&#128221; Note</option>
+            <option value="script">&#128187; Script</option>
           </select>
         </div>
         <div class="form-group" style="flex:1">
@@ -962,7 +1476,7 @@
             <option value="low">Low</option>
             <option value="medium" selected>Medium</option>
             <option value="high">High</option>
-            <option value="urgent">Urgent</option>
+            <option value="urgent">&#128293; Urgent</option>
           </select>
         </div>
       </div>
@@ -982,6 +1496,39 @@
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
       <button class="btn btn-primary" id="modalSaveBtn" onclick="saveDraft()">Create Draft</button>
+    </div>
+  </div>
+</div>
+
+<!-- Templates View (injected into main content area via JS) -->
+
+<!-- Template Create/Edit Modal -->
+<div class="modal-overlay" id="templateModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="templateModalTitle">New Template</h3>
+      <button class="modal-close" onclick="closeTemplateModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Template Name *</label>
+        <input type="text" id="templateTitleInput" placeholder="e.g. Video Description, Sponsor Email">
+      </div>
+      <div class="form-group">
+        <label>Category</label>
+        <input type="text" id="templateCategoryInput" placeholder="e.g. YouTube, Business, Social">
+      </div>
+      <div class="form-group">
+        <label>Body</label>
+        <textarea id="templateBodyInput" rows="12" placeholder="Template body with {{placeholder}} variables...&#10;&#10;Example:&#10;Title: {{video_title}}&#10;Description: {{description}}&#10;Sponsor: {{sponsor_name}}"></textarea>
+      </div>
+      <div style="font-size:12px;color:var(--text-tertiary);margin-top:-8px;padding:0 2px">
+        Use <code style="background:var(--bg-glass-active);padding:2px 6px;border-radius:4px;font-size:11px">{{variable_name}}</code> for placeholder variables that will be highlighted when used.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeTemplateModal()">Cancel</button>
+      <button class="btn btn-primary" id="templateSaveBtn" onclick="saveTemplate()">Create Template</button>
     </div>
   </div>
 </div>
@@ -1017,6 +1564,14 @@ let searchTimeout = null;
 let rejectingId = null;
 
 const API = '/api';
+
+// ─── Toast ────────────────────────────────────────────────────────────────────
+function showToast(msg, duration = 2500) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), duration);
+}
 
 // ─── API Helpers ──────────────────────────────────────────────────────────────
 async function api(path, opts = {}) {
@@ -1063,6 +1618,7 @@ function showLoginError(msg) {
   const el = document.getElementById('loginError');
   el.textContent = msg;
   el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 4000);
 }
 
 function logout() {
@@ -1092,7 +1648,7 @@ async function showApp() {
   avatar.style.background = currentUser.avatar_color;
   avatar.textContent = currentUser.display_name[0].toUpperCase();
 
-  await Promise.all([loadStats(), loadDrafts()]);
+  await Promise.all([loadStats(), loadDrafts(), loadTemplateCount()]);
 }
 
 // ─── Stats ────────────────────────────────────────────────────────────────────
@@ -1122,18 +1678,30 @@ function setView(view) {
     all: 'All Drafts', review: 'Needs Review', urgent: 'Urgent',
     draft: 'Drafts', approved: 'Approved', done: 'Done', rejected: 'Rejected',
     'type-email': 'Emails', 'type-todo': 'Todos', 'type-idea': 'Ideas',
-    'type-note': 'Notes', 'type-script': 'Scripts'
+    'type-note': 'Notes', 'type-script': 'Scripts', templates: 'Templates'
   };
 
   document.getElementById('viewTitle').textContent = titles[view] || 'All Drafts';
   document.getElementById('listView').style.display = 'block';
   document.getElementById('detailView').style.display = 'none';
 
-  // Close sidebar on mobile
   document.getElementById('sidebar').classList.remove('open');
   document.getElementById('sidebarOverlay').classList.remove('open');
 
-  loadDrafts();
+  // Toggle search bar visibility and header button for templates view
+  const searchBar = document.querySelector('.search-bar');
+  const headerBtn = document.querySelector('.content-header .btn-primary');
+  if (view === 'templates') {
+    searchBar.style.display = 'none';
+    headerBtn.textContent = '+ New Template';
+    headerBtn.onclick = openCreateTemplateModal;
+    loadTemplates();
+  } else {
+    searchBar.style.display = '';
+    headerBtn.textContent = '+ New Draft';
+    headerBtn.onclick = function() { openCreateModal(); };
+    loadDrafts();
+  }
 }
 
 // ─── Load Drafts ──────────────────────────────────────────────────────────────
@@ -1147,7 +1715,6 @@ async function loadDrafts() {
   if (priority) params.set('priority', priority);
   params.set('sort', sort);
 
-  // Apply view filters
   if (currentView === 'review') params.set('status', 'review');
   else if (currentView === 'draft') params.set('status', 'draft');
   else if (currentView === 'approved') params.set('status', 'approved');
@@ -1176,25 +1743,84 @@ function renderDraftList(drafts) {
     return;
   }
 
-  container.innerHTML = drafts.map(d => `
-    <div class="draft-card" onclick="openDraft(${d.id})">
+  container.innerHTML = drafts.map(d => {
+    const preview = d.content ? d.content.substring(0, 120) : '';
+    return `
+    <div class="draft-card" data-type="${d.type}" onclick="openDraft(${d.id})">
       <div class="draft-card-top">
         <div class="draft-card-title">${esc(d.title)}</div>
         <div class="draft-card-meta">
-          <span class="badge badge-${d.type}">${d.type}</span>
+          <span class="badge badge-${d.type}">${typeIcon(d.type)} ${d.type}</span>
           <span class="badge badge-${d.status}">${statusLabel(d.status)}</span>
-          <span class="badge badge-${d.priority}">${d.priority}</span>
+          ${d.priority === 'urgent' || d.priority === 'high' ? `<span class="badge badge-${d.priority}">${d.priority}</span>` : ''}
         </div>
       </div>
+      ${preview ? `<div class="draft-card-preview">${esc(preview)}</div>` : ''}
       <div class="draft-card-bottom">
-        <span>by ${esc(d.creator_name || 'Unknown')} &middot; ${timeAgo(d.created_at)}</span>
+        <span>${esc(d.creator_name || 'Unknown')} &middot; ${timeAgo(d.created_at)}</span>
         <span>
           ${d.comment_count > 0 ? `<span class="comment-count">&#128172; ${d.comment_count}</span>` : ''}
         </span>
       </div>
-      ${d.tags && d.tags.length > 0 ? `<div class="draft-card-tags" style="margin-top:6px">${d.tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}</div>` : ''}
-    </div>
-  `).join('');
+      ${d.tags && d.tags.length > 0 ? `<div class="draft-card-tags">${d.tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  // Setup swipe on mobile
+  if ('ontouchstart' in window) setupSwipe();
+}
+
+// ─── Swipe Handling ───────────────────────────────────────────────────────────
+function setupSwipe() {
+  document.querySelectorAll('.draft-card').forEach(card => {
+    let startX = 0, currentX = 0, swiping = false;
+
+    card.addEventListener('touchstart', e => {
+      startX = e.touches[0].clientX;
+      swiping = true;
+    }, { passive: true });
+
+    card.addEventListener('touchmove', e => {
+      if (!swiping) return;
+      currentX = e.touches[0].clientX - startX;
+      const clamped = Math.max(-60, Math.min(60, currentX));
+      card.style.transform = `translateX(${clamped}px)`;
+      card.style.transition = 'none';
+    }, { passive: true });
+
+    card.addEventListener('touchend', () => {
+      swiping = false;
+      card.style.transition = 'transform 0.3s ease';
+      const id = parseInt(card.getAttribute('onclick').match(/\d+/)[0]);
+
+      if (currentX > 50) {
+        // Swipe right = advance status
+        advanceStatus(id);
+        showToast('Status advanced &#10003;');
+      } else if (currentX < -50) {
+        // Swipe left = open detail
+        openDraft(id);
+      }
+
+      card.style.transform = 'translateX(0)';
+      currentX = 0;
+    });
+  });
+}
+
+async function advanceStatus(id) {
+  try {
+    const draft = await api(`/drafts/${id}`);
+    const nextMap = { draft: 'submit', review: 'approve', approved: 'done' };
+    const action = nextMap[draft.status];
+    if (action) {
+      await api(`/drafts/${id}/${action}`, { method: 'POST' });
+      loadDrafts();
+      loadStats();
+    }
+  } catch (err) {
+    console.error('Advance error:', err);
+  }
 }
 
 // ─── Draft Detail ─────────────────────────────────────────────────────────────
@@ -1213,29 +1839,34 @@ async function openDraft(id) {
     document.getElementById('detailTitle').textContent = draft.title;
     document.getElementById('detailContent').textContent = draft.content || '(No content)';
 
-    // Meta badges
+    // Status flow
+    const steps = ['draft', 'review', 'approved', 'done'];
+    const rejected = draft.status === 'rejected';
+    document.getElementById('statusFlow').innerHTML = steps.map((s, i) => {
+      const active = rejected ? false : steps.indexOf(draft.status) >= i;
+      return `
+        ${i > 0 ? '<span class="status-step-arrow">&#8594;</span>' : ''}
+        <div class="status-step step-${s} ${active ? 'active' : ''}">${statusLabel(s)}</div>
+      `;
+    }).join('') + (rejected ? '<span class="status-step-arrow">&#8594;</span><div class="status-step active" style="background:var(--red-dim);color:var(--red)">Rejected</div>' : '');
+
+    // Meta
     document.getElementById('detailMeta').innerHTML = `
-      <span class="badge badge-${draft.type}">${draft.type}</span>
+      <span class="badge badge-${draft.type}">${typeIcon(draft.type)} ${draft.type}</span>
       <span class="badge badge-${draft.status}">${statusLabel(draft.status)}</span>
-      <span class="badge badge-${draft.priority}">${draft.priority} priority</span>
+      <span class="badge badge-${draft.priority}">${draft.priority}</span>
       ${draft.category ? `<span class="badge badge-draft">${esc(draft.category)}</span>` : ''}
       <span style="font-size:12px;color:var(--text-tertiary)">
         by ${esc(draft.creator_name || 'Unknown')} &middot; ${timeAgo(draft.created_at)}
-        ${draft.assignee_name ? ` &middot; assigned to ${esc(draft.assignee_name)}` : ''}
+        ${draft.assignee_name ? ` &middot; &#8594; ${esc(draft.assignee_name)}` : ''}
       </span>
     `;
 
-    // Tags
     document.getElementById('detailTags').innerHTML = (draft.tags || [])
       .map(t => `<span class="tag">${esc(t)}</span>`).join('');
 
-    // Action buttons
     renderDetailActions(draft);
-
-    // Comments
     renderComments(comments);
-
-    // History
     renderHistory(history);
   } catch (err) {
     console.error('Open draft error:', err);
@@ -1247,18 +1878,18 @@ function renderDetailActions(draft) {
   let html = '';
 
   if (draft.status === 'draft') {
-    html += `<button class="btn btn-primary btn-sm" onclick="submitForReview(${draft.id})">Submit for Review</button>`;
+    html += `<button class="btn btn-primary btn-sm" onclick="submitForReview(${draft.id})">&#128065; Submit for Review</button>`;
   }
   if (draft.status === 'review') {
-    html += `<button class="btn btn-green btn-sm" onclick="approveDraft(${draft.id})">Approve</button>`;
-    html += `<button class="btn btn-red btn-sm" onclick="openRejectModal(${draft.id})">Reject</button>`;
+    html += `<button class="btn btn-green btn-sm" onclick="approveDraft(${draft.id})">&#10003; Approve</button>`;
+    html += `<button class="btn btn-red btn-sm" onclick="openRejectModal(${draft.id})">&#10005; Reject</button>`;
   }
   if (draft.status === 'approved') {
-    html += `<button class="btn btn-primary btn-sm" onclick="markDone(${draft.id})">Mark Done</button>`;
+    html += `<button class="btn btn-primary btn-sm" onclick="markDone(${draft.id})">&#9989; Mark Done</button>`;
   }
 
-  html += `<button class="btn btn-ghost btn-sm" onclick="openEditModal(${draft.id})">Edit</button>`;
-  html += `<button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="deleteDraft(${draft.id})">Delete</button>`;
+  html += `<button class="btn btn-ghost btn-sm" onclick="openEditModal(${draft.id})">&#9998; Edit</button>`;
+  html += `<button class="btn btn-ghost btn-sm" style="color:var(--red);border-color:rgba(248,113,113,0.2)" onclick="deleteDraft(${draft.id})">&#128465; Delete</button>`;
 
   el.innerHTML = html;
 }
@@ -1266,7 +1897,7 @@ function renderDetailActions(draft) {
 function renderComments(comments) {
   const el = document.getElementById('commentList');
   if (comments.length === 0) {
-    el.innerHTML = '<div style="font-size:13px;color:var(--text-tertiary);padding:8px 0">No comments yet</div>';
+    el.innerHTML = '<div style="font-size:13px;color:var(--text-tertiary);padding:10px 0">No comments yet</div>';
     return;
   }
   el.innerHTML = comments.map(c => `
@@ -1297,7 +1928,7 @@ function renderHistory(history) {
 
 function formatAction(h) {
   if (h.action === 'created') return `<strong>${esc(h.display_name)}</strong> created this draft`;
-  if (h.action === 'status_change') return `<strong>${esc(h.display_name)}</strong> changed status from <span class="badge badge-${h.old_value}">${statusLabel(h.old_value)}</span> to <span class="badge badge-${h.new_value}">${statusLabel(h.new_value)}</span>`;
+  if (h.action === 'status_change') return `<strong>${esc(h.display_name)}</strong> changed status <span class="badge badge-${h.old_value}" style="font-size:10px">${statusLabel(h.old_value)}</span> &#8594; <span class="badge badge-${h.new_value}" style="font-size:10px">${statusLabel(h.new_value)}</span>`;
   if (h.action === 'title_change') return `<strong>${esc(h.display_name)}</strong> changed the title`;
   if (h.action === 'content_edit') return `<strong>${esc(h.display_name)}</strong> edited the content`;
   return `<strong>${esc(h.display_name)}</strong> ${h.action}`;
@@ -1314,18 +1945,21 @@ function closeDetail() {
 // ─── Draft Actions ────────────────────────────────────────────────────────────
 async function submitForReview(id) {
   await api(`/drafts/${id}/submit`, { method: 'POST' });
+  showToast('Submitted for review');
   openDraft(id);
   loadStats();
 }
 
 async function approveDraft(id) {
   await api(`/drafts/${id}/approve`, { method: 'POST' });
+  showToast('Draft approved &#10003;');
   openDraft(id);
   loadStats();
 }
 
 async function markDone(id) {
   await api(`/drafts/${id}/done`, { method: 'POST' });
+  showToast('Marked as done &#9989;');
   openDraft(id);
   loadStats();
 }
@@ -1346,6 +1980,7 @@ async function confirmReject() {
   const reason = document.getElementById('rejectReason').value.trim();
   await api(`/drafts/${rejectingId}/reject`, { method: 'POST', body: JSON.stringify({ reason }) });
   closeRejectModal();
+  showToast('Draft rejected');
   openDraft(rejectingId);
   loadStats();
 }
@@ -1353,6 +1988,7 @@ async function confirmReject() {
 async function deleteDraft(id) {
   if (!confirm('Delete this draft permanently?')) return;
   await api(`/drafts/${id}`, { method: 'DELETE' });
+  showToast('Draft deleted');
   closeDetail();
 }
 
@@ -1367,6 +2003,7 @@ async function addComment() {
     input.value = '';
     const comments = await api(`/drafts/${currentDraft.id}/comments`);
     renderComments(comments);
+    showToast('Comment added');
   } catch (err) {
     console.error('Comment error:', err);
   }
@@ -1383,6 +2020,9 @@ function openCreateModal() {
   document.getElementById('draftCategoryInput').value = '';
   document.getElementById('draftTagsInput').value = '';
   document.getElementById('draftContentInput').value = '';
+  document.getElementById('templatePickerGroup').style.display = '';
+  document.getElementById('templatePicker').value = '';
+  loadTemplatePicker();
   document.getElementById('draftModal').classList.add('open');
 }
 
@@ -1397,6 +2037,7 @@ async function openEditModal(id) {
   document.getElementById('draftCategoryInput').value = draft.category || '';
   document.getElementById('draftTagsInput').value = (draft.tags || []).join(', ');
   document.getElementById('draftContentInput').value = draft.content || '';
+  document.getElementById('templatePickerGroup').style.display = 'none';
   document.getElementById('draftModal').classList.add('open');
 }
 
@@ -1413,25 +2054,26 @@ async function saveDraft() {
   const tagsRaw = document.getElementById('draftTagsInput').value.trim();
   const content = document.getElementById('draftContentInput').value;
 
-  if (!title) { alert('Title is required'); return; }
+  if (!title) { showToast('Title is required'); return; }
 
   const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
-
   const body = { title, type, priority, category, tags, content };
 
   try {
     if (editingDraftId) {
       await api(`/drafts/${editingDraftId}`, { method: 'PUT', body: JSON.stringify(body) });
       closeModal();
+      showToast('Draft updated');
       openDraft(editingDraftId);
     } else {
       const draft = await api('/drafts', { method: 'POST', body: JSON.stringify(body) });
       closeModal();
+      showToast('Draft created');
       openDraft(draft.id);
     }
     loadStats();
   } catch (err) {
-    alert(err.message);
+    showToast(err.message);
   }
 }
 
@@ -1439,7 +2081,7 @@ async function saveDraft() {
 function exportCopy() {
   if (!currentDraft) return;
   const text = `${currentDraft.title}\n\n${currentDraft.content || ''}`;
-  navigator.clipboard.writeText(text).then(() => alert('Copied to clipboard!'));
+  navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard'));
 }
 
 function exportText() {
@@ -1479,6 +2121,11 @@ function statusLabel(s) {
   return labels[s] || s;
 }
 
+function typeIcon(t) {
+  const icons = { email: '&#9993;', todo: '&#9744;', idea: '&#128161;', note: '&#128221;', script: '&#128187;' };
+  return icons[t] || '';
+}
+
 function timeAgo(dateStr) {
   const now = Date.now();
   const then = new Date(dateStr).getTime();
@@ -1488,6 +2135,188 @@ function timeAgo(dateStr) {
   if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
   if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
   return new Date(dateStr).toLocaleDateString();
+}
+
+// ─── Templates ────────────────────────────────────────────────────────────
+let allTemplates = [];
+let editingTemplateId = null;
+let templateCategoryFilter = '';
+
+async function loadTemplateCount() {
+  try {
+    const templates = await api('/templates');
+    document.getElementById('countTemplates').textContent = templates.length;
+  } catch (err) { /* ignore */ }
+}
+
+async function loadTemplates() {
+  try {
+    const params = new URLSearchParams();
+    if (templateCategoryFilter) params.set('category', templateCategoryFilter);
+    allTemplates = await api('/templates?' + params.toString());
+    renderTemplates();
+  } catch (err) {
+    console.error('Load templates error:', err);
+  }
+}
+
+function renderTemplates() {
+  const container = document.getElementById('draftList');
+  const categories = [...new Set(allTemplates.map(t => t.category).filter(Boolean))];
+
+  let html = '';
+  html += '<div class="template-category-filter">';
+  html += `<button class="template-category-chip ${templateCategoryFilter === '' ? 'active' : ''}" onclick="filterTemplateCategory('')">All</button>`;
+  categories.forEach(c => {
+    html += `<button class="template-category-chip ${templateCategoryFilter === c ? 'active' : ''}" onclick="filterTemplateCategory('${esc(c)}')">${esc(c)}</button>`;
+  });
+  html += '</div>';
+
+  if (allTemplates.length === 0) {
+    html += `
+      <div class="empty-state">
+        <div class="icon">&#128220;</div>
+        <h3>No templates yet</h3>
+        <p>Create a template to speed up draft creation</p>
+      </div>`;
+    container.innerHTML = html;
+    return;
+  }
+
+  html += '<div class="templates-grid">';
+  allTemplates.forEach(t => {
+    const preview = highlightVars(esc(t.body ? t.body.substring(0, 150) : ''));
+    html += `
+    <div class="template-card" onclick="useTemplate(${t.id})">
+      ${t.category ? `<div class="template-card-category">${esc(t.category)}</div>` : ''}
+      <div class="template-card-title">${esc(t.title)}</div>
+      <div class="template-card-preview">${preview}</div>
+      <div class="template-card-footer">
+        <span>${esc(t.creator_name || 'Unknown')} &middot; ${timeAgo(t.created_at)}</span>
+        <div class="template-card-actions" onclick="event.stopPropagation()">
+          <button onclick="openEditTemplateModal(${t.id})" title="Edit">&#9998;</button>
+          <button class="delete-btn" onclick="deleteTemplate(${t.id})" title="Delete">&#128465;</button>
+        </div>
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function highlightVars(text) {
+  return text.replace(/\{\{([^}]+)\}\}/g, '<span class="tpl-var">{{$1}}</span>');
+}
+
+function filterTemplateCategory(cat) {
+  templateCategoryFilter = cat;
+  loadTemplates();
+}
+
+function useTemplate(id) {
+  const tpl = allTemplates.find(t => t.id === id);
+  if (!tpl) return;
+  openCreateModal();
+  document.getElementById('draftContentInput').value = tpl.body || '';
+  document.getElementById('draftTitleInput').focus();
+  showToast('Template applied — fill in the placeholders');
+}
+
+async function loadTemplatePicker() {
+  try {
+    const templates = await api('/templates');
+    const select = document.getElementById('templatePicker');
+    select.innerHTML = '<option value="">— Blank draft —</option>';
+    const grouped = {};
+    templates.forEach(t => {
+      const cat = t.category || 'Uncategorized';
+      if (!grouped[cat]) grouped[cat] = [];
+      grouped[cat].push(t);
+    });
+    Object.keys(grouped).sort().forEach(cat => {
+      const group = document.createElement('optgroup');
+      group.label = cat;
+      grouped[cat].forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t.id;
+        opt.textContent = t.title;
+        opt.dataset.body = t.body || '';
+        group.appendChild(opt);
+      });
+      select.appendChild(group);
+    });
+  } catch (err) { /* ignore */ }
+}
+
+function applyTemplate() {
+  const select = document.getElementById('templatePicker');
+  const opt = select.options[select.selectedIndex];
+  if (opt && opt.dataset && opt.dataset.body) {
+    document.getElementById('draftContentInput').value = opt.dataset.body;
+  }
+}
+
+function openCreateTemplateModal() {
+  editingTemplateId = null;
+  document.getElementById('templateModalTitle').textContent = 'New Template';
+  document.getElementById('templateSaveBtn').textContent = 'Create Template';
+  document.getElementById('templateTitleInput').value = '';
+  document.getElementById('templateCategoryInput').value = '';
+  document.getElementById('templateBodyInput').value = '';
+  document.getElementById('templateModal').classList.add('open');
+}
+
+async function openEditTemplateModal(id) {
+  try {
+    const tpl = await api(`/templates/${id}`);
+    editingTemplateId = id;
+    document.getElementById('templateModalTitle').textContent = 'Edit Template';
+    document.getElementById('templateSaveBtn').textContent = 'Save Changes';
+    document.getElementById('templateTitleInput').value = tpl.title;
+    document.getElementById('templateCategoryInput').value = tpl.category || '';
+    document.getElementById('templateBodyInput').value = tpl.body || '';
+    document.getElementById('templateModal').classList.add('open');
+  } catch (err) {
+    showToast('Failed to load template');
+  }
+}
+
+function closeTemplateModal() {
+  document.getElementById('templateModal').classList.remove('open');
+  editingTemplateId = null;
+}
+
+async function saveTemplate() {
+  const title = document.getElementById('templateTitleInput').value.trim();
+  const category = document.getElementById('templateCategoryInput').value.trim();
+  const body = document.getElementById('templateBodyInput').value;
+  if (!title) { showToast('Template name is required'); return; }
+  try {
+    if (editingTemplateId) {
+      await api(`/templates/${editingTemplateId}`, { method: 'PUT', body: JSON.stringify({ title, category, body }) });
+      showToast('Template updated');
+    } else {
+      await api('/templates', { method: 'POST', body: JSON.stringify({ title, category, body }) });
+      showToast('Template created');
+    }
+    closeTemplateModal();
+    loadTemplates();
+    loadTemplateCount();
+  } catch (err) {
+    showToast(err.message);
+  }
+}
+
+async function deleteTemplate(id) {
+  if (!confirm('Delete this template?')) return;
+  try {
+    await api(`/templates/${id}`, { method: 'DELETE' });
+    showToast('Template deleted');
+    loadTemplates();
+    loadTemplateCount();
+  } catch (err) {
+    showToast('Failed to delete');
+  }
 }
 
 // ─── Init ─────────────────────────────────────────────────────────────────────

@@ -70,58 +70,83 @@ const APPS = [
 
 app.get('/', requireAuth, (req, res) => {
   const user = req.user;
-  res.send(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg"><link rel="icon" type="image/x-icon" href="/favicons/favicon.ico"><link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png">
+  res.send(`<!DOCTYPE html>
+<html lang="en">
+<head><link rel="stylesheet" href="http://shared-assets:3000/design-tokens.css">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Admin Dashboard</title>
+<link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg">
+<link rel="icon" type="image/x-icon" href="/favicons/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+:root{--bg:#0a0a0f;--surface:rgba(255,255,255,0.03);--glass:rgba(255,255,255,0.05);--glass-border:rgba(255,255,255,0.08);--text:#e8e8f0;--dim:#888899;--accent:#7c3aed;--accent2:#2563eb;--gradient:linear-gradient(135deg,#7c3aed,#2563eb);--glow:rgba(124,58,237,0.3);--green:#34d399;--red:#f87171;--yellow:#fbbf24}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0a0a0f;color:#e0e0e0;min-height:100vh;-webkit-text-size-adjust:100%}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;-webkit-text-size-adjust:100%}
 
-/* Header - mobile first */
-header{background:#12121a;border-bottom:1px solid #1e1e2e;padding:.75rem 1rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10}
-header h1{font-size:1.1rem;background:linear-gradient(135deg,#7c3aed,#2563eb);-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap}
-.user{display:flex;align-items:center;gap:.5rem}
-.user img{width:32px;height:32px;border-radius:50%;flex-shrink:0}
-.user span{font-size:.85rem;font-weight:500;display:none}
-a.logout{color:#888;text-decoration:none;padding:.5rem .75rem;border:1px solid #333;border-radius:8px;font-size:.8rem;min-height:44px;min-width:44px;display:flex;align-items:center;justify-content:center;transition:all .2s;-webkit-tap-highlight-color:transparent}
-a.logout:hover,a.logout:active{color:#fff;border-color:#555;background:#1a1a25}
+/* BG orbs */
+.bg-orbs{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.12;animation:drift 25s ease-in-out infinite}
+.orb:nth-child(1){width:350px;height:350px;background:#7c3aed;top:-80px;right:-80px}
+.orb:nth-child(2){width:300px;height:300px;background:#2563eb;bottom:-60px;left:-60px;animation-delay:-10s}
+@keyframes drift{0%,100%{transform:translate(0,0)}50%{transform:translate(30px,-20px)}}
 
-/* Main */
-main{max-width:1400px;margin:0 auto;padding:1rem;padding-bottom:env(safe-area-inset-bottom,1rem)}
-h2{font-size:.9rem;color:#888;margin-bottom:.75rem;text-transform:uppercase;letter-spacing:.06em}
+/* Header */
+header{position:sticky;top:0;z-index:10;background:rgba(10,10,15,0.8);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--glass-border);padding:.75rem 1rem;display:flex;justify-content:space-between;align-items:center}
+header h1{font-size:1.1rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.user-area{display:flex;align-items:center;gap:.5rem}
+.user-area img{width:32px;height:32px;border-radius:50%;border:2px solid var(--glass-border)}
+.user-area .name{font-size:.85rem;font-weight:500;display:none}
+a.logout{color:var(--dim);text-decoration:none;padding:8px 14px;border:1px solid var(--glass-border);border-radius:10px;font-size:.8rem;font-weight:500;min-height:44px;min-width:44px;display:flex;align-items:center;justify-content:center;transition:all .3s;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(10px)}
+a.logout:hover,a.logout:active{color:#fff;border-color:var(--accent);background:rgba(124,58,237,0.15);box-shadow:0 0 15px var(--glow)}
 
-/* App grid - mobile: 2 columns */
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;margin-bottom:2rem}
-.card{background:#16161f;border:1px solid #1e1e2e;border-radius:12px;padding:1rem .75rem;text-decoration:none;color:#e0e0e0;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:.4rem;text-align:center;min-height:80px;justify-content:center;-webkit-tap-highlight-color:transparent}
-.card:active{transform:scale(.96);background:#1a1a28}
-.card .emoji{font-size:1.75rem;line-height:1}
-.card .label{font-size:.8rem;font-weight:500;line-height:1.2;word-break:break-word}
+main{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:1rem;padding-bottom:calc(1rem + env(safe-area-inset-bottom,0px))}
 
-/* Docker container cards - mobile first */
-.container-grid{display:grid;grid-template-columns:1fr;gap:.75rem;margin-bottom:2rem}
-.ccard{background:#16161f;border:1px solid #1e1e2e;border-radius:12px;padding:1rem;overflow:hidden}
-.ccard-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;gap:.5rem}
-.ccard-name{font-weight:600;font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
-.ccard-image{color:#666;font-size:.75rem;margin-bottom:.25rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ccard-status{color:#999;font-size:.8rem}
-.state{padding:.2rem .6rem;border-radius:6px;font-size:.7rem;font-weight:700;text-transform:uppercase;white-space:nowrap;flex-shrink:0}
-.state.running{background:#064e3b;color:#34d399}
-.state.exited{background:#450a0a;color:#f87171}
-.state.created,.state.paused,.state.restarting{background:#422006;color:#fbbf24}
-#containers-loading{text-align:center;color:#555;padding:2rem;font-size:.9rem}
+/* Stats row */
+.stats-row{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;margin-bottom:1.5rem}
+.stat{background:var(--glass);border:1px solid var(--glass-border);border-radius:16px;padding:1rem;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);transition:all .3s}
+.stat:hover{border-color:rgba(124,58,237,0.3);box-shadow:0 4px 20px rgba(124,58,237,0.1)}
+.stat-val{font-size:1.6rem;font-weight:800;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-lbl{font-size:.7rem;color:var(--dim);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
 
-/* Section divider */
+/* Section headers */
+.section-title{font-size:.85rem;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem}
+.section-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--glass-border),transparent)}
 .section{margin-bottom:2rem}
 
-/* 480px+ (large phones, foldable inner screens) */
+/* App grid */
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem}
+.card{background:var(--glass);border:1px solid var(--glass-border);border-radius:14px;padding:1rem .75rem;text-decoration:none;color:var(--text);transition:all .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;align-items:center;gap:.35rem;text-align:center;min-height:80px;justify-content:center;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;inset:0;background:var(--gradient);opacity:0;transition:opacity .3s}
+.card:active{transform:scale(.96)}
+.card:active::before,.card:hover::before{opacity:.08}
+.card:hover{border-color:rgba(124,58,237,0.4);box-shadow:0 8px 32px var(--glow);transform:translateY(-2px)}
+.card>*{position:relative;z-index:1}
+.card .emoji{font-size:1.75rem;line-height:1}
+.card .label{font-size:.8rem;font-weight:600;line-height:1.2}
+
+/* Container cards */
+.container-grid{display:grid;grid-template-columns:1fr;gap:.75rem}
+.ccard{background:var(--glass);border:1px solid var(--glass-border);border-radius:14px;padding:1rem;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);transition:all .3s;overflow:hidden}
+.ccard:hover{border-color:rgba(124,58,237,0.2)}
+.ccard-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem;gap:.5rem}
+.ccard-name{font-weight:600;font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.ccard-image{color:var(--dim);font-size:.7rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ccard-status{color:#666;font-size:.75rem;margin-top:.2rem}
+.state{padding:4px 10px;border-radius:8px;font-size:.65rem;font-weight:700;text-transform:uppercase;white-space:nowrap;flex-shrink:0;letter-spacing:.03em}
+.state.running{background:rgba(52,211,153,0.12);color:var(--green);box-shadow:0 0 10px rgba(52,211,153,0.1)}
+.state.exited{background:rgba(248,113,113,0.12);color:var(--red)}
+.state.created,.state.paused,.state.restarting{background:rgba(251,191,36,0.12);color:var(--yellow)}
+#containers-loading{text-align:center;color:#444;padding:2rem;font-size:.85rem}
+
+/* Responsive */
 @media(min-width:480px){
   .grid{grid-template-columns:repeat(3,1fr)}
   .container-grid{grid-template-columns:repeat(2,1fr)}
-  .user span{display:inline}
-  header{padding:.75rem 1.25rem}
+  .user-area .name{display:inline}
+  .stats-row{grid-template-columns:repeat(4,1fr)}
 }
-
-/* 768px+ (tablets, unfolded foldables) */
 @media(min-width:768px){
   main{padding:1.5rem}
   .grid{grid-template-columns:repeat(4,1fr);gap:1rem}
@@ -130,40 +155,62 @@ h2{font-size:.9rem;color:#888;margin-bottom:.75rem;text-transform:uppercase;lett
   .card .emoji{font-size:2rem}
   .card .label{font-size:.85rem}
   header h1{font-size:1.3rem}
-  h2{font-size:1rem;margin-bottom:1rem}
 }
-
-/* 1024px+ (desktop) */
 @media(min-width:1024px){
   main{padding:2rem}
   .grid{grid-template-columns:repeat(5,1fr)}
   .container-grid{grid-template-columns:repeat(3,1fr)}
-  .card:hover{border-color:#7c3aed;transform:translateY(-2px);box-shadow:0 4px 20px rgba(124,58,237,.15)}
-  a.logout:hover{color:#fff;border-color:#555}
 }
-
 @media(min-width:1280px){
   .grid{grid-template-columns:repeat(7,1fr)}
   .container-grid{grid-template-columns:repeat(4,1fr)}
 }
-</style></head><body>
+
+/* Animations */
+.card,.ccard,.stat{animation:fadeUp .5s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+</style>
+</head>
+<body>
+<div class="bg-orbs"><div class="orb"></div><div class="orb"></div></div>
 <header>
-  <h1>⚡ Admin</h1>
-  <div class="user">
+  <h1>⚡ Admin Dashboard</h1>
+  <div class="user-area">
     ${user.photo ? `<img src="${user.photo}" alt="">` : ''}
-    <span>${user.name}</span>
+    <span class="name">${user.name}</span>
     <a href="/logout" class="logout">Logout</a>
   </div>
 </header>
 <main>
-  <div class="section">
-    <h2>🔗 Apps</h2>
-    <div class="grid">
-      ${APPS.map(a => `<a class="card" href="${a.url}" target="_blank" rel="noopener"><span class="emoji">${a.emoji}</span><span class="label">${a.name}</span></a>`).join('')}
+  <div class="stats-row" id="stats-row">
+    <div class="stat" style="animation-delay:.05s">
+      <div class="stat-val" id="stat-total">-</div>
+      <div class="stat-lbl">Containers</div>
+    </div>
+    <div class="stat" style="animation-delay:.1s">
+      <div class="stat-val" id="stat-running" style="background:none;-webkit-text-fill-color:var(--green)">-</div>
+      <div class="stat-lbl">Running</div>
+    </div>
+    <div class="stat" style="animation-delay:.15s">
+      <div class="stat-val" id="stat-stopped" style="background:none;-webkit-text-fill-color:var(--red)">-</div>
+      <div class="stat-lbl">Stopped</div>
+    </div>
+    <div class="stat" style="animation-delay:.2s">
+      <div class="stat-val">${APPS.length}</div>
+      <div class="stat-lbl">Apps</div>
     </div>
   </div>
+
   <div class="section">
-    <h2>🐳 Docker Containers</h2>
+    <div class="section-title">🔗 Quick Launch</div>
+    <div class="grid">
+      ${APPS.map((a, i) => `<a class="card" href="${a.url}" target="_blank" rel="noopener" style="animation-delay:${(i * 0.03).toFixed(2)}s"><span class="emoji">${a.emoji}</span><span class="label">${a.name}</span></a>`).join('')}
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">🐳 Docker Containers</div>
     <div id="containers-loading">Loading containers…</div>
     <div id="container-grid" class="container-grid" style="display:none"></div>
   </div>
@@ -172,15 +219,24 @@ h2{font-size:.9rem;color:#888;margin-bottom:.75rem;text-transform:uppercase;lett
 fetch('/api/containers').then(r=>r.json()).then(data=>{
   document.getElementById('containers-loading').style.display='none';
   const g=document.getElementById('container-grid');g.style.display='grid';
-  if(!data.length){g.innerHTML='<div style="grid-column:1/-1;text-align:center;color:#555;padding:2rem">No containers found</div>';return}
+
+  const running=data.filter(c=>c.state==='running').length;
+  const stopped=data.length-running;
+  document.getElementById('stat-total').textContent=data.length;
+  document.getElementById('stat-running').textContent=running;
+  document.getElementById('stat-stopped').textContent=stopped;
+
+  if(!data.length){g.innerHTML='<div style="grid-column:1/-1;text-align:center;color:#444;padding:2rem">No containers found</div>';return}
   data.sort((a,b)=>(a.state==='running'?0:1)-(b.state==='running'?0:1)||a.name.localeCompare(b.name));
-  g.innerHTML=data.map(c=>\`<div class="ccard">
+  g.innerHTML=data.map((c,i)=>\`<div class="ccard" style="animation-delay:\${(i*0.03).toFixed(2)}s">
     <div class="ccard-header"><span class="ccard-name">\${c.name}</span><span class="state \${c.state}">\${c.state}</span></div>
     <div class="ccard-image">\${c.image}</div>
     <div class="ccard-status">\${c.status}</div>
   </div>\`).join('');
 }).catch(()=>{document.getElementById('containers-loading').textContent='Could not connect to Docker';});
-</script></body></html>`);
+</script>
+</body>
+</html>`);
 });
 
 app.listen(3000, () => console.log('Admin dashboard running on :3000'));

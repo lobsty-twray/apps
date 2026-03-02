@@ -1,281 +1,606 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="stylesheet" href="http://shared-assets:3000/design-tokens.css">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gaming Session Logger</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Gaming Logger</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: #eee;
-            padding: 20px;
-            min-height: 100vh;
-        }
-        .container { max-width: 1200px; margin: 0 auto; }
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            color: #00d4ff;
-            text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
-        }
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-        .stat-card {
-            background: rgba(0, 212, 255, 0.1);
-            border: 2px solid #00d4ff;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        .stat-value {
-            font-size: 2em;
-            font-weight: bold;
-            color: #00d4ff;
-        }
-        .stat-label {
-            color: #aaa;
-            font-size: 0.85em;
-        }
-        .section {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid #00d4ff;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-        h2 {
-            color: #00d4ff;
-            margin-bottom: 15px;
-        }
-        .btn {
-            background: #00d4ff;
-            color: #1a1a2e;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
-        }
-        .btn:hover {
-            background: #00b8cc;
-            transform: translateY(-2px);
-        }
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        input, select, textarea {
-            background: rgba(0, 212, 255, 0.05);
-            border: 1px solid #00d4ff;
-            color: #eee;
-            padding: 10px;
-            border-radius: 5px;
-            font-family: inherit;
-        }
-        input::placeholder, textarea::placeholder {
-            color: #888;
-        }
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #00ff88;
-            box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
-        }
-        .session-item {
-            background: rgba(0,212,255,0.05);
-            border-left: 4px solid #00ff88;
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .session-item:hover {
-            background: rgba(0,212,255,0.1);
-            border-left-color: #00d4ff;
-        }
-        .session-title {
-            font-weight: bold;
-            color: #00d4ff;
-            margin-bottom: 5px;
-        }
-        .session-meta {
-            font-size: 0.85em;
-            color: #aaa;
-        }
-        .content-potential-high {
-            color: #00ff88;
-            font-weight: bold;
-        }
-        .no-data {
-            text-align: center;
-            color: #666;
-            padding: 20px;
+        *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+        body{background:#0a0a0f;color:#e8e8f0;font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden;padding-bottom:80px}
+        
+
+        /* Scrollbar */
+        ::-webkit-scrollbar{width:4px}
+        ::-webkit-scrollbar-track{background:transparent}
+        ::-webkit-scrollbar-thumb{background:rgba(124,58,237,0.3);border-radius:4px}
+
+        .container{max-width:600px;margin:0 auto;padding:16px 16px 100px}
+
+        /* Header */
+        .header{text-align:center;padding:24px 0 8px}
+        .header h1{font-size:1.6em;font-weight:800;background:var(--accent);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .header p{color:#888899;font-size:.8em;margin-top:4px}
+
+        /* Stats */
+        .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:20px 0}
+        .stats-grid .stat-card:last-child:nth-child(odd){grid-column:1/-1}
+        .stat-card{background:var(--glass);backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:var(--radius);padding:16px;text-align:center;animation:fadeUp .5s ease both}
+        .stat-card:nth-child(1){animation-delay:.05s}
+        .stat-card:nth-child(2){animation-delay:.1s}
+        .stat-card:nth-child(3){animation-delay:.15s}
+        .stat-card:nth-child(4){animation-delay:.2s}
+        .stat-card:nth-child(5){animation-delay:.25s}
+        .stat-value{font-size:1.8em;font-weight:800;color:#a78bfa;background:var(--accent,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.2}
+        .stat-value.game-name{font-size:1.1em}
+        .stat-label{color:#888899;font-size:.7em;text-transform:uppercase;letter-spacing:.05em;margin-top:4px}
+
+        /* View tabs */
+        .view-tabs{display:none}
+
+        /* Sessions */
+        .sessions-list{display:flex;flex-direction:column;gap:12px;margin-top:16px}
+        .session-card{background:var(--glass);backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:var(--radius);padding:16px;position:relative;overflow:hidden;animation:fadeUp .4s ease both;transition:transform .2s,box-shadow .2s;cursor:pointer}
+        .session-card:active{transform:scale(.98)}
+        .session-card.high-potential{border:1px solid rgba(245,158,11,0.3);box-shadow:0 0 20px rgba(245,158,11,0.08)}
+        .session-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+        .game-title{font-size:1.15em;font-weight:700;color:#fff;flex:1}
+        .badges{display:flex;gap:6px;flex-shrink:0;align-items:center}
+        .badge{padding:3px 8px;border-radius:20px;font-size:.65em;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+        .badge-platform{background:rgba(124,58,237,0.2);color:#a78bfa;border:1px solid rgba(124,58,237,0.3)}
+        .badge-live{background:rgba(239,68,68,0.2);color:#f87171;border:1px solid rgba(239,68,68,0.4);animation:livePulse 2s infinite}
+        .badge-potential{background:rgba(245,158,11,0.15);color:#fbbf24;border:1px solid rgba(245,158,11,0.3);font-size:.6em}
+        @keyframes livePulse{0%,100%{opacity:1}50%{opacity:.6}}
+        .session-meta{display:flex;gap:12px;margin-top:8px;font-size:.75em;color:#888899;flex-wrap:wrap}
+        .session-meta span{display:flex;align-items:center;gap:3px}
+        .session-temps{display:flex;gap:12px;margin-top:10px}
+        .temp-bar{flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,0.05);overflow:hidden;position:relative}
+        .temp-bar-inner{height:100%;border-radius:3px;transition:width .6s ease}
+        .temp-bar-label{font-size:.65em;color:#888899;margin-bottom:3px;display:flex;justify-content:space-between}
+        .temp-green{background:linear-gradient(90deg,#22c55e,#4ade80)}
+        .temp-yellow{background:linear-gradient(90deg,#eab308,#f59e0b)}
+        .temp-red{background:linear-gradient(90deg,#ef4444,#f87171)}
+        .session-notes{font-size:.75em;color:#888899;margin-top:8px;line-height:1.4}
+        .session-actions{position:absolute;top:8px;right:8px;opacity:0;transition:opacity .2s}
+        .session-card:hover .session-actions{opacity:1}
+        .btn-delete{background:none;border:none;color:#ef4444;cursor:pointer;padding:8px;font-size:1em;border-radius:8px;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center}
+        .btn-delete:hover{background:rgba(239,68,68,0.1)}
+
+        /* Empty state */
+        .empty-state{text-align:center;padding:60px 20px;color:#444}
+        .empty-state .icon{font-size:3em;margin-bottom:12px}
+        .empty-state p{font-size:.85em}
+
+        /* Bottom nav */
+        .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,15,0.95);backdrop-filter:blur(20px);border-top:1px solid var(--glass-border);display:flex;justify-content:center;gap:0;z-index:100;padding:0 0 env(safe-area-inset-bottom)}
+        .nav-item{flex:1;max-width:160px;display:flex;flex-direction:column;align-items:center;padding:10px 0 8px;color:#555;font-size:.65em;font-weight:500;cursor:pointer;transition:color .2s;min-height:44px;justify-content:center}
+        .nav-item.active{color:#7c3aed}
+        .nav-item svg{width:22px;height:22px;margin-bottom:2px}
+
+        /* FAB */
+        .fab{position:fixed;bottom:80px;right:20px;width:56px;height:56px;border-radius:50%;background:var(--accent);border:none;color:#fff;font-size:1.5em;cursor:pointer;box-shadow:0 4px 20px rgba(124,58,237,0.4);z-index:101;display:flex;align-items:center;justify-content:center;transition:transform .2s,box-shadow .2s}
+        .fab:active{transform:scale(.9)}
+
+        /* Modal overlay */
+        .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;opacity:0;visibility:hidden;transition:opacity .3s,visibility .3s}
+        .modal-overlay.show{opacity:1;visibility:visible}
+        .modal{position:fixed;bottom:0;left:0;right:0;background:#111118;border-radius:20px 20px 0 0;z-index:201;transform:translateY(100%);transition:transform .35s cubic-bezier(.32,.72,0,1);max-height:90vh;overflow-y:auto;padding:0 0 env(safe-area-inset-bottom)}
+        .modal-overlay.show .modal{transform:translateY(0)}
+        .modal-handle{width:36px;height:4px;background:#333;border-radius:2px;margin:12px auto}
+        .modal-header{padding:0 20px 16px;display:flex;justify-content:space-between;align-items:center}
+        .modal-header h2{font-size:1.1em;font-weight:700}
+        .modal-close{background:none;border:none;color:#888899;font-size:1.3em;padding:8px;cursor:pointer;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center}
+        .modal-body{padding:0 20px 24px}
+
+        /* Form */
+        .form-group{margin-bottom:16px}
+        .form-group label{display:block;font-size:.75em;color:#888899;margin-bottom:6px;font-weight:500}
+        .form-input{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--glass-border);border-radius:12px;padding:14px 16px;color:#e8e8f0;font-family:'Inter',sans-serif;font-size:.9em;transition:border-color .2s;min-height:44px}
+        .form-input:focus{outline:none;border-color:rgba(124,58,237,0.5)}
+        .form-input::placeholder{color:#444}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+        /* Pill selector */
+        .pill-group{display:flex;gap:8px;flex-wrap:wrap}
+        .pill{padding:10px 18px;border-radius:24px;border:1px solid var(--glass-border);background:var(--glass);color:#888899;font-size:.8em;font-weight:500;cursor:pointer;transition:all .2s;min-height:44px;display:flex;align-items:center}
+        .pill.active{border-color:rgba(124,58,237,0.5);color:#a78bfa;background:rgba(124,58,237,0.1)}
+
+        /* Content potential visual selector */
+        .potential-group{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+        .potential-box{padding:14px;border-radius:12px;border:1px solid var(--glass-border);background:var(--glass);text-align:center;cursor:pointer;transition:all .2s;min-height:44px}
+        .potential-box .label{font-size:.8em;font-weight:600}
+        .potential-box .icon{font-size:1.2em;margin-bottom:4px}
+        .potential-box.active.low{border-color:rgba(107,114,128,0.5);background:rgba(107,114,128,0.1)}
+        .potential-box.active.low .label{color:#9ca3af}
+        .potential-box.active.med{border-color:rgba(234,179,8,0.5);background:rgba(234,179,8,0.1)}
+        .potential-box.active.med .label{color:#fbbf24}
+        .potential-box.active.high{border-color:rgba(34,197,94,0.5);background:rgba(34,197,94,0.1)}
+        .potential-box.active.high .label{color:#4ade80}
+
+        /* Toggle */
+        .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:4px 0}
+        .toggle{width:44px;height:24px;border-radius:12px;background:#333;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
+        .toggle.on{background:rgba(124,58,237,0.6)}
+        .toggle::after{content:'';position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;top:2px;left:2px;transition:transform .2s}
+        .toggle.on::after{transform:translateX(20px)}
+
+        .btn-submit{width:100%;padding:16px;border:none;border-radius:14px;background:var(--accent);color:#fff;font-family:'Inter',sans-serif;font-size:.95em;font-weight:600;cursor:pointer;min-height:44px;transition:opacity .2s}
+        .btn-submit:active{opacity:.8}
+
+        /* Context menu */
+        .context-menu{position:fixed;background:#1a1a24;border:1px solid var(--glass-border);border-radius:12px;padding:4px;z-index:300;min-width:140px;box-shadow:0 8px 32px rgba(0,0,0,0.5);animation:fadeUp .15s ease}
+        .context-menu button{display:flex;align-items:center;gap:8px;width:100%;padding:12px 16px;background:none;border:none;color:#e8e8f0;font-family:'Inter',sans-serif;font-size:.85em;cursor:pointer;border-radius:8px;min-height:44px}
+        .context-menu button:hover{background:rgba(255,255,255,0.05)}
+        .context-menu .danger{color:#ef4444}
+
+        /* Animations */
+        @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes countUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+        /* Stats view */
+        .view{display:none}
+        .view.active{display:block}
+
+        /* Desktop tweaks */
+        @media(min-width:768px){
+            .container{padding:24px}
+            .bottom-nav{display:none}
+            .fab{bottom:32px;right:32px}
+            body{padding-bottom:0}
+            .session-actions{opacity:1}
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🎮 Gaming Session Logger</h1>
-            <p style="color: #aaa;">Track your gaming sessions and extract content ideas</p>
-        </header>
 
-        <div class="stats" id="stats"></div>
-
-        <div class="section">
-            <h2>Log New Session</h2>
-            <div class="form-grid">
-                <input type="text" id="gameName" placeholder="Game Title" required>
-                <input type="text" id="platform" placeholder="Platform (PC/Console)">
-                <input type="datetime-local" id="startTime" required>
-                <input type="datetime-local" id="endTime">
-                <input type="text" id="difficulty" placeholder="Difficulty">
-                <input type="number" id="achievementScore" placeholder="Achievement Score">
-                <input type="number" id="fps" placeholder="Avg FPS">
-                <input type="number" id="gpuTemp" placeholder="GPU Temp (°C)">
-                <input type="number" id="cpuTemp" placeholder="CPU Temp (°C)">
-                <select id="contentPotential">
-                    <option value="">Content Potential</option>
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High 🎥</option>
-                </select>
-            </div>
-            <textarea id="notes" placeholder="Session notes..." style="margin-bottom: 10px;"></textarea>
-            <label style="display: flex; align-items: center; gap: 10px; color: #aaa;">
-                <input type="checkbox" id="isStreamed"> Streamed/Recorded
-            </label>
-            <button class="btn" onclick="logSession()" style="margin-top: 10px;">Log Session</button>
-        </div>
-
-        <div class="section">
-            <h2>Recent Sessions</h2>
-            <div id="sessionsList" class="no-data">Loading...</div>
-        </div>
+<div class="container">
+    <div class="header">
+        <h1>🎮 Gaming Logger</h1>
+        <p>Track sessions · Extract content</p>
     </div>
 
-    <script>
-        const API = '';
+    <!-- Stats -->
+    <div id="view-stats" class="view active">
+        <div class="stats-grid" id="stats-grid"></div>
+    </div>
 
-        document.addEventListener('DOMContentLoaded', () => {
-            loadStats();
-            loadSessions();
-            document.getElementById('startTime').valueAsDate = new Date();
-        });
+    <!-- Sessions -->
+    <div id="view-sessions" class="view active">
+        <div class="sessions-list" id="sessions-list"></div>
+    </div>
+</div>
 
-        async function loadStats() {
-            try {
-                const res = await fetch(`${API}/api/stats`);
-                const stats = await res.json();
-                document.getElementById('stats').innerHTML = `
-                    <div class="stat-card">
-                        <div class="stat-value">${stats.total_sessions}</div>
-                        <div class="stat-label">Sessions</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">${Math.round(stats.total_minutes / 60)}</div>
-                        <div class="stat-label">Hours Played</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">${stats.favorite_game}</div>
-                        <div class="stat-label">Favorite</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">${stats.avg_fps}</div>
-                        <div class="stat-label">Avg FPS</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">${stats.high_content_potential}</div>
-                        <div class="stat-label">Video Ideas</div>
-                    </div>
-                `;
-            } catch (err) {
-                console.error('Error loading stats:', err);
-            }
-        }
+<!-- FAB -->
+<button class="fab" onclick="openModal()" aria-label="Log session">＋</button>
 
-        async function loadSessions() {
-            try {
-                const res = await fetch(`${API}/api/sessions`);
-                const sessions = await res.json();
+<!-- Bottom Nav -->
+<nav class="bottom-nav">
+    <div class="nav-item active" data-view="all" onclick="switchView('all')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Sessions
+    </div>
+    <div class="nav-item" data-view="stats" onclick="switchView('stats')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+        Stats
+    </div>
+    <div class="nav-item" data-view="log" onclick="openModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        Log New
+    </div>
+</nav>
 
-                if (sessions.length === 0) {
-                    document.getElementById('sessionsList').innerHTML = '<div class="no-data">No sessions logged yet</div>';
-                    return;
-                }
-
-                const html = sessions.slice(0, 15).map(s => `
-                    <div class="session-item">
-                        <div class="session-title">
-                            ${s.game_name}
-                            ${s.is_streamed ? '🔴 STREAMED' : ''}
-                            ${s.content_potential === 'high' ? '<span class="content-potential-high">📹 HIGH POTENTIAL</span>' : ''}
+<!-- Modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-handle"></div>
+        <div class="modal-header">
+            <h2 id="modal-title">Log Session</h2>
+            <button class="modal-close" onclick="closeModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <form id="session-form" onsubmit="submitSession(event)">
+                <div class="form-group">
+                    <label>Game Title *</label>
+                    <input type="text" class="form-input" id="f-game" placeholder="e.g. Cyberpunk 2077" required>
+                </div>
+                <div class="form-group">
+                    <label>Platform</label>
+                    <div class="pill-group" id="f-platform">
+                        <div class="pill" data-val="PC" onclick="selectPill(this)">🖥 PC</div>
+                        <div class="pill" data-val="PS5" onclick="selectPill(this)">🎮 PS5</div>
+                        <div class="pill" data-val="Xbox" onclick="selectPill(this)">🟢 Xbox</div>
+                        <div class="pill" data-val="Switch" onclick="selectPill(this)">🔴 Switch</div>
+                        <div class="pill" data-val="Steam Deck" onclick="selectPill(this)">🎲 Deck</div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Start Time *</label>
+                        <input type="datetime-local" class="form-input" id="f-start" required>
+                    </div>
+                    <div class="form-group">
+                        <label>End Time</label>
+                        <input type="datetime-local" class="form-input" id="f-end">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Avg FPS</label>
+                        <input type="number" class="form-input" id="f-fps" placeholder="120">
+                    </div>
+                    <div class="form-group">
+                        <label>Difficulty</label>
+                        <input type="text" class="form-input" id="f-difficulty" placeholder="Hard">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>GPU Temp °C</label>
+                        <input type="number" class="form-input" id="f-gpu" placeholder="72">
+                    </div>
+                    <div class="form-group">
+                        <label>CPU Temp °C</label>
+                        <input type="number" class="form-input" id="f-cpu" placeholder="68">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Achievement Score</label>
+                    <input type="number" class="form-input" id="f-score" placeholder="1500">
+                </div>
+                <div class="form-group">
+                    <label>Content Potential</label>
+                    <div class="potential-group" id="f-potential">
+                        <div class="potential-box low" data-val="low" onclick="selectPotential(this)">
+                            <div class="icon">📝</div>
+                            <div class="label">Low</div>
                         </div>
-                        <div class="session-meta">
-                            ${new Date(s.start_time).toLocaleString()} • ${s.duration_minutes} min
-                            ${s.platform ? '• ' + s.platform : ''}
-                            ${s.fps ? '• ' + s.fps + ' FPS' : ''}
+                        <div class="potential-box med" data-val="medium" onclick="selectPotential(this)">
+                            <div class="icon">🎬</div>
+                            <div class="label">Medium</div>
+                        </div>
+                        <div class="potential-box high" data-val="high" onclick="selectPotential(this)">
+                            <div class="icon">🔥</div>
+                            <div class="label">High</div>
                         </div>
                     </div>
-                `).join('');
+                </div>
+                <div class="form-group">
+                    <div class="toggle-row">
+                        <label style="margin:0">Streamed / Recorded</label>
+                        <div class="toggle" id="f-streamed" onclick="this.classList.toggle('on')"></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea class="form-input" id="f-notes" rows="3" placeholder="Highlights, bugs, observations..."></textarea>
+                </div>
+                <button type="submit" class="btn-submit" id="btn-submit">Log Session</button>
+            </form>
+        </div>
+    </div>
+</div>
 
-                document.getElementById('sessionsList').innerHTML = html;
-            } catch (err) {
-                console.error('Error:', err);
-            }
+<!-- Context menu -->
+<div class="context-menu" id="context-menu" style="display:none">
+    <button onclick="editSession()">✏️ Edit</button>
+    <button class="danger" onclick="deleteSession()">🗑 Delete</button>
+</div>
+
+<script>
+const API='';
+let sessions=[];
+let selectedPlatform=null;
+let selectedPotential=null;
+let contextSessionId=null;
+let editingId=null;
+let longPressTimer=null;
+
+// Init
+document.addEventListener('DOMContentLoaded',()=>{
+    loadStats();
+    loadSessions();
+    const now=new Date();
+    now.setMinutes(now.getMinutes()-now.getTimezoneOffset());
+    document.getElementById('f-start').value=now.toISOString().slice(0,16);
+});
+
+// Stats
+async function loadStats(){
+    try{
+        const r=await fetch(`${API}/api/stats`);
+        const s=await r.json();
+        const grid=document.getElementById('stats-grid');
+        const items=[
+            {value:s.total_sessions,label:'Sessions',cls:''},
+            {value:Math.round(s.total_minutes/60),label:'Hours Played',cls:''},
+            {value:s.favorite_game||'N/A',label:'Favorite Game',cls:'game-name'},
+            {value:s.avg_fps||0,label:'Avg FPS',cls:''},
+            {value:s.high_content_potential,label:'Video Ideas',cls:''}
+        ];
+        grid.innerHTML=items.map((it,i)=>`
+            <div class="stat-card" style="animation-delay:${i*.06}s">
+                <div class="stat-value ${it.cls}">${it.value}</div>
+                <div class="stat-label">${it.label}</div>
+            </div>
+        `).join('');
+    }catch(e){console.error(e)}
+}
+
+// Sessions
+async function loadSessions(){
+    try{
+        const r=await fetch(`${API}/api/sessions`);
+        sessions=await r.json();
+        renderSessions();
+    }catch(e){console.error(e)}
+}
+
+function renderSessions(){
+    const el=document.getElementById('sessions-list');
+    if(!sessions.length){
+        el.innerHTML=`<div class="empty-state"><div class="icon">🎮</div><p>No sessions yet. Tap + to log your first!</p></div>`;
+        return;
+    }
+    el.innerHTML=sessions.map((s,i)=>{
+        const isHigh=s.content_potential==='high';
+        const gpuClass=tempClass(s.gpu_temp);
+        const cpuClass=tempClass(s.cpu_temp);
+        const gpuPct=s.gpu_temp?Math.min(s.gpu_temp/100*100,100):0;
+        const cpuPct=s.cpu_temp?Math.min(s.cpu_temp/100*100,100):0;
+        const date=new Date(s.start_time).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+        const dur=s.duration_minutes?formatDuration(s.duration_minutes):'—';
+        return `
+        <div class="session-card ${isHigh?'high-potential':''}" style="animation-delay:${i*.04}s"
+             data-id="${s.id}"
+             oncontextmenu="showContext(event,${s.id})"
+             ontouchstart="startLongPress(event,${s.id})" ontouchend="cancelLongPress()" ontouchmove="cancelLongPress()">
+            <div class="session-card-head">
+                <div class="game-title">${esc(s.game_name)}</div>
+                <div class="badges">
+                    ${s.is_streamed?'<span class="badge badge-live">● LIVE</span>':''}
+                    ${isHigh?'<span class="badge badge-potential">⭐ HIGH</span>':''}
+                    ${s.platform?`<span class="badge badge-platform">${esc(s.platform)}</span>`:''}
+                </div>
+            </div>
+            <div class="session-meta">
+                <span>📅 ${date}</span>
+                <span>⏱ ${dur}</span>
+                ${s.fps?`<span>🖥 ${s.fps} FPS</span>`:''}
+            </div>
+            ${(s.gpu_temp||s.cpu_temp)?`
+            <div style="margin-top:10px">
+                ${s.gpu_temp?`<div class="temp-bar-label"><span>GPU</span><span>${s.gpu_temp}°C</span></div><div class="temp-bar"><div class="temp-bar-inner ${gpuClass}" style="width:${gpuPct}%"></div></div>`:''}
+                ${s.cpu_temp?`<div class="temp-bar-label" style="margin-top:6px"><span>CPU</span><span>${s.cpu_temp}°C</span></div><div class="temp-bar"><div class="temp-bar-inner ${cpuClass}" style="width:${cpuPct}%"></div></div>`:''}
+            </div>`:''}
+            ${s.notes?`<div class="session-notes">${esc(s.notes).substring(0,120)}</div>`:''}
+            <div class="session-actions"><button class="btn-delete" onclick="event.stopPropagation();contextSessionId=${s.id};deleteSession()">🗑</button></div>
+        </div>`;
+    }).join('');
+}
+
+function tempClass(t){if(!t)return'';return t<70?'temp-green':t<85?'temp-yellow':'temp-red'}
+function formatDuration(m){return m>=60?`${Math.floor(m/60)}h ${m%60}m`:`${m}m`}
+function esc(s){if(!s)return'';const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+
+// Pills
+function selectPill(el){
+    el.parentElement.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
+    el.classList.add('active');
+    selectedPlatform=el.dataset.val;
+}
+function selectPotential(el){
+    el.parentElement.querySelectorAll('.potential-box').forEach(p=>p.classList.remove('active'));
+    el.classList.add('active');
+    selectedPotential=el.dataset.val;
+}
+
+// Modal
+function openModal(){
+    document.getElementById('modal-overlay').classList.add('show');
+    document.body.style.overflow='hidden';
+}
+function closeModal(e){
+    if(e&&e.target&&!e.target.classList.contains('modal-overlay'))return;
+    document.getElementById('modal-overlay').classList.remove('show');
+    document.body.style.overflow='';
+    resetForm();
+}
+function resetForm(){
+    document.getElementById('session-form').reset();
+    document.querySelectorAll('.pill,.potential-box').forEach(p=>p.classList.remove('active'));
+    selectedPlatform=null;selectedPotential=null;editingId=null;
+    document.getElementById('modal-title').textContent='Log Session';
+    document.getElementById('btn-submit').textContent='Log Session';
+    const now=new Date();now.setMinutes(now.getMinutes()-now.getTimezoneOffset());
+    document.getElementById('f-start').value=now.toISOString().slice(0,16);
+}
+
+// Submit
+async function submitSession(e){
+    e.preventDefault();
+    const data={
+        game_name:document.getElementById('f-game').value.trim(),
+        platform:selectedPlatform,
+        start_time:document.getElementById('f-start').value,
+        end_time:document.getElementById('f-end').value||null,
+        difficulty:document.getElementById('f-difficulty').value||null,
+        achievement_score:document.getElementById('f-score').value?parseInt(document.getElementById('f-score').value):null,
+        fps:document.getElementById('f-fps').value?parseInt(document.getElementById('f-fps').value):null,
+        gpu_temp:document.getElementById('f-gpu').value?parseInt(document.getElementById('f-gpu').value):null,
+        cpu_temp:document.getElementById('f-cpu').value?parseInt(document.getElementById('f-cpu').value):null,
+        notes:document.getElementById('f-notes').value||null,
+        is_streamed:document.getElementById('f-streamed').classList.contains('on'),
+        content_potential:selectedPotential
+    };
+    try{
+        const url=editingId?`${API}/api/sessions/${editingId}`:`${API}/api/sessions`;
+        const method=editingId?'PUT':'POST';
+        await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+        closeModal();
+        loadSessions();loadStats();
+    }catch(err){alert('Failed to save session')}
+}
+
+// Context menu / long press
+function showContext(e,id){
+    e.preventDefault();
+    contextSessionId=id;
+    const menu=document.getElementById('context-menu');
+    menu.style.display='block';
+    menu.style.left=Math.min(e.clientX,window.innerWidth-160)+'px';
+    menu.style.top=Math.min(e.clientY,window.innerHeight-100)+'px';
+}
+function startLongPress(e,id){longPressTimer=setTimeout(()=>{const t=e.touches[0];showContext({preventDefault:()=>{},clientX:t.clientX,clientY:t.clientY},id)},500)}
+function cancelLongPress(){clearTimeout(longPressTimer)}
+document.addEventListener('click',()=>{document.getElementById('context-menu').style.display='none'});
+
+async function deleteSession(){
+    if(!contextSessionId)return;
+    if(!confirm('Delete this session?'))return;
+    try{
+        await fetch(`${API}/api/sessions/${contextSessionId}`,{method:'DELETE'});
+        document.getElementById('context-menu').style.display='none';
+        loadSessions();loadStats();
+    }catch(e){alert('Failed to delete')}
+}
+
+function editSession(){
+    const s=sessions.find(x=>x.id===contextSessionId);
+    if(!s)return;
+    document.getElementById('context-menu').style.display='none';
+    editingId=s.id;
+    document.getElementById('modal-title').textContent='Edit Session';
+    document.getElementById('btn-submit').textContent='Save Changes';
+    document.getElementById('f-game').value=s.game_name;
+    if(s.platform){document.querySelectorAll('#f-platform .pill').forEach(p=>{if(p.dataset.val===s.platform){p.classList.add('active');selectedPlatform=s.platform}})}
+    if(s.start_time){const d=new Date(s.start_time);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());document.getElementById('f-start').value=d.toISOString().slice(0,16)}
+    if(s.end_time){const d=new Date(s.end_time);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());document.getElementById('f-end').value=d.toISOString().slice(0,16)}
+    document.getElementById('f-fps').value=s.fps||'';
+    document.getElementById('f-gpu').value=s.gpu_temp||'';
+    document.getElementById('f-cpu').value=s.cpu_temp||'';
+    document.getElementById('f-difficulty').value=s.difficulty||'';
+    document.getElementById('f-score').value=s.achievement_score||'';
+    document.getElementById('f-notes').value=s.notes||'';
+    if(s.is_streamed)document.getElementById('f-streamed').classList.add('on');
+    if(s.content_potential){document.querySelectorAll('#f-potential .potential-box').forEach(p=>{if(p.dataset.val===s.content_potential){p.classList.add('active');selectedPotential=s.content_potential}})}
+    openModal();
+}
+
+// View switching
+function switchView(v){
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.view===v));
+    const stats=document.getElementById('view-stats');
+    const sess=document.getElementById('view-sessions');
+    if(v==='stats'){stats.classList.add('active');sess.classList.remove('active');loadDetailedStats()}
+    else if(v==='log'){openModal();return}
+    else{stats.classList.add('active');sess.classList.add('active')}
+}
+// Enhanced stats dashboard
+async function loadDetailedStats() {
+    try {
+        const r = await fetch(`${API}/api/stats/detailed`);
+        const d = await r.json();
+        const grid = document.getElementById('stats-grid');
+        
+        const weekDiff = d.this_week_mins - d.last_week_mins;
+        const weekArrow = weekDiff > 0 ? '↑' : weekDiff < 0 ? '↓' : '→';
+        const weekColor = weekDiff > 0 ? '#4ade80' : weekDiff < 0 ? '#f87171' : '#888899';
+        const weekPct = d.last_week_mins > 0 ? Math.abs(Math.round(weekDiff / d.last_week_mins * 100)) : 0;
+        
+        // Platform colors
+        const platColors = {'PC':'#7c3aed','PS5':'#3b82f6','Xbox':'#22c55e','Switch':'#ef4444','Steam Deck':'#f59e0b'};
+        const maxPlatMins = d.platforms.length ? Math.max(...d.platforms.map(p => parseInt(p.minutes || 0)), 1) : 1;
+        
+        // Monthly chart
+        const maxMonthly = d.monthly.length ? Math.max(...d.monthly.map(m => parseInt(m.mins || 0)), 1) : 1;
+        
+        let html = `
+        <div class="stat-card" style="grid-column:1/-1">
+            <div style="display:flex;justify-content:space-around;text-align:center">
+                <div>
+                    <div class="stat-value">${d.streak} 🔥</div>
+                    <div class="stat-label">Current Streak</div>
+                </div>
+                <div>
+                    <div class="stat-value">${d.longest_streak}</div>
+                    <div class="stat-label">Best Streak</div>
+                </div>
+                <div>
+                    <div class="stat-value">${d.unique_games}</div>
+                    <div class="stat-label">Games</div>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">${d.avg_duration}m</div>
+            <div class="stat-label">Avg Session</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value game-name">${d.most_played ? d.most_played.game : 'N/A'}</div>
+            <div class="stat-label">${d.most_played ? Math.round(d.most_played.minutes/60) + 'h total' : 'Most Played'}</div>
+        </div>
+        <div class="stat-card" style="grid-column:1/-1">
+            <div style="display:flex;align-items:center;justify-content:center;gap:16px">
+                <div style="text-align:center">
+                    <div style="font-size:.7em;color:#888899">Last Week</div>
+                    <div style="font-size:1.2em;font-weight:700;color:#888899">${Math.round(d.last_week_mins/60)}h</div>
+                </div>
+                <div style="font-size:1.8em;color:${weekColor};font-weight:800">${weekArrow}</div>
+                <div style="text-align:center">
+                    <div style="font-size:.7em;color:#888899">This Week</div>
+                    <div class="stat-value" style="font-size:1.2em">${Math.round(d.this_week_mins/60)}h</div>
+                </div>
+            </div>
+            ${weekPct ? `<div style="font-size:.7em;color:${weekColor};text-align:center;margin-top:4px">${weekArrow === '↑' ? '+' : '-'}${weekPct}%</div>` : ''}
+            <div class="stat-label" style="margin-top:4px">Weekly Comparison</div>
+        </div>`;
+        
+        if (d.platforms.length) {
+            html += `<div class="stat-card" style="grid-column:1/-1">
+                <div class="stat-label" style="margin-bottom:12px;font-size:.8em">Platform Breakdown</div>
+                ${d.platforms.map(p => {
+                    const mins = parseInt(p.minutes || 0);
+                    const pct = Math.round(mins / maxPlatMins * 100);
+                    const color = platColors[p.platform] || '#7c3aed';
+                    return `<div style="margin-bottom:8px">
+                        <div style="display:flex;justify-content:space-between;font-size:.75em;margin-bottom:3px">
+                            <span style="color:#e8e8f0">${p.platform}</span>
+                            <span style="color:#888899">${p.count} session${parseInt(p.count)===1?"":"s"} · ${Math.round(mins/60)}h</span>
+                        </div>
+                        <div style="height:8px;border-radius:4px;background:rgba(255,255,255,0.05)">
+                            <div style="height:100%;width:${pct}%;border-radius:4px;background:${color};transition:width .6s"></div>
+                        </div>
+                    </div>`;
+                }).join('')}
+            </div>`;
         }
-
-        async function logSession() {
-            const gameName = document.getElementById('gameName').value.trim();
-            if (!gameName) {
-                alert('Game name required');
-                return;
-            }
-
-            const data = {
-                game_name: gameName,
-                platform: document.getElementById('platform').value || null,
-                start_time: document.getElementById('startTime').value,
-                end_time: document.getElementById('endTime').value || null,
-                difficulty: document.getElementById('difficulty').value || null,
-                achievement_score: document.getElementById('achievementScore').value || null,
-                fps: document.getElementById('fps').value ? parseInt(document.getElementById('fps').value) : null,
-                gpu_temp: document.getElementById('gpuTemp').value ? parseInt(document.getElementById('gpuTemp').value) : null,
-                cpu_temp: document.getElementById('cpuTemp').value ? parseInt(document.getElementById('cpuTemp').value) : null,
-                notes: document.getElementById('notes').value || null,
-                is_streamed: document.getElementById('isStreamed').checked,
-                content_potential: document.getElementById('contentPotential').value || null
-            };
-
-            try {
-                await fetch(`${API}/api/sessions`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-
-                document.getElementById('gameName').value = '';
-                document.getElementById('notes').value = '';
-                loadSessions();
-                loadStats();
-            } catch (err) {
-                console.error('Error:', err);
-                alert('Failed to log session');
-            }
+        
+        if (d.monthly.length) {
+            html += `<div class="stat-card" style="grid-column:1/-1">
+                <div class="stat-label" style="margin-bottom:12px;font-size:.8em">Monthly Trend</div>
+                <div style="display:flex;align-items:flex-end;gap:8px;height:100px;padding-top:8px">
+                    ${d.monthly.map(m => {
+                        const mins = parseInt(m.mins || 0);
+                        const pct = Math.max(Math.round(mins / maxMonthly * 100), 4);
+                        const label = m.month.slice(5);
+                        return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;height:100%">
+                            <div style="font-size:.6em;color:#888899;margin-bottom:4px">${Math.round(mins/60)}h</div>
+                            <div style="flex:1;width:100%;display:flex;align-items:flex-end">
+                                <div style="width:100%;height:${pct}%;border-radius:4px 4px 0 0;background:var(--accent,linear-gradient(135deg,#7c3aed,#a78bfa));min-height:3px"></div>
+                            </div>
+                            <div style="font-size:.6em;color:#888899;margin-top:4px">${label}</div>
+                        </div>`;
+                    }).join('')}
+                </div>
+            </div>`;
         }
-    </script>
+        
+        grid.innerHTML = html;
+    } catch(e) { console.error(e); }
+}
+
+</script>
 </body>
 </html>

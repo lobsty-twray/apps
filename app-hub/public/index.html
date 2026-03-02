@@ -1,250 +1,648 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="stylesheet" href="http://shared-assets:3000/design-tokens.css">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Ray's App Hub</title>
+    <link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg">
+    <link rel="icon" type="image/x-icon" href="/favicons/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
         
+
+        
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
             min-height: 100vh;
-            padding: 40px 20px;
+            overflow-x: hidden;
+            -webkit-text-size-adjust: 100%;
         }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
+
+        .bg-orbs { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+        .bg-orbs .orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.15; animation: float 20s ease-in-out infinite; }
+        .bg-orbs .orb:nth-child(1) { width: 400px; height: 400px; background: #7c3aed; top: -100px; left: -100px; }
+        .bg-orbs .orb:nth-child(2) { width: 350px; height: 350px; background: #2563eb; bottom: -50px; right: -50px; animation-delay: -7s; }
+        .bg-orbs .orb:nth-child(3) { width: 300px; height: 300px; background: #7c3aed; top: 50%; left: 50%; animation-delay: -14s; }
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -40px) scale(1.05); }
+            66% { transform: translate(-20px, 20px) scale(0.95); }
         }
-        
-        header {
-            text-align: center;
-            color: white;
-            margin-bottom: 50px;
-        }
-        
-        h1 {
-            font-size: 3em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        .subtitle {
-            font-size: 1.3em;
-            opacity: 0.9;
-        }
-        
-        .apps-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 25px;
-            margin-bottom: 40px;
-        }
-        
+
+        .container { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 1rem; padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px)); }
+
+        .header { text-align: center; padding: 2rem 0 1.5rem; }
+        .header h1 { font-size: 1.8rem; font-weight: 800; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 0.3rem; }
+        .header p { color: var(--text-dim); font-size: 0.85rem; font-weight: 300; }
+
+        .search-wrap { margin: 0 auto 1.5rem; max-width: 500px; position: relative; }
+        .search-wrap svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--text-dim); pointer-events: none; }
+        .search-input { width: 100%; padding: 12px 16px 12px 44px; background: var(--glass); border: 1px solid var(--glass-border); border-radius: 14px; color: var(--text); font-size: 0.95rem; font-family: inherit; outline: none; transition: all 0.3s; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); min-height: 48px; }
+        .search-input::placeholder { color: var(--text-dim); }
+        .search-input:focus { border-color: var(--accent); box-shadow: 0 0 20px var(--glow); }
+
+        .filters { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.5rem; margin-bottom: 1.5rem; scrollbar-width: none; }
+        .filters::-webkit-scrollbar { display: none; }
+        .chip { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--glass-border); background: var(--glass); color: var(--text-dim); font-size: 0.8rem; font-weight: 500; cursor: pointer; white-space: nowrap; transition: all 0.3s; -webkit-tap-highlight-color: transparent; min-height: 36px; display: flex; align-items: center; backdrop-filter: blur(10px); }
+        .chip:hover, .chip.active { background: var(--gradient); color: white; border-color: transparent; box-shadow: 0 4px 15px var(--glow); }
+
+        .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 2rem; }
+        .stat-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 16px; padding: 1rem 0.75rem; text-align: center; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); transition: all 0.3s; }
+        .stat-card:hover { border-color: rgba(124,58,237,0.3); box-shadow: 0 4px 20px rgba(124,58,237,0.1); }
+        .stat-value { font-size: 1.5rem; font-weight: 800; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .stat-label { font-size: 0.7rem; color: var(--text-dim); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+        .category-title { font-size: 0.85rem; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.75rem; padding-left: 4px; display: flex; align-items: center; gap: 0.5rem; }
+        .category-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--glass-border), transparent); }
+        .category-section { margin-bottom: 2rem; }
+
+        .apps-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+
         .app-card {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            background: var(--glass); border: 1px solid var(--glass-border); border-radius: 16px;
+            padding: 1.25rem 1rem; text-decoration: none; color: var(--text);
+            display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            -webkit-tap-highlight-color: transparent; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            position: relative; overflow: visible; min-height: 110px; justify-content: center;
+        }
+        .app-card::before { content: ''; position: absolute; inset: 0; background: var(--gradient); opacity: 0; transition: opacity 0.3s; z-index: 0; border-radius: 16px; }
+        .app-card:active { transform: scale(0.96); }
+        .app-card:active::before, .app-card:hover::before { opacity: 0.08; }
+        .app-card:hover { border-color: rgba(124,58,237,0.4); box-shadow: 0 8px 32px var(--glow); transform: translateY(-2px); }
+        .app-card > * { position: relative; z-index: 1; }
+
+        .app-icon { font-size: 2rem; line-height: 1; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3)); }
+        .app-name { font-size: 0.82rem; font-weight: 600; line-height: 1.2; }
+        .app-desc { font-size: 0.7rem; color: var(--text-dim); line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+        .app-status {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--text-dim); box-shadow: none;
+            position: absolute; top: 10px; right: 10px;
             transition: all 0.3s;
-            cursor: pointer;
-            text-decoration: none;
-            color: inherit;
-            display: block;
         }
-        
-        .app-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        .app-status.up { background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 2s ease-in-out infinite; }
+        .app-status.down { background: var(--red); box-shadow: 0 0 8px var(--red); animation: pulse 1s ease-in-out infinite; }
+
+        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.8); } }
+
+        /* Gear button */
+        .gear-btn {
+            position: absolute; top: 6px; left: 6px; z-index: 10;
+            width: 32px; height: 32px; border-radius: 8px;
+            background: transparent; border: none; cursor: pointer;
+            color: var(--text-dim); font-size: 1rem;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s; -webkit-tap-highlight-color: transparent;
+            min-width: 44px; min-height: 44px;
         }
-        
-        .app-icon {
-            font-size: 3em;
-            margin-bottom: 15px;
+        .gear-btn:hover { color: var(--text); background: rgba(255,255,255,0.1); }
+
+        /* Dropdown */
+        .gear-dropdown {
+            display: none; position: absolute; top: 44px; left: 6px; z-index: 20;
+            background: rgba(20,20,30,0.95); border: 1px solid var(--glass-border);
+            border-radius: 12px; padding: 4px; min-width: 140px;
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
         }
-        
-        .app-title {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #667eea;
-            margin-bottom: 10px;
+        .gear-dropdown.open { display: block; }
+        .gear-dropdown button {
+            display: flex; align-items: center; gap: 8px; width: 100%;
+            padding: 10px 12px; border: none; background: transparent;
+            color: var(--text); font-size: 0.78rem; font-family: inherit;
+            cursor: pointer; border-radius: 8px; transition: background 0.2s;
+            min-height: 44px; -webkit-tap-highlight-color: transparent;
         }
-        
-        .app-description {
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 15px;
+        .gear-dropdown button:hover { background: rgba(255,255,255,0.1); }
+        .gear-dropdown button.danger:hover { background: rgba(248,113,113,0.15); color: var(--red); }
+
+        /* Log modal */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0; z-index: 100;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+            align-items: center; justify-content: center; padding: 1rem;
         }
-        
-        .app-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: #667eea;
-            font-weight: 500;
-            font-size: 0.9em;
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: rgba(20,20,30,0.98); border: 1px solid var(--glass-border);
+            border-radius: 16px; width: 100%; max-width: 600px; max-height: 80vh;
+            display: flex; flex-direction: column; overflow: hidden;
         }
-        
-        .category-header {
-            color: white;
-            font-size: 1.8em;
-            margin: 40px 0 20px 0;
-            padding-bottom: 10px;
-            border-bottom: 2px solid rgba(255,255,255,0.3);
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1rem 1.25rem; border-bottom: 1px solid var(--glass-border);
         }
-        
-        .stats {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 40px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 20px;
-            text-align: center;
+        .modal-header h3 { font-size: 0.95rem; font-weight: 600; }
+        .modal-close {
+            width: 44px; height: 44px; border: none; background: transparent;
+            color: var(--text-dim); font-size: 1.2rem; cursor: pointer;
+            border-radius: 8px; display: flex; align-items: center; justify-content: center;
         }
-        
-        .stat-value {
-            font-size: 2.5em;
-            font-weight: bold;
-            color: #667eea;
+        .modal-close:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+        .modal-body {
+            padding: 1rem 1.25rem; overflow-y: auto; flex: 1;
         }
-        
-        .stat-label {
-            color: #666;
-            font-size: 0.9em;
-            margin-top: 5px;
+        .modal-body pre {
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            font-size: 0.72rem; line-height: 1.5; color: var(--text-dim);
+            white-space: pre-wrap; word-break: break-all;
         }
-        
-        .status-indicator {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            background: #2ecc71;
-            border-radius: 50%;
-            margin-right: 5px;
-            animation: pulse 2s infinite;
+
+        /* Toast */
+        .toast {
+            position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
+            background: rgba(20,20,30,0.95); border: 1px solid var(--glass-border);
+            border-radius: 12px; padding: 12px 20px; z-index: 200;
+            font-size: 0.85rem; backdrop-filter: blur(20px);
+            opacity: 0; transition: opacity 0.3s; pointer-events: none;
         }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+        .toast.show { opacity: 1; }
+        .toast.success { border-color: rgba(52,211,153,0.4); }
+        .toast.error { border-color: rgba(248,113,113,0.4); }
+
+        .no-results { text-align: center; color: var(--text-dim); padding: 3rem 1rem; font-size: 0.9rem; display: none; }
+        .no-results.show { display: block; }
+
+        .footer { text-align: center; padding: 2rem 0 1rem; color: var(--text-dim); font-size: 0.75rem; }
+        .footer .lobsty { font-size: 0.85rem; margin-bottom: 0.3rem; }
+
+        @media (min-width: 480px) {
+            .apps-grid { grid-template-columns: repeat(3, 1fr); }
+            .header h1 { font-size: 2.2rem; }
+            .container { padding: 1.25rem; }
         }
-        
-        @media (max-width: 768px) {
-            h1 { font-size: 2em; }
-            .apps-grid { grid-template-columns: 1fr; }
+        @media (min-width: 768px) {
+            .apps-grid { grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+            .container { padding: 2rem; }
+            .header { padding: 3rem 0 2rem; }
+            .header h1 { font-size: 2.8rem; }
+            .stat-value { font-size: 2rem; }
+            .app-card { padding: 1.5rem 1rem; min-height: 130px; }
+            .app-icon { font-size: 2.5rem; }
+            .app-name { font-size: 0.9rem; }
         }
+        @media (min-width: 1024px) { .apps-grid { grid-template-columns: repeat(5, 1fr); } }
+        @media (min-width: 1280px) { .apps-grid { grid-template-columns: repeat(6, 1fr); } }
+
+        .app-card { animation: fadeUp 0.5s ease both; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Global search results dropdown */
+        .search-wrap { position: relative; z-index: 50; }
+        .search-kbd { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 0.7rem; color: var(--text-dim); background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border); border-radius: 6px; padding: 2px 7px; pointer-events: none; font-family: inherit; }
+        .global-results {
+            display: none; position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+            background: rgba(14,14,22,0.97); border: 1px solid var(--glass-border);
+            border-radius: 14px; max-height: 60vh; overflow-y: auto;
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.6); scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.1) transparent;
+        }
+        .global-results.open { display: block; }
+        .global-results .gr-group { padding: 0.5rem 0; }
+        .global-results .gr-group + .gr-group { border-top: 1px solid var(--glass-border); }
+        .global-results .gr-app-label { padding: 6px 16px; font-size: 0.72rem; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; display: flex; align-items: center; gap: 6px; }
+        .global-results .gr-item {
+            display: block; padding: 10px 16px 10px 36px; text-decoration: none; color: var(--text);
+            transition: background 0.15s; cursor: pointer;
+        }
+        .global-results .gr-item:hover, .global-results .gr-item.active { background: rgba(124,58,237,0.15); }
+        .global-results .gr-item-title { font-size: 0.85rem; font-weight: 500; line-height: 1.3; }
+        .global-results .gr-item-desc { font-size: 0.72rem; color: var(--text-dim); margin-top: 2px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .global-results .gr-empty { padding: 1.5rem; text-align: center; color: var(--text-dim); font-size: 0.85rem; }
+        .global-results .gr-loading { padding: 1.5rem; text-align: center; color: var(--text-dim); font-size: 0.85rem; }
+
+        /* Recently Visited */
+        .recent-section { margin-bottom: 2rem; }
+        .recent-title { font-size: 0.85rem; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.75rem; padding-left: 4px; display: flex; align-items: center; gap: 0.5rem; }
+        .recent-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--glass-border), transparent); }
+        .recent-row { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.5rem; scrollbar-width: none; }
+        .recent-row::-webkit-scrollbar { display: none; }
+        .recent-pill {
+            display: flex; align-items: center; gap: 6px; padding: 8px 14px;
+            background: var(--glass); border: 1px solid var(--glass-border); border-radius: 12px;
+            text-decoration: none; color: var(--text); font-size: 0.8rem; font-weight: 500;
+            white-space: nowrap; transition: all 0.3s; backdrop-filter: blur(10px);
+            -webkit-tap-highlight-color: transparent; min-height: 40px; flex-shrink: 0;
+        }
+        .recent-pill:hover { border-color: rgba(124,58,237,0.4); box-shadow: 0 4px 15px var(--glow); transform: translateY(-1px); }
+        .recent-pill .rp-emoji { font-size: 1.1rem; }
+
+        /* Keyboard shortcut badges */
+        .kb-badge {
+            display: none; position: absolute; top: -6px; left: -6px; z-index: 5;
+            width: 22px; height: 22px; border-radius: 6px;
+            background: var(--accent); color: #fff; font-size: 0.7rem; font-weight: 700;
+            align-items: center; justify-content: center; box-shadow: 0 2px 8px var(--glow);
+        }
+        body.show-kb .app-card .kb-badge { display: flex; }
     </style>
-<link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg"><link rel="icon" type="image/x-icon" href="/favicons/favicon.ico"><link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png"></head>
+</head>
 <body>
+    <div class="bg-orbs"><div class="orb"></div><div class="orb"></div><div class="orb"></div></div>
+
     <div class="container">
-        <header>
-            <h1>🎯 Ray's App Hub</h1>
-            <p class="subtitle">Your Content Creation Command Center</p>
-        </header>
-        
-        <div class="stats">
-            <div>
-                <div class="stat-value">10</div>
-                <div class="stat-label">Active Apps</div>
+        <div class="header">
+            <h1>🎯 App Hub</h1>
+            <p>Your Content Creation Command Center</p>
+        </div>
+
+        <div class="search-wrap">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input type="text" class="search-input" placeholder="Search apps & content..." id="search" autocomplete="off">
+            <span class="search-kbd" id="search-kbd">⌘K</span>
+            <div class="global-results" id="global-results"></div>
+        </div>
+
+        <div class="filters" id="filters">
+            <div class="chip active" data-filter="all">All</div>
+            <div class="chip" data-filter="content">📹 Content</div>
+            <div class="chip" data-filter="productivity">📋 Productivity</div>
+            <div class="chip" data-filter="hardware">⚡ Hardware</div>
+            <div class="chip" data-filter="business">💼 Business</div>
+            <div class="chip" data-filter="infra">🔧 Infrastructure</div>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-value" id="app-count">0</div>
+                <div class="stat-label">Apps</div>
             </div>
-            <div>
-                <div class="stat-value">✅</div>
-                <div class="stat-label">All Running</div>
+            <div class="stat-card">
+                <div class="stat-value" id="online-count">—</div>
+                <div class="stat-label">Online</div>
             </div>
-            <div>
-                <div class="stat-value">50k+</div>
-                <div class="stat-label">Lines of Code</div>
+            <div class="stat-card">
+                <div class="stat-value" id="offline-count">—</div>
+                <div class="stat-label">Offline</div>
             </div>
         </div>
-        
-        <h2 class="category-header">📹 Content Creation</h2>
-        <div class="apps-grid">
-            <a href="http://youtube-studio.twray.dev" class="app-card" target="_blank">
-                <div class="app-icon">📺</div>
-                <div class="app-title">YouTube Studio</div>
-                <div class="app-description">Track your video pipeline from idea to publish. Manage titles, descriptions, and publishing workflow.</div>
-                <div class="app-link"><span class="status-indicator"></span> Open App →</div>
-            </a>
-            
-            <a href="http://script-writer.twray.dev" class="app-card" target="_blank">
-                <div class="app-icon">✍️</div>
-                <div class="app-title">Script Writer</div>
-                <div class="app-description">Create video scripts with templates. Track word count, version history, and organize by series.</div>
-                <div class="app-link"><span class="status-indicator"></span> Open App →</div>
-            </a>
-            
-            <a href="http://thumbnail-analyzer.twray.dev" class="app-card" target="_blank">
-                <div class="app-icon">🎬</div>
-                <div class="app-title">Thumbnail Analyzer</div>
-                <div class="app-description">Design and test thumbnails. Track CTR estimates and compare different designs.</div>
-                <div class="app-link"><span class="status-indicator"></span> Open App →</div>
-            </a>
-            
-            <a href="http://content-ideas.twray.dev" class="app-card" target="_blank">
-                <div class="app-icon">💡</div>
-                <div class="app-title">Content Ideas</div>
-                <div class="app-description">Kanban board for brainstorming. Move ideas from concept to ready to publish.</div>
-                <div class="app-link"><span class="status-indicator"></span> Open App →</div>
-            </a>
-        </div>
-        
-        <h2 class="category-header">⚡ Hardware & Performance</h2>
-        <div class="apps-grid">
-            <a href="http://hardware-monitor.twray.dev" class="app-card" target="_blank">
-                <div class="app-icon">🖥️</div>
-                <div class="app-title">Hardware Monitor</div>
-                <div class="app-description">Real-time RTX 5090 stats. Monitor CPU, GPU, RAM, network, and storage in real-time.</div>
-                <div class="app-link"><span class="status-indicator"></span> Open App →</div>
-            </a>
-            
-            <a href="http://benchmark-tracker.twray.dev" class="app-card" target="_blank">
-                <div class="app-icon">📊</div>
-                <div class="app-title">Benchmark Tracker</div>
-                <div class="app-description">Log benchmark scores and track performance over time. Compare hardware configurations.</div>
-                <div class="app-link"><span class="status-indicator"></span> Open App →</div>
-            </a>
-            
-            <a href="http://gear-inventory.twray.dev" class="app-card" target="_blank">
-                <div class="app-icon">🎥</div>
-                <div class="app-title">Gear Inventory</div>
-                <div class="app-description">Catalog all your cameras, lenses, displays, and 3D printers. Track specs and maintenance.</div>
-                <div class="app-link"><span class="status-indicator"></span> Open App →</div>
-            </a>
-        </div>
-        
-        <h2 class="category-header">💼 Business & Planning</h2>
-        <div class="apps-grid">
-            <a href="http://sponsor-manager.twray.dev" class="app-card" target="_blank">
-                <div class="app-icon">💰</div>
-                <div class="app-title">Sponsor Manager</div>
-                <div class="app-description">Track sponsor deals, deliverables, and payments. Manage revenue and deadlines.</div>
-                <div class="app-link"><span class="status-indicator"></span> Open App →</div>
-            </a>
-            
-            <a href="http://gaming-logger.twray.dev" class="app-card" target="_blank">
-                <div class="app-icon">🎮</div>
-                <div class="app-title">Gaming Logger</div>
-                <div class="app-description">Track gaming sessions. Identify high-potential moments for content creation.</div>
-                <div class="app-link"><span class="status-indicator"></span> Open App →</div>
-            </a>
-            
-            <a href="http://stream-planner.twray.dev" class="app-card" target="_blank">
-                <div class="app-icon">🎥</div>
-                <div class="app-title">Stream Planner</div>
-                <div class="app-description">Schedule streams across Twitch, YouTube, and Discord. Track viewers and duration.</div>
-                <div class="app-link"><span class="status-indicator"></span> Open App →</div>
-            </a>
-        </div>
-        
-        <div style="text-align: center; color: white; margin-top: 60px; opacity: 0.8;">
-            <p>🦞 Built by Lobsty | All apps running on Lobsty VM</p>
-            <p style="margin-top: 10px; font-size: 0.9em;">Local: 192.100.2.228:8099-8109 | Cloud: *.twray.dev</p>
+
+        <div id="recent-section"></div>
+        <div id="app-categories"></div>
+        <div class="no-results" id="no-results">No apps match your search 🔍</div>
+
+        <div class="footer">
+            <div class="lobsty">🦞 Built by Lobsty</div>
+            <div>Running on Lobsty VM · *.twray.dev</div>
         </div>
     </div>
+
+    <!-- Log Modal -->
+    <div class="modal-overlay" id="log-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="log-modal-title">Logs</h3>
+                <button class="modal-close" onclick="closeLogModal()">✕</button>
+            </div>
+            <div class="modal-body"><pre id="log-modal-content">Loading...</pre></div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const APPS = [
+            { name: 'YouTube Studio', emoji: '📺', desc: 'Video pipeline from idea to publish', url: 'https://youtube-studio.twray.dev', cat: 'content', container: 'lobsty-youtube-studio' },
+            { name: 'Script Writer', emoji: '✍️', desc: 'Video scripts with templates', url: 'https://script-writer.twray.dev', cat: 'content', container: 'lobsty-script-writer' },
+            { name: 'Thumbnail Analyzer', emoji: '🎬', desc: 'Design & test thumbnails', url: 'https://thumbnail-analyzer.twray.dev', cat: 'content', container: 'lobsty-thumbnail-analyzer' },
+            { name: 'Content Ideas', emoji: '💡', desc: 'Brainstorm & organize ideas', url: 'https://content-ideas.twray.dev', cat: 'content', container: 'lobsty-content-ideas' },
+            { name: 'Video Pipeline', emoji: '🎥', desc: 'Track video production stages', url: 'https://video-pipeline.twray.dev', cat: 'content', container: 'lobsty-video-pipeline' },
+            { name: 'Stream Planner', emoji: '📡', desc: 'Schedule & plan streams', url: 'https://stream-planner.twray.dev', cat: 'content', container: 'lobsty-stream-planner' },
+            { name: 'Kanban Board', emoji: '📋', desc: 'Task management & workflows', url: 'https://board.twray.dev', cat: 'productivity', container: 'lobsty-board' },
+            { name: 'Docs Hub', emoji: '📄', desc: 'Documents & notes', url: 'https://docs.twray.dev', cat: 'productivity', container: 'lobsty-docs' },
+            { name: 'Drafts', emoji: '✏️', desc: 'Draft management workspace', url: 'https://drafts.twray.dev', cat: 'productivity', container: 'lobsty-drafts' },
+            { name: 'Todo', emoji: '✅', desc: 'Simple task tracking', url: 'https://todo.twray.dev', cat: 'productivity', container: 'lobsty-todo' },
+            { name: 'Budget Tracker', emoji: '💵', desc: 'Track expenses & budgets', url: 'https://budget.twray.dev', cat: 'productivity', container: 'lobsty-budget' },
+            { name: 'Hardware Monitor', emoji: '🖥️', desc: 'Real-time system stats', url: 'https://hardware-monitor.twray.dev', cat: 'hardware', container: 'lobsty-hardware-monitor' },
+            { name: 'Benchmark Tracker', emoji: '📊', desc: 'Performance benchmarks', url: 'https://benchmark-tracker.twray.dev', cat: 'hardware', container: 'lobsty-benchmark-tracker' },
+            { name: 'Gear Inventory', emoji: '🎒', desc: 'Camera & gear catalog', url: 'https://gear-inventory.twray.dev', cat: 'hardware', container: 'lobsty-gear-inventory' },
+            { name: 'Gaming Logger', emoji: '🎮', desc: 'Track gaming sessions', url: 'https://gaming-logger.twray.dev', cat: 'hardware', container: 'lobsty-gaming-logger' },
+            { name: 'Sponsor Manager', emoji: '🤝', desc: 'Sponsor deals & payments', url: 'https://sponsor-manager.twray.dev', cat: 'business', container: 'lobsty-sponsor-manager' },
+            { name: 'Shop', emoji: '🛒', desc: 'Shopify-connected store', url: 'https://shop.twray.dev', cat: 'business', container: 'lobsty-shop' },
+            { name: 'Stock Monitor', emoji: '📈', desc: 'Restock alerts & auto-buy', url: 'https://monitor.twray.dev', cat: 'business', public: true, container: 'lobsty-monitor' },
+            { name: 'Admin Dashboard', emoji: '⚙️', desc: 'System admin & Docker', url: 'https://admin.twray.dev', cat: 'infra', container: 'lobsty-admin' },
+            { name: 'Landing Page', emoji: '🌐', desc: 'Public landing page', url: 'https://twray.dev', cat: 'infra', public: true, container: 'lobsty-landing' },
+            { name: 'Komodo', emoji: '🐉', desc: 'Docker management', url: 'https://komodo.twray.dev', cat: 'infra', container: null },
+            { name: 'Netdata', emoji: '📊', desc: 'System monitoring', url: 'https://netdata.twray.dev', cat: 'infra', container: null },
+            { name: 'Open WebUI', emoji: '🤖', desc: 'AI chat interface', url: 'https://ai.twray.dev', cat: 'infra', container: null },
+            { name: 'Pi-hole', emoji: '🕳️', desc: 'Ad blocking DNS', url: 'https://pihole.twray.dev', cat: 'infra', container: null },
+        ];
+
+        const CAT_LABELS = { content: '📹 Content Creation', productivity: '📋 Productivity', hardware: '⚡ Hardware & Performance', business: '💼 Business', infra: '🔧 Infrastructure' };
+
+        document.getElementById('app-count').textContent = APPS.length;
+        let activeFilter = 'all';
+        let healthData = {};
+
+        function renderApps(filter = 'all', query = '') {
+            const container = document.getElementById('app-categories');
+            const q = query.toLowerCase().trim();
+            let html = '';
+            let totalVisible = 0;
+
+            ['content', 'productivity', 'hardware', 'business', 'infra'].forEach(cat => {
+                const apps = APPS.filter(a => {
+                    const matchCat = filter === 'all' || a.cat === filter;
+                    const matchQ = !q || a.name.toLowerCase().includes(q) || a.desc.toLowerCase().includes(q);
+                    return a.cat === cat && matchCat && matchQ;
+                });
+                if (!apps.length) return;
+                totalVisible += apps.length;
+
+                html += `<div class="category-section">
+                    <div class="category-title">${CAT_LABELS[cat]}</div>
+                    <div class="apps-grid">
+                        ${apps.map((a, i) => {
+                            const status = healthData[a.url];
+                            const statusClass = status === undefined ? '' : (status ? 'up' : 'down');
+                            const hasContainer = !!a.container;
+                            return `<a href="${a.url}" class="app-card" target="_blank" rel="noopener" style="animation-delay:${i * 0.05}s" data-url="${a.url}">
+                                <div class="app-status ${statusClass}"></div>
+                                ${hasContainer ? `<button class="gear-btn" onclick="toggleGear(event, this)" title="Actions">⚙</button>
+                                <div class="gear-dropdown" data-container="${a.container}">
+                                    <button onclick="restartApp(event, '${a.container}', '${a.name}')">🔄 Restart</button>
+                                    <button onclick="viewLogs(event, '${a.container}', '${a.name}')">📋 View Logs</button>
+                                </div>` : ''}
+                                <div class="app-icon">${a.emoji}</div>
+                                <div class="app-name">${a.name}</div>
+                                <div class="app-desc">${a.desc}</div>
+                            </a>`;
+                        }).join('')}
+                    </div>
+                </div>`;
+            });
+
+            container.innerHTML = html;
+            document.getElementById('no-results').classList.toggle('show', totalVisible === 0);
+        }
+
+        // Gear dropdown
+        function toggleGear(e, btn) {
+            e.preventDefault(); e.stopPropagation();
+            const dd = btn.nextElementSibling;
+            const wasOpen = dd.classList.contains('open');
+            document.querySelectorAll('.gear-dropdown.open').forEach(d => d.classList.remove('open'));
+            if (!wasOpen) dd.classList.add('open');
+        }
+
+        // Close dropdowns on outside click
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.gear-dropdown.open').forEach(d => d.classList.remove('open'));
+        });
+
+        // Restart
+        async function restartApp(e, container, name) {
+            e.preventDefault(); e.stopPropagation();
+            document.querySelectorAll('.gear-dropdown.open').forEach(d => d.classList.remove('open'));
+            showToast(`Restarting ${name}...`, '');
+            try {
+                const res = await fetch(`/api/restart/${container}`, { method: 'POST' });
+                const data = await res.json();
+                if (data.ok) { showToast(`${name} restarted ✓`, 'success'); fetchHealth(); }
+                else showToast(`Failed: ${data.error}`, 'error');
+            } catch { showToast('Restart failed', 'error'); }
+        }
+
+        // View Logs
+        async function viewLogs(e, container, name) {
+            e.preventDefault(); e.stopPropagation();
+            document.querySelectorAll('.gear-dropdown.open').forEach(d => d.classList.remove('open'));
+            document.getElementById('log-modal-title').textContent = `${name} Logs`;
+            document.getElementById('log-modal-content').textContent = 'Loading...';
+            document.getElementById('log-modal').classList.add('open');
+            try {
+                const res = await fetch(`/api/logs/${container}`);
+                const data = await res.json();
+                document.getElementById('log-modal-content').textContent = data.logs || data.error || 'No logs';
+            } catch { document.getElementById('log-modal-content').textContent = 'Failed to fetch logs'; }
+        }
+
+        function closeLogModal() { document.getElementById('log-modal').classList.remove('open'); }
+        document.getElementById('log-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeLogModal(); });
+
+        // Toast
+        function showToast(msg, type) {
+            const t = document.getElementById('toast');
+            t.textContent = msg; t.className = 'toast show ' + (type || '');
+            clearTimeout(t._timer);
+            t._timer = setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        // Health polling
+        async function fetchHealth() {
+            try {
+                const res = await fetch('/api/health');
+                healthData = await res.json();
+                // Update dots without full re-render
+                document.querySelectorAll('.app-card[data-url]').forEach(card => {
+                    const url = card.dataset.url;
+                    const dot = card.querySelector('.app-status');
+                    if (dot && url in healthData) {
+                        dot.className = 'app-status ' + (healthData[url] ? 'up' : 'down');
+                    }
+                });
+                // Update stats
+                const online = Object.values(healthData).filter(v => v).length;
+                const offline = Object.values(healthData).filter(v => !v).length;
+                document.getElementById('online-count').textContent = online;
+                document.getElementById('offline-count').textContent = offline;
+            } catch {}
+        }
+
+        // Filter chips
+        document.getElementById('filters').addEventListener('click', e => {
+            const chip = e.target.closest('.chip');
+            if (!chip) return;
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            activeFilter = chip.dataset.filter;
+            renderApps(activeFilter, document.getElementById('search').value);
+        });
+
+        // search input handled by global search below
+
+        renderApps();
+        fetchHealth();
+        setInterval(fetchHealth, 60000);
+
+        // Global search
+        let searchTimer = null;
+        let globalResultsEl = document.getElementById("global-results");
+        let activeResultIdx = -1;
+        let flatResults = [];
+
+        if (!/(Mac|iPhone|iPad)/.test(navigator.userAgent)) {
+            document.getElementById("search-kbd").textContent = "Ctrl+K";
+        }
+
+        document.addEventListener("keydown", e => {
+            if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+                e.preventDefault();
+                document.getElementById("search").focus();
+            }
+            if (e.key === "Escape") {
+                globalResultsEl.classList.remove("open");
+                activeResultIdx = -1;
+            }
+            if (globalResultsEl.classList.contains("open")) {
+                if (e.key === "ArrowDown") {
+                    e.preventDefault();
+                    activeResultIdx = Math.min(activeResultIdx + 1, flatResults.length - 1);
+                    highlightResult();
+                } else if (e.key === "ArrowUp") {
+                    e.preventDefault();
+                    activeResultIdx = Math.max(activeResultIdx - 1, -1);
+                    highlightResult();
+                } else if (e.key === "Enter" && activeResultIdx >= 0) {
+                    e.preventDefault();
+                    const link = globalResultsEl.querySelectorAll(".gr-item")[activeResultIdx];
+                    if (link) window.open(link.href, "_blank");
+                }
+            }
+        });
+
+        function highlightResult() {
+            globalResultsEl.querySelectorAll(".gr-item").forEach((el, i) => {
+                el.classList.toggle("active", i === activeResultIdx);
+                if (i === activeResultIdx) el.scrollIntoView({ block: "nearest" });
+            });
+        }
+
+        document.getElementById("search").addEventListener("input", e => {
+            const q = e.target.value.trim();
+            renderApps(activeFilter, q);
+            clearTimeout(searchTimer);
+            activeResultIdx = -1;
+            if (q.length < 2) {
+                globalResultsEl.classList.remove("open");
+                return;
+            }
+            globalResultsEl.innerHTML = "<div class=\"gr-loading\">Searching...</div>";
+            globalResultsEl.classList.add("open");
+            searchTimer = setTimeout(() => doGlobalSearch(q), 300);
+        });
+
+        async function doGlobalSearch(q) {
+            try {
+                const res = await fetch("/api/search?q=" + encodeURIComponent(q));
+                const data = await res.json();
+                flatResults = [];
+                if (!data.results || data.results.length === 0) {
+                    globalResultsEl.innerHTML = "<div class=\"gr-empty\">No results across apps</div>";
+                    return;
+                }
+                let html = "";
+                data.results.forEach(group => {
+                    html += "<div class=\"gr-group\">";
+                    html += "<div class=\"gr-app-label\">" + group.emoji + " " + group.app + "</div>";
+                    group.items.forEach(item => {
+                        flatResults.push(item);
+                        const desc = item.desc ? "<div class=\"gr-item-desc\">" + escHtml(item.desc) + "</div>" : "";
+                        html += "<a class=\"gr-item\" href=\"" + escHtml(item.url) + "\" target=\"_blank\" rel=\"noopener\">";
+                        html += "<div class=\"gr-item-title\">" + escHtml(item.title) + "</div>" + desc;
+                        html += "</a>";
+                    });
+                    html += "</div>";
+                });
+                globalResultsEl.innerHTML = html;
+            } catch {
+                globalResultsEl.innerHTML = "<div class=\"gr-empty\">Search failed</div>";
+            }
+        }
+
+        function escHtml(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+
+        document.addEventListener("click", e => {
+            if (!e.target.closest(".search-wrap")) {
+                globalResultsEl.classList.remove("open");
+                activeResultIdx = -1;
+            }
+        });
+
+
+        // === Recently Visited ===
+        function getRecent() {
+            try { return JSON.parse(localStorage.getItem('recentlyVisited') || '[]'); } catch { return []; }
+        }
+        function saveRecent(app) {
+            let recent = getRecent().filter(r => r.url !== app.url);
+            recent.unshift({ url: app.url, name: app.name, emoji: app.emoji, timestamp: Date.now() });
+            if (recent.length > 8) recent = recent.slice(0, 8);
+            localStorage.setItem('recentlyVisited', JSON.stringify(recent));
+        }
+        function renderRecent() {
+            const recent = getRecent();
+            const el = document.getElementById('recent-section');
+            if (!recent.length) { el.innerHTML = ''; return; }
+            const pills = recent.slice(0, 5).map(r =>
+                '<a href="' + escHtml(r.url) + '" class="recent-pill" target="_blank" rel="noopener"><span class="rp-emoji">' + r.emoji + '</span>' + escHtml(r.name) + '</a>'
+            ).join('');
+            el.innerHTML = '<div class="recent-section"><div class="recent-title">\u23f1 Recently Visited</div><div class="recent-row">' + pills + '</div></div>';
+        }
+
+        // Intercept app card clicks to track visits
+        document.addEventListener('click', e => {
+            const card = e.target.closest('.app-card');
+            if (!card || e.target.closest('.gear-btn') || e.target.closest('.gear-dropdown')) return;
+            const url = card.getAttribute('href');
+            const app = APPS.find(a => a.url === url);
+            if (app) { saveRecent(app); renderRecent(); }
+        });
+
+        renderRecent();
+
+        // === Keyboard Shortcut Badges ===
+        function getVisibleCards() { return Array.from(document.querySelectorAll('.app-card')); }
+
+        function injectBadges() {
+            document.querySelectorAll('.kb-badge').forEach(b => b.remove());
+            getVisibleCards().slice(0, 9).forEach((card, i) => {
+                const badge = document.createElement('div');
+                badge.className = 'kb-badge';
+                badge.textContent = i + 1;
+                card.appendChild(badge);
+            });
+        }
+
+        document.addEventListener('keydown', e => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            if (e.metaKey || e.ctrlKey) {
+                if (!document.body.classList.contains('show-kb')) {
+                    injectBadges();
+                    document.body.classList.add('show-kb');
+                }
+                const num = parseInt(e.key);
+                if (num >= 1 && num <= 9) {
+                    e.preventDefault();
+                    const cards = getVisibleCards();
+                    if (cards[num - 1]) {
+                        const url = cards[num - 1].getAttribute('href');
+                        const app = APPS.find(a => a.url === url);
+                        if (app) { saveRecent(app); renderRecent(); }
+                        window.open(url, '_blank');
+                    }
+                }
+            }
+        });
+        document.addEventListener('keyup', e => {
+            if (!e.metaKey && !e.ctrlKey) {
+                document.body.classList.remove('show-kb');
+            }
+        });
+    </script>
 </body>
 </html>

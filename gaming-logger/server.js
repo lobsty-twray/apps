@@ -7,7 +7,7 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const pool = new Pool({
+const pool = new Pool(process.env.DATABASE_URL ? { connectionString: process.env.DATABASE_URL } : {
   host: process.env.DB_HOST || 'lobsty-postgres',
   port: process.env.DB_PORT || 5432,
   database: process.env.DB_NAME || 'gaming_logger',
@@ -168,6 +168,54 @@ app.get('/api/stats', async (req, res) => {
   }
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Gaming Logger on port ${PORT}`);
+
+// Detailed stats
+app.get('/api/stats/detailed', async (req, res) => {
+  try {
+    const streakQuery = await pool.query(`
+      WITH daily AS (SELECT DISTINCT DATE(start_time) as d FROM sessions ORDER BY d DESC)
+      SELECT d FROM daily
+    `);
+    let streak = 0;
+    const today = new Date(); today.setHours(0,0,0,0);
+    for (const row of streakQuery.rows) {
+      const d = new Date(row.d); d.setHours(0,0,0,0);
+      const expected = new Date(today); expected.setDate(expected.getDate() - streak);
+      if (d.getTime() === expected.getTime()) streak++;
+      else break;
+    }
+
+    // Longest streak
+    let longestStreak = 0, currentRun = 0;
+    const allDays = streakQuery.rows.map(r => { const d = new Date(r.d); d.setHours(0,0,0,0); return d.getTime(); });
+    for (let i = 0; i < allDays.length; i++) {
+      if (i === 0) { currentRun = 1; }
+      else {
+        const diff = allDays[i-1] - allDays[i];
+        if (diff === 86400000) currentRun++;
+        else currentRun = 1;
+      }
+      if (currentRun > longestStreak) longestStreak = currentRun;
+    }
+
+    const uniqueGames = await pool.query('SELECT COUNT(DISTINCT game_name) FROM sessions');
+    const avgDuration = await pool.query('SELECT AVG(duration_minutes) FROM sessions WHERE duration_minutes IS NOT NULL');
+    const mostPlayed = await pool.query('SELECT game_name, SUM(duration_minutes) as mins FROM sessions GROUP BY game_name ORDER BY mins DESC LIMIT 1');
+    const platformBreakdown = await pool.query('SELECT platform, COUNT(*) as count, SUM(duration_minutes) as minutes FROM sessions WHERE platform IS NOT NULL GROUP BY platform ORDER BY count DESC');
+    const thisWeek = await pool.query("SELECT COALESCE(SUM(duration_minutes),0) as mins FROM sessions WHERE start_time >= date_trunc('week', NOW())");
+    const lastWeek = await pool.query("SELECT COALESCE(SUM(duration_minutes),0) as mins FROM sessions WHERE start_time >= date_trunc('week', NOW()) - interval '7 days' AND start_time < date_trunc('week', NOW())");
+    const monthly = await pool.query("SELECT to_char(start_time, 'YYYY-MM') as month, SUM(duration_minutes) as mins FROM sessions WHERE start_time >= NOW() - interval '6 months' GROUP BY month ORDER BY month");
+
+    res.json({
+      streak, longest_streak: longestStreak,
+      unique_games: parseInt(uniqueGames.rows[0].count),
+      avg_duration: Math.round(parseFloat(avgDuration.rows[0].avg) || 0),
+      most_played: mostPlayed.rows[0] ? { game: mostPlayed.rows[0].game_name, minutes: parseInt(mostPlayed.rows[0].mins) } : null,
+      platforms: platformBreakdown.rows,
+      this_week_mins: parseInt(thisWeek.rows[0].mins),
+      last_week_mins: parseInt(lastWeek.rows[0].mins),
+      monthly: monthly.rows
+    });
+  } catch(e) { console.error(e); res.status(500).json({error:'Failed'}); }
 });
+app.listen(PORT, '0.0.0.0', () => { console.log(`Gaming Logger on port ${PORT}`); });

@@ -91,6 +91,19 @@ async function initDatabase() {
       CREATE INDEX IF NOT EXISTS idx_drafts_assigned_to ON drafts(assigned_to);
       CREATE INDEX IF NOT EXISTS idx_comments_draft_id ON comments(draft_id);
       CREATE INDEX IF NOT EXISTS idx_draft_history_draft_id ON draft_history(draft_id);
+
+      CREATE TABLE IF NOT EXISTS templates (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(500) NOT NULL,
+        category VARCHAR(100) DEFAULT '',
+        body TEXT DEFAULT '',
+        created_by INTEGER REFERENCES users(id),
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_templates_category ON templates(category);
+      CREATE INDEX IF NOT EXISTS idx_templates_created_by ON templates(created_by);
     `);
 
     // Seed default users if they don't exist
@@ -506,6 +519,95 @@ app.get('/api/users', authRequired, async (req, res) => {
   }
 });
 
+// ─── Templates CRUD ──────────────────────────────────────────────────────────
+
+app.get('/api/templates', authRequired, async (req, res) => {
+  try {
+    const { category, search } = req.query;
+    let where = [];
+    let params = [];
+    let i = 1;
+    if (category) { where.push(`t.category = $${i++}`); params.push(category); }
+    if (search) { where.push(`(t.title ILIKE $${i} OR t.body ILIKE $${i})`); params.push(`%${search}%`); i++; }
+    const whereClause = where.length > 0 ? 'WHERE ' + where.join(' AND ') : '';
+    const result = await pool.query(`
+      SELECT t.*, u.display_name AS creator_name, u.avatar_color AS creator_color
+      FROM templates t
+      LEFT JOIN users u ON t.created_by = u.id
+      ${whereClause}
+      ORDER BY t.category ASC, t.title ASC
+    `, params);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('List templates error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.post('/api/templates', authRequired, async (req, res) => {
+  try {
+    const { title, category, body } = req.body;
+    if (!title) return res.status(400).json({ error: 'Title is required' });
+    const result = await pool.query(
+      `INSERT INTO templates (title, category, body, created_by) VALUES ($1, $2, $3, $4) RETURNING *`,
+      [title, category || '', body || '', req.userId]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error('Create template error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.get('/api/templates/:id', authRequired, async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM templates WHERE id = $1', [req.params.id]);
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Template not found' });
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.put('/api/templates/:id', authRequired, async (req, res) => {
+  try {
+    const { title, category, body } = req.body;
+    const result = await pool.query(
+      `UPDATE templates SET
+        title = COALESCE($1, title),
+        category = COALESCE($2, category),
+        body = COALESCE($3, body),
+        updated_at = NOW()
+      WHERE id = $4 RETURNING *`,
+      [title, category, body, req.params.id]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Template not found' });
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Update template error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.delete('/api/templates/:id', authRequired, async (req, res) => {
+  try {
+    const result = await pool.query('DELETE FROM templates WHERE id = $1 RETURNING id', [req.params.id]);
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Template not found' });
+    res.json({ deleted: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.get('/api/template-categories', authRequired, async (req, res) => {
+  try {
+    const result = await pool.query(`SELECT DISTINCT category FROM templates WHERE category != '' ORDER BY category`);
+    res.json(result.rows.map(r => r.category));
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // ─── SPA Fallback ────────────────────────────────────────────────────────────
 
 app.get('*', (req, res) => {
@@ -516,6 +618,17 @@ app.get('*', (req, res) => {
 
 initDatabase()
   .then(() => {
+
+// Global search endpoint (internal, no auth)
+app.get("/api/search", async (req, res) => {
+  try {
+    const q = (req.query.q || "").trim();
+    if (!q || q.length < 2) return res.json([]);
+    const result = await pool.query("SELECT id, title, LEFT(content, 200) as content, status FROM drafts WHERE title ILIKE $1 OR content ILIKE $1 ORDER BY updated_at DESC LIMIT 10", ["%" + q + "%"]);
+    res.json(result.rows);
+  } catch (error) { res.json([]); }
+});
+
     app.listen(PORT, () => {
       console.log(`Drafts Hub running on port ${PORT}`);
     });

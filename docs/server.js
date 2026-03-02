@@ -520,6 +520,17 @@ app.get('*', (req, res) => {
 // Start
 initDatabase()
   .then(() => {
+
+// Global search endpoint (internal, no auth)
+app.get("/api/search", async (req, res) => {
+  try {
+    const q = (req.query.q || "").trim();
+    if (!q || q.length < 2) return res.json([]);
+    const result = await pool.query("SELECT id, title, LEFT(content, 200) as content FROM docs WHERE title ILIKE $1 OR content ILIKE $1 ORDER BY updated_at DESC LIMIT 10", ["%" + q + "%"]);
+    res.json(result.rows);
+  } catch (error) { res.json([]); }
+});
+
     app.listen(PORT, () => {
       console.log(`Lobsty Docs running on port ${PORT}`);
     });
