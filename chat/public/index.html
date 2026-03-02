@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="http://shared-assets:3000/design-tokens.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Chat Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <!-- Token Bar -->
+  <div id="token-bar">
+    <div class="token-item"><span class="token-label">IN</span><span id="tb-input" class="token-val">0</span></div>
+    <div class="token-item"><span class="token-label">OUT</span><span id="tb-output" class="token-val">0</span></div>
+    <div class="token-item"><span class="token-label">THINK</span><span id="tb-thinking" class="token-val">0</span></div>
+    <div class="token-item"><span class="token-label">CACHE R</span><span id="tb-cache-read" class="token-val">0</span></div>
+    <div class="token-item"><span class="token-label">CACHE W</span><span id="tb-cache-write" class="token-val">0</span></div>
+  </div>
+
+  <!-- Header -->
+  <header id="app-header">
+    <div class="header-left">
+      <h1>Chat Hub</h1>
+      <span id="model-name" class="model-badge">—</span>
+    </div>
+    <div class="header-right">
+      <select id="session-select"><option value="main">main</option></select>
+      <button id="nav-chat" class="nav-btn active" onclick="showView('chat')">💬</button>
+      <button id="nav-usage" class="nav-btn" onclick="showView('usage')">📊</button>
+      <button id="nav-settings" class="nav-btn" onclick="showView('settings')">⚙️</button>
+    </div>
+  </header>
+
+  <!-- Chat View -->
+  <div id="view-chat" class="view active">
+    <div id="messages"></div>
+    <div id="input-area">
+      <div id="typing-indicator" class="hidden">Assistant is typing...</div>
+      <form id="chat-form">
+        <textarea id="chat-input" placeholder="Message..." rows="1"></textarea>
+        <button type="submit" id="send-btn">▶</button>
+        <button type="button" id="abort-btn" class="hidden" onclick="abortRun()">⏹</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Usage View -->
+  <div id="view-usage" class="view">
+    <div class="usage-summary" id="usage-summary"></div>
+    <div class="usage-chart-container">
+      <h3>Daily Usage (Last 30 Days)</h3>
+      <canvas id="usage-chart" width="800" height="300"></canvas>
+    </div>
+    <div id="usage-recent">
+      <h3>Recent Messages</h3>
+      <div id="recent-list"></div>
+    </div>
+  </div>
+
+  <!-- Settings View -->
+  <div id="view-settings" class="view">
+    <div class="settings-card">
+      <h3>Gateway Connection</h3>
+      <label>WebSocket URL</label>
+      <input id="set-ws-url" type="text" placeholder="wss://openclaw.twray.dev">
+      <label>Gateway Token</label>
+      <input id="set-token" type="password" placeholder="Enter gateway token">
+      <button onclick="saveSettings()" class="btn-primary">Save & Reconnect</button>
+    </div>
+    <div class="settings-card">
+      <h3>Connection Status</h3>
+      <div id="conn-status">Disconnected</div>
+    </div>
+  </div>
+
+  <script src="/charts.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
