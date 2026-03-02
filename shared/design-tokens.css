@@ -1,0 +1,47 @@
+:root {
+  /* Backgrounds */
+  --bg: #0a0a0f;
+  --surface: rgba(255,255,255,0.03);
+  --glass: rgba(255,255,255,0.05);
+  --glass-border: rgba(255,255,255,0.08);
+  --glass-hover: rgba(255,255,255,0.1);
+
+  /* Text */
+  --text: #e8e8f0;
+  --text-dim: #888899;
+
+  /* Accent */
+  --accent: #7c3aed;
+  --accent2: #2563eb;
+  --accent-light: #a78bfa;
+  --gradient: linear-gradient(135deg, #7c3aed, #2563eb);
+  --glow: rgba(124,58,237,0.3);
+  --glow2: rgba(37,99,235,0.3);
+
+  /* Status */
+  --green: #34d399;
+  --red: #f87171;
+  --yellow: #fbbf24;
+
+  /* Spacing */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+
+  /* Touch */
+  --min-touch: 44px;
+
+  /* Typography */
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Base resets */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-text-size-adjust: 100%;
+}

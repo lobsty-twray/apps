@@ -1,6 +1,39 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment & secrets
 .env
-# Ignore backup files
-*.backup*
+.env.*
 secrets.txt
+*.secret
+credentials.json
+
+# Database files
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+board/data/
+postgres-data/
+pgdata/
+
+# BFG cleanup
 .git.bfg-report/
 *.jar
+
+# Backups
+*.bak
+*.backup*
+
+# Screenshots (generated)
+screenshots/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
