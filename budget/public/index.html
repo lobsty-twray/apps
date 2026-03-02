@@ -1,253 +1,267 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="stylesheet" href="http://shared-assets:3000/design-tokens.css">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Lobsty Budget</title>
-    <link rel="stylesheet" href="style.css?v=1771353943">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta name="theme-color" content="#0a0a0f">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body>
+    <!-- Top navbar -->
     <nav class="navbar">
         <div class="nav-brand">
-            <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle menu">
-                <span class="hamburger-line"></span>
-                <span class="hamburger-line"></span>
-                <span class="hamburger-line"></span>
-            </button>
             <span class="logo">🦞</span>
-            <h1>Lobsty Budget</h1>
+            <h1>Budget</h1>
         </div>
         <div class="nav-date">
-            <select id="monthSelect">
-                <option value="1">Jan</option>
-                <option value="2">Feb</option>
-                <option value="3">Mar</option>
-                <option value="4">Apr</option>
-                <option value="5">May</option>
-                <option value="6">Jun</option>
-                <option value="7">Jul</option>
-                <option value="8">Aug</option>
-                <option value="9">Sep</option>
-                <option value="10">Oct</option>
-                <option value="11">Nov</option>
-                <option value="12">Dec</option>
-            </select>
-            <select id="yearSelect"></select>
+            <button class="date-nav-btn" id="prevMonth" aria-label="Previous month">‹</button>
+            <div class="date-display" id="dateDisplay">Feb 2026</div>
+            <button class="date-nav-btn" id="nextMonth" aria-label="Next month">›</button>
         </div>
-    </nav>
-
-    <div id="sidebar-overlay" class="sidebar-overlay"></div>
-    <div class="sidebar" id="sidebar">
-        <div class="nav-item active" data-view="dashboard">📊 Dashboard</div>
-        <div class="nav-item" data-view="transactions">💳 Transactions</div>
-        <div class="nav-item" data-view="categories">🏷️ Categories</div>
-        <div class="nav-item" data-view="budgets">🎯 Budgets</div>
-        <div class="nav-item" data-view="trends">📈 Trends</div>
-    </div>
-
-    <!-- Bottom navigation for mobile -->
-    <nav class="bottom-nav" id="bottom-nav">
-        <button class="bottom-nav-item active" data-view="dashboard">
-            <span class="bottom-nav-icon">📊</span>
-            <span class="bottom-nav-label">Dashboard</span>
-        </button>
-        <button class="bottom-nav-item" data-view="transactions">
-            <span class="bottom-nav-icon">💳</span>
-            <span class="bottom-nav-label">Transactions</span>
-        </button>
-        <button class="bottom-nav-item" data-view="categories">
-            <span class="bottom-nav-icon">🏷️</span>
-            <span class="bottom-nav-label">Categories</span>
-        </button>
-        <button class="bottom-nav-item" data-view="budgets">
-            <span class="bottom-nav-icon">🎯</span>
-            <span class="bottom-nav-label">Budgets</span>
-        </button>
-        <button class="bottom-nav-item" data-view="trends">
-            <span class="bottom-nav-icon">📈</span>
-            <span class="bottom-nav-label">Trends</span>
-        </button>
     </nav>
 
     <main class="main-content">
         <!-- Dashboard View -->
         <div id="dashboard-view" class="view active">
             <div class="summary-cards">
-                <div class="card income-card">
-                    <h3>Total Income</h3>
-                    <div class="amount" id="total-income">$0.00</div>
+                <div class="glass-card summary-card income-card">
+                    <div class="summary-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 7l-5-5-5 5"/></svg>
+                    </div>
+                    <div class="summary-info">
+                        <span class="summary-label">Income</span>
+                        <span class="summary-amount" id="total-income">$0.00</span>
+                    </div>
                 </div>
-                <div class="card expense-card">
-                    <h3>Total Expenses</h3>
-                    <div class="amount" id="total-expenses">$0.00</div>
+                <div class="glass-card summary-card expense-card">
+                    <div class="summary-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22V2M7 17l5 5 5-5"/></svg>
+                    </div>
+                    <div class="summary-info">
+                        <span class="summary-label">Expenses</span>
+                        <span class="summary-amount" id="total-expenses">$0.00</span>
+                    </div>
                 </div>
-                <div class="card savings-card">
-                    <h3>Net Savings</h3>
-                    <div class="amount" id="net-savings">$0.00</div>
+                <div class="glass-card summary-card balance-card">
+                    <div class="summary-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                    </div>
+                    <div class="summary-info">
+                        <span class="summary-label">Balance</span>
+                        <span class="summary-amount" id="net-savings">$0.00</span>
+                    </div>
                 </div>
             </div>
+
+            <!-- Progress ring -->
+            <div class="glass-card budget-overview-card" id="budget-overview-section" style="display:none">
+                <h3 class="section-title">Monthly Budget</h3>
+                <div class="ring-container" id="ring-container"></div>
+            </div>
             
-            <div class="chart-container">
-                <h2>Spending by Category</h2>
-                <canvas id="categoryChart"></canvas>
+            <div class="glass-card chart-card">
+                <h3 class="section-title">Spending Breakdown</h3>
+                <div class="chart-wrapper">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+                <div class="category-legend" id="category-legend"></div>
+            </div>
+
+            <!-- Recent transactions on dashboard -->
+            <div class="glass-card">
+                <div class="section-header">
+                    <h3 class="section-title">Recent Transactions</h3>
+                    <button class="link-btn" id="viewAllTransactions">View All →</button>
+                </div>
+                <div class="transaction-list" id="recent-transactions"></div>
             </div>
         </div>
 
         <!-- Transactions View -->
         <div id="transactions-view" class="view">
-            <div class="view-header">
-                <h2>Transactions</h2>
-                <div class="filters">
-                    <select id="typeFilter">
-                        <option value="">All Types</option>
-                        <option value="income">Income</option>
-                        <option value="expense">Expense</option>
-                    </select>
-                    <select id="categoryFilter">
-                        <option value="">All Categories</option>
-                    </select>
+            <div class="view-top-bar">
+                <div class="filter-chips">
+                    <button class="chip active" data-type="">All</button>
+                    <button class="chip" data-type="income">Income</button>
+                    <button class="chip" data-type="expense">Expense</button>
                 </div>
-                <button class="btn btn-primary" onclick="openTransactionModal()">+ Add Transaction</button>
+                <select class="glass-select" id="categoryFilter">
+                    <option value="">All Categories</option>
+                </select>
             </div>
-            
             <div class="transaction-list" id="transaction-list"></div>
         </div>
 
         <!-- Categories View -->
         <div id="categories-view" class="view">
-            <div class="view-header">
-                <h2>Categories</h2>
-                <button class="btn btn-primary" onclick="openCategoryModal()">+ Add Category</button>
-            </div>
-            
             <div class="category-grid" id="category-grid"></div>
         </div>
 
         <!-- Budgets View -->
         <div id="budgets-view" class="view">
-            <div class="view-header">
-                <h2>Budget Limits</h2>
-                <button class="btn btn-primary" onclick="openBudgetModal()">+ Set Budget</button>
-            </div>
-            
             <div class="budget-list" id="budget-list"></div>
         </div>
 
         <!-- Trends View -->
         <div id="trends-view" class="view">
-            <h2>Monthly Trends</h2>
-            <div class="chart-container">
-                <canvas id="trendsChart"></canvas>
+            <div class="glass-card chart-card">
+                <h3 class="section-title">Income vs Expenses</h3>
+                <div class="chart-wrapper chart-wrapper-tall">
+                    <canvas id="trendsChart"></canvas>
+                </div>
+            </div>
+            <div class="glass-card chart-card">
+                <h3 class="section-title">Net Savings</h3>
+                <div class="chart-wrapper chart-wrapper-tall">
+                    <canvas id="savingsChart"></canvas>
+                </div>
             </div>
         </div>
     </main>
 
-    <!-- Transaction Modal -->
-    <div id="transaction-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="transaction-modal-title">Add Transaction</h3>
-                <span class="close" onclick="closeTransactionModal()">&times;</span>
-            </div>
+    <!-- FAB -->
+    <button class="fab" id="fab" aria-label="Add new">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+
+    <!-- Bottom navigation -->
+    <nav class="bottom-nav">
+        <button class="bottom-nav-item active" data-view="dashboard">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            <span>Dashboard</span>
+        </button>
+        <button class="bottom-nav-item" data-view="transactions">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+            <span>Transactions</span>
+        </button>
+        <div class="bottom-nav-spacer"></div>
+        <button class="bottom-nav-item" data-view="budgets">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+            <span>Budgets</span>
+        </button>
+        <button class="bottom-nav-item" data-view="trends">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 20l5-8 4 4 9-12"/></svg>
+            <span>Trends</span>
+        </button>
+    </nav>
+
+    <!-- Transaction Modal (bottom sheet) -->
+    <div id="transaction-modal" class="modal-overlay">
+        <div class="modal-sheet glass-card">
+            <div class="sheet-handle"></div>
+            <h3 class="modal-title" id="transaction-modal-title">Add Transaction</h3>
             <form id="transaction-form">
-                <div class="form-group">
-                    <label>Type</label>
-                    <select name="type" required>
-                        <option value="expense">Expense</option>
-                        <option value="income">Income</option>
-                    </select>
+                <div class="type-toggle">
+                    <button type="button" class="type-btn active" data-type="expense">Expense</button>
+                    <button type="button" class="type-btn" data-type="income">Income</button>
                 </div>
-                <div class="form-group">
-                    <label>Amount</label>
-                    <input type="number" name="amount" step="0.01" min="0" required>
+                <input type="hidden" name="type" value="expense">
+                <div class="amount-input-wrapper">
+                    <span class="currency-symbol">$</span>
+                    <input type="number" name="amount" step="0.01" min="0" required placeholder="0.00" class="amount-input" inputmode="decimal">
                 </div>
-                <div class="form-group">
-                    <label>Category</label>
-                    <select name="category_id" id="transaction-category-select" required></select>
-                </div>
-                <div class="form-group">
-                    <label>Date</label>
-                    <input type="date" name="date" required>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select name="category_id" id="transaction-category-select" required class="glass-select"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" name="date" required class="glass-input">
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Description</label>
-                    <input type="text" name="description">
+                    <input type="text" name="description" class="glass-input" placeholder="What was this for?">
                 </div>
-                <div class="form-group">
-                    <label class="checkbox-label">
-                        <input type="checkbox" name="recurring">
-                        Recurring transaction
-                    </label>
-                </div>
+                <label class="toggle-row">
+                    <span>Recurring</span>
+                    <input type="checkbox" name="recurring" class="toggle-input">
+                    <span class="toggle-slider"></span>
+                </label>
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeTransactionModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="button" class="btn-ghost" onclick="app.closeTransactionModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Save</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- Category Modal -->
-    <div id="category-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Add Category</h3>
-                <span class="close" onclick="closeCategoryModal()">&times;</span>
-            </div>
+    <div id="category-modal" class="modal-overlay">
+        <div class="modal-sheet glass-card">
+            <div class="sheet-handle"></div>
+            <h3 class="modal-title">New Category</h3>
             <form id="category-form">
                 <div class="form-group">
                     <label>Name</label>
-                    <input type="text" name="name" required>
+                    <input type="text" name="name" required class="glass-input" placeholder="Category name">
                 </div>
                 <div class="form-group">
                     <label>Type</label>
-                    <select name="type" required>
+                    <select name="type" required class="glass-select">
                         <option value="expense">Expense</option>
                         <option value="income">Income</option>
                         <option value="both">Both</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label>Color</label>
-                    <input type="color" name="color" value="#646cff" required>
-                </div>
-                <div class="form-group">
-                    <label>Icon (emoji)</label>
-                    <input type="text" name="icon" required placeholder="🏷️">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Color</label>
+                        <input type="color" name="color" value="#646cff" required class="color-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Icon (emoji)</label>
+                        <input type="text" name="icon" required placeholder="🏷️" class="glass-input emoji-input">
+                    </div>
                 </div>
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeCategoryModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="button" class="btn-ghost" onclick="app.closeCategoryModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Save</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- Budget Modal -->
-    <div id="budget-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Set Budget</h3>
-                <span class="close" onclick="closeBudgetModal()">&times;</span>
-            </div>
+    <div id="budget-modal" class="modal-overlay">
+        <div class="modal-sheet glass-card">
+            <div class="sheet-handle"></div>
+            <h3 class="modal-title">Set Budget</h3>
             <form id="budget-form">
                 <div class="form-group">
                     <label>Category</label>
-                    <select name="category_id" id="budget-category-select" required></select>
+                    <select name="category_id" id="budget-category-select" required class="glass-select"></select>
                 </div>
-                <div class="form-group">
-                    <label>Monthly Limit</label>
-                    <input type="number" name="amount" step="0.01" min="0" required>
+                <div class="amount-input-wrapper">
+                    <span class="currency-symbol">$</span>
+                    <input type="number" name="amount" step="0.01" min="0" required placeholder="0.00" class="amount-input" inputmode="decimal">
                 </div>
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeBudgetModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="button" class="btn-ghost" onclick="app.closeBudgetModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Save</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <script src="app.js?v=1771353943"></script>
+    <!-- Hidden selects for month/year (used by JS) -->
+    <select id="monthSelect" style="display:none">
+        <option value="1">Jan</option><option value="2">Feb</option><option value="3">Mar</option>
+        <option value="4">Apr</option><option value="5">May</option><option value="6">Jun</option>
+        <option value="7">Jul</option><option value="8">Aug</option><option value="9">Sep</option>
+        <option value="10">Oct</option><option value="11">Nov</option><option value="12">Dec</option>
+    </select>
+    <select id="yearSelect" style="display:none"></select>
+
+    <script src="app.js"></script>
 </body>
 </html>

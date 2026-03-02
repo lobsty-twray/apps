@@ -8,667 +8,543 @@ class BudgetApp {
         this.budgets = [];
         this.categoryChart = null;
         this.trendsChart = null;
-        
+        this.savingsChart = null;
         this.init();
     }
 
     async init() {
         this.initEventListeners();
-        this.initDateSelectors();
+        this.updateDateDisplay();
         await this.loadCategories();
         this.switchView('dashboard');
     }
 
     initEventListeners() {
-        // Navigation (sidebar)
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', (e) => {
-                const view = e.target.dataset.view;
-                this.switchView(view);
-                this.closeSidebar();
+        // Bottom nav
+        document.querySelectorAll('.bottom-nav-item').forEach(btn => {
+            btn.addEventListener('click', () => this.switchView(btn.dataset.view));
+        });
+
+        // Date nav
+        document.getElementById('prevMonth').addEventListener('click', () => this.changeMonth(-1));
+        document.getElementById('nextMonth').addEventListener('click', () => this.changeMonth(1));
+
+        // FAB
+        document.getElementById('fab').addEventListener('click', () => {
+            if (this.currentView === 'budgets') this.openBudgetModal();
+            else if (this.currentView === 'categories') this.openCategoryModal();
+            else this.openTransactionModal();
+        });
+
+        // View all transactions
+        document.getElementById('viewAllTransactions').addEventListener('click', () => this.switchView('transactions'));
+
+        // Filter chips
+        document.querySelectorAll('.chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                this.loadTransactions();
             });
         });
 
-        // Bottom navigation (mobile)
-        document.querySelectorAll('.bottom-nav-item').forEach(item => {
-            item.addEventListener('click', (e) => {
-                const btn = e.currentTarget;
-                const view = btn.dataset.view;
-                this.switchView(view);
+        document.getElementById('categoryFilter').addEventListener('change', () => this.loadTransactions());
+
+        // Type toggle in transaction modal
+        document.querySelectorAll('.type-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                document.querySelector('[name="type"]').value = btn.dataset.type;
+                this.updateTransactionCategorySelects();
             });
-        });
-
-        // Sidebar toggle
-        document.getElementById('sidebar-toggle').addEventListener('click', () => this.toggleSidebar());
-        document.getElementById('sidebar-overlay').addEventListener('click', () => this.closeSidebar());
-
-        // Date selectors
-        document.getElementById('monthSelect').addEventListener('change', (e) => {
-            this.currentMonth = parseInt(e.target.value);
-            this.refreshCurrentView();
-        });
-
-        document.getElementById('yearSelect').addEventListener('change', (e) => {
-            this.currentYear = parseInt(e.target.value);
-            this.refreshCurrentView();
-        });
-
-        // Filters
-        document.getElementById('typeFilter').addEventListener('change', () => {
-            this.loadTransactions();
-        });
-
-        document.getElementById('categoryFilter').addEventListener('change', () => {
-            this.loadTransactions();
         });
 
         // Forms
-        document.getElementById('transaction-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.saveTransaction();
-        });
+        document.getElementById('transaction-form').addEventListener('submit', e => { e.preventDefault(); this.saveTransaction(); });
+        document.getElementById('category-form').addEventListener('submit', e => { e.preventDefault(); this.saveCategory(); });
+        document.getElementById('budget-form').addEventListener('submit', e => { e.preventDefault(); this.saveBudget(); });
 
-        document.getElementById('category-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.saveCategory();
-        });
-
-        document.getElementById('budget-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.saveBudget();
-        });
-
-        // Modal close on background click
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.classList.remove('active');
-                }
-            });
+        // Modal overlay close
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('active'); });
         });
     }
 
-    initDateSelectors() {
-        const monthSelect = document.getElementById('monthSelect');
-        const yearSelect = document.getElementById('yearSelect');
-        
-        monthSelect.value = this.currentMonth;
-        
-        // Populate year selector
-        const currentYear = new Date().getFullYear();
-        for (let year = currentYear - 5; year <= currentYear + 1; year++) {
-            const option = document.createElement('option');
-            option.value = year;
-            option.textContent = year;
-            if (year === this.currentYear) option.selected = true;
-            yearSelect.appendChild(option);
-        }
+    changeMonth(delta) {
+        this.currentMonth += delta;
+        if (this.currentMonth > 12) { this.currentMonth = 1; this.currentYear++; }
+        if (this.currentMonth < 1) { this.currentMonth = 12; this.currentYear--; }
+        this.updateDateDisplay();
+        this.refreshCurrentView();
     }
 
-    toggleSidebar() {
-        document.getElementById('sidebar').classList.toggle('mobile-open');
-        document.getElementById('sidebar-overlay').classList.toggle('active');
+    updateDateDisplay() {
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        document.getElementById('dateDisplay').textContent = `${months[this.currentMonth - 1]} ${this.currentYear}`;
     }
 
-    closeSidebar() {
-        document.getElementById('sidebar').classList.remove('mobile-open');
-        document.getElementById('sidebar-overlay').classList.remove('active');
-    }
-
-    async switchView(viewName) {
-        // Update sidebar navigation
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.classList.remove('active');
-        });
-        document.querySelector(`.sidebar [data-view="${viewName}"]`).classList.add('active');
-
-        // Update bottom navigation
-        document.querySelectorAll('.bottom-nav-item').forEach(item => {
-            item.classList.toggle('active', item.dataset.view === viewName);
-        });
-
-        // Update views
-        document.querySelectorAll('.view').forEach(view => {
-            view.classList.remove('active');
-        });
+    switchView(viewName) {
+        document.querySelectorAll('.bottom-nav-item').forEach(b => b.classList.toggle('active', b.dataset.view === viewName));
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.getElementById(`${viewName}-view`).classList.add('active');
-
         this.currentView = viewName;
 
-        // Load view data
         switch (viewName) {
-            case 'dashboard':
-                await this.loadDashboard();
-                break;
-            case 'transactions':
-                await this.loadTransactions();
-                break;
-            case 'categories':
-                await this.loadCategories();
-                this.renderCategories();
-                break;
-            case 'budgets':
-                await this.loadBudgets();
-                break;
-            case 'trends':
-                await this.loadTrends();
-                break;
+            case 'dashboard': this.loadDashboard(); break;
+            case 'transactions': this.loadTransactions(); break;
+            case 'categories': this.loadCategories().then(() => this.renderCategories()); break;
+            case 'budgets': this.loadBudgets(); break;
+            case 'trends': this.loadTrends(); break;
         }
     }
 
-    async refreshCurrentView() {
-        await this.switchView(this.currentView);
-    }
+    refreshCurrentView() { this.switchView(this.currentView); }
 
+    // ─── Dashboard ───
     async loadDashboard() {
         try {
-            const response = await fetch(`/api/dashboard?month=${this.currentMonth}&year=${this.currentYear}`);
-            const data = await response.json();
+            const [dashRes, txRes, budgetRes] = await Promise.all([
+                fetch(`/api/dashboard?month=${this.currentMonth}&year=${this.currentYear}`),
+                fetch(`/api/transactions?month=${this.currentMonth}&year=${this.currentYear}`),
+                fetch(`/api/budgets?month=${this.currentMonth}&year=${this.currentYear}`)
+            ]);
+            const data = await dashRes.json();
+            const txs = await txRes.json();
+            const budgets = await budgetRes.json();
 
-            document.getElementById('total-income').textContent = this.formatCurrency(data.income);
-            document.getElementById('total-expenses').textContent = this.formatCurrency(data.expenses);
-            
-            const netSavings = document.getElementById('net-savings');
-            netSavings.textContent = this.formatCurrency(data.netSavings);
-            netSavings.className = `amount ${data.netSavings >= 0 ? 'income' : 'expense'}`;
+            this.animateValue('total-income', data.income);
+            this.animateValue('total-expenses', data.expenses);
+
+            const savingsEl = document.getElementById('net-savings');
+            this.animateValue('net-savings', data.netSavings);
+            savingsEl.classList.toggle('negative', data.netSavings < 0);
 
             this.renderCategoryChart(data.categoryBreakdown);
-        } catch (error) {
-            console.error('Error loading dashboard:', error);
-        }
+            this.renderRecentTransactions(txs.slice(0, 5));
+            this.renderBudgetRings(budgets);
+        } catch (err) { console.error('Dashboard error:', err); }
+    }
+
+    animateValue(id, target) {
+        const el = document.getElementById(id);
+        el.textContent = this.formatCurrency(target);
     }
 
     renderCategoryChart(categoryData) {
-        const ctx = document.getElementById('categoryChart').getContext('2d');
-        
-        if (this.categoryChart) {
-            this.categoryChart.destroy();
-        }
+        const ctx = document.getElementById('categoryChart');
+        if (this.categoryChart) this.categoryChart.destroy();
 
-        if (categoryData.length === 0) {
-            ctx.font = '16px system-ui';
-            ctx.fillStyle = '#999';
-            ctx.textAlign = 'center';
-            ctx.fillText('No expenses this month', ctx.canvas.width / 2, ctx.canvas.height / 2);
+        const legend = document.getElementById('category-legend');
+
+        if (!categoryData.length) {
+            ctx.getContext('2d').clearRect(0, 0, ctx.width, ctx.height);
+            legend.innerHTML = '<div class="empty-state"><p>No expenses this month</p></div>';
             return;
         }
+
+        legend.innerHTML = categoryData.map(c =>
+            `<div class="legend-item"><span class="legend-dot" style="background:${c.color}"></span>${c.name}: ${this.formatCurrency(c.total)}</div>`
+        ).join('');
 
         this.categoryChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: categoryData.map(item => item.name),
+                labels: categoryData.map(c => c.name),
                 datasets: [{
-                    data: categoryData.map(item => item.total),
-                    backgroundColor: categoryData.map(item => item.color),
-                    borderWidth: 0
+                    data: categoryData.map(c => c.total),
+                    backgroundColor: categoryData.map(c => c.color),
+                    borderWidth: 0,
+                    hoverOffset: 8
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                cutout: '70%',
                 plugins: {
-                    legend: {
-                        position: window.innerWidth <= 768 ? 'bottom' : 'right',
-                        labels: {
-                            color: '#ffffff',
-                            font: {
-                                size: window.innerWidth <= 768 ? 12 : 14
-                            },
-                            generateLabels: function(chart) {
-                                const data = chart.data;
-                                return data.labels.map((label, i) => ({
-                                    text: `${label}: ${this.formatCurrency(data.datasets[0].data[i])}`,
-                                    fillStyle: data.datasets[0].backgroundColor[i],
-                                    hidden: false,
-                                    index: i
-                                }));
-                            }.bind(this)
-                        }
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(20,20,30,0.9)',
+                        borderColor: 'rgba(255,255,255,0.1)',
+                        borderWidth: 1,
+                        titleColor: '#f0f0f5',
+                        bodyColor: '#f0f0f5',
+                        cornerRadius: 10,
+                        padding: 12,
+                        callbacks: { label: ctx => ` ${this.formatCurrency(ctx.raw)}` }
                     }
-                }
+                },
+                animation: { animateRotate: true, duration: 800 }
             }
         });
     }
 
-    async loadTransactions() {
-        try {
-            const typeFilter = document.getElementById('typeFilter').value;
-            const categoryFilter = document.getElementById('categoryFilter').value;
-            
-            let url = `/api/transactions?month=${this.currentMonth}&year=${this.currentYear}`;
-            if (typeFilter) url += `&type=${typeFilter}`;
-            if (categoryFilter) url += `&category=${categoryFilter}`;
-
-            const response = await fetch(url);
-            this.transactions = await response.json();
-            this.renderTransactions();
-            this.updateCategoryFilter();
-        } catch (error) {
-            console.error('Error loading transactions:', error);
+    renderRecentTransactions(txs) {
+        const container = document.getElementById('recent-transactions');
+        if (!txs.length) {
+            container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">💳</div><p>No transactions yet</p></div>';
+            return;
         }
+        container.innerHTML = txs.map((tx, i) => this.transactionHTML(tx, i, false)).join('');
+    }
+
+    renderBudgetRings(budgets) {
+        const section = document.getElementById('budget-overview-section');
+        const container = document.getElementById('ring-container');
+        if (!budgets.length) { section.style.display = 'none'; return; }
+        section.style.display = '';
+
+        container.innerHTML = budgets.map(b => {
+            const pct = Math.min((b.spent / b.amount) * 100, 100);
+            const r = 26;
+            const circ = 2 * Math.PI * r;
+            const offset = circ - (pct / 100) * circ;
+            const color = pct < 70 ? 'var(--income)' : pct < 90 ? 'var(--warning)' : 'var(--expense)';
+            const cat = this.categories.find(c => c.id === b.category_id);
+            return `<div class="ring-item">
+                <svg class="ring-svg" viewBox="0 0 60 60">
+                    <circle class="ring-bg" cx="30" cy="30" r="${r}"/>
+                    <circle class="ring-fill" cx="30" cy="30" r="${r}" stroke="${color}"
+                        stroke-dasharray="${circ}" stroke-dashoffset="${offset}"/>
+                </svg>
+                <span class="ring-percent">${Math.round(pct)}%</span>
+                <span class="ring-label">${cat?.icon || ''} ${b.category_name}</span>
+            </div>`;
+        }).join('');
+    }
+
+    // ─── Transactions ───
+    async loadTransactions() {
+        const activeChip = document.querySelector('.chip.active');
+        const type = activeChip ? activeChip.dataset.type : '';
+        const category = document.getElementById('categoryFilter').value;
+
+        let url = `/api/transactions?month=${this.currentMonth}&year=${this.currentYear}`;
+        if (type) url += `&type=${type}`;
+        if (category) url += `&category=${category}`;
+
+        const res = await fetch(url);
+        this.transactions = await res.json();
+        this.renderTransactions();
+        this.updateCategoryFilter();
     }
 
     renderTransactions() {
         const container = document.getElementById('transaction-list');
-        
-        if (this.transactions.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-state-icon">💳</div>
-                    <p>No transactions found</p>
-                </div>
-            `;
+        if (!this.transactions.length) {
+            container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">💳</div><p>No transactions found</p></div>';
             return;
         }
+        container.innerHTML = this.transactions.map((tx, i) => this.transactionHTML(tx, i, true)).join('');
+    }
 
-        container.innerHTML = this.transactions.map(transaction => `
-            <div class="transaction-item">
-                <div class="transaction-info">
-                    <div class="transaction-icon" style="background-color: ${transaction.category_color}20; color: ${transaction.category_color};">
-                        ${transaction.category_icon}
-                    </div>
-                    <div class="transaction-details">
-                        <h4>${transaction.description || transaction.category_name}</h4>
-                        <div class="transaction-meta">
-                            ${transaction.category_name} • ${new Date(transaction.date).toLocaleDateString()}
-                            ${transaction.recurring ? ' • Recurring' : ''}
-                        </div>
-                    </div>
-                </div>
-                <div class="transaction-amount ${transaction.type}">
-                    ${transaction.type === 'income' ? '+' : '-'}${this.formatCurrency(transaction.amount)}
-                </div>
-                <div class="transaction-actions">
-                    <button class="btn btn-small btn-secondary" onclick="app.editTransaction(${transaction.id})">Edit</button>
-                    <button class="btn btn-small btn-danger" onclick="app.deleteTransaction(${transaction.id})">Delete</button>
-                </div>
+    transactionHTML(tx, index, showActions) {
+        const delay = Math.min(index * 40, 300);
+        return `<div class="transaction-item stagger-in" style="animation-delay:${delay}ms" onclick="app.toggleTxActions(this)">
+            <div class="tx-icon" style="background:${tx.category_color}15; color:${tx.category_color}">${tx.category_icon}</div>
+            <div class="tx-details">
+                <div class="tx-name">${tx.description || tx.category_name}</div>
+                <div class="tx-meta">${tx.category_name}${tx.recurring ? ' · Recurring' : ''}</div>
             </div>
-        `).join('');
+            <div class="tx-right">
+                <div class="tx-amount ${tx.type}">${tx.type === 'income' ? '+' : '-'}${this.formatCurrency(tx.amount)}</div>
+                <div class="tx-date-small">${new Date(tx.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
+            </div>
+            ${showActions ? `<div class="tx-actions">
+                <button class="tx-action-btn tx-action-edit" onclick="event.stopPropagation(); app.editTransaction(${tx.id})">Edit</button>
+                <button class="tx-action-btn tx-action-delete" onclick="event.stopPropagation(); app.deleteTransaction(${tx.id})">Delete</button>
+            </div>` : ''}
+        </div>`;
+    }
+
+    toggleTxActions(el) {
+        const actions = el.querySelector('.tx-actions');
+        if (actions) actions.classList.toggle('show');
     }
 
     updateCategoryFilter() {
-        const categoryFilter = document.getElementById('categoryFilter');
-        const currentValue = categoryFilter.value;
-        
-        categoryFilter.innerHTML = '<option value="">All Categories</option>';
-        this.categories.forEach(category => {
-            const option = document.createElement('option');
-            option.value = category.id;
-            option.textContent = category.name;
-            if (category.id.toString() === currentValue) option.selected = true;
-            categoryFilter.appendChild(option);
+        const select = document.getElementById('categoryFilter');
+        const val = select.value;
+        select.innerHTML = '<option value="">All Categories</option>';
+        this.categories.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = `${c.icon} ${c.name}`;
+            if (c.id.toString() === val) opt.selected = true;
+            select.appendChild(opt);
         });
     }
 
+    // ─── Categories ───
     async loadCategories() {
-        try {
-            const response = await fetch('/api/categories');
-            this.categories = await response.json();
-            this.updateTransactionCategorySelects();
-            this.updateBudgetCategorySelect();
-        } catch (error) {
-            console.error('Error loading categories:', error);
-        }
+        const res = await fetch('/api/categories');
+        this.categories = await res.json();
+        this.updateTransactionCategorySelects();
+        this.updateBudgetCategorySelect();
     }
 
     renderCategories() {
         const container = document.getElementById('category-grid');
-        
-        container.innerHTML = this.categories.map(category => `
-            <div class="category-item">
-                <div class="category-icon" style="color: ${category.color};">${category.icon}</div>
-                <div class="category-name">${category.name}</div>
-                <div class="category-type">${category.type}</div>
-                ${!category.is_default ? `
-                    <div class="category-actions">
-                        <button class="btn btn-small btn-danger" onclick="app.deleteCategory(${category.id})">×</button>
-                    </div>
-                ` : ''}
-            </div>
-        `).join('');
+        container.innerHTML = this.categories.map((c, i) => {
+            const delay = Math.min(i * 40, 400);
+            return `<div class="category-item stagger-in" style="animation-delay:${delay}ms; border-left: 3px solid ${c.color}">
+                <div class="cat-icon">${c.icon}</div>
+                <div class="cat-name">${c.name}</div>
+                <div class="cat-type">${c.type}</div>
+                ${!c.is_default ? `<button class="cat-delete" onclick="app.deleteCategory(${c.id})">×</button>` : ''}
+            </div>`;
+        }).join('');
     }
 
     updateTransactionCategorySelects() {
-        const selects = document.querySelectorAll('#transaction-category-select');
-        selects.forEach(select => {
-            const currentValue = select.value;
-            select.innerHTML = '';
-            
-            this.categories.forEach(category => {
-                const option = document.createElement('option');
-                option.value = category.id;
-                option.textContent = `${category.icon} ${category.name}`;
-                if (category.id.toString() === currentValue) option.selected = true;
-                select.appendChild(option);
+        const select = document.getElementById('transaction-category-select');
+        const currentType = document.querySelector('[name="type"]').value;
+        const val = select.value;
+        select.innerHTML = '';
+        this.categories
+            .filter(c => c.type === currentType || c.type === 'both')
+            .forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.id;
+                opt.textContent = `${c.icon} ${c.name}`;
+                if (c.id.toString() === val) opt.selected = true;
+                select.appendChild(opt);
             });
-        });
     }
 
     updateBudgetCategorySelect() {
         const select = document.getElementById('budget-category-select');
-        const currentValue = select.value;
-        
+        if (!select) return;
+        const val = select.value;
         select.innerHTML = '';
-        this.categories.filter(c => c.type === 'expense' || c.type === 'both').forEach(category => {
-            const option = document.createElement('option');
-            option.value = category.id;
-            option.textContent = `${category.icon} ${category.name}`;
-            if (category.id.toString() === currentValue) option.selected = true;
-            select.appendChild(option);
+        this.categories.filter(c => c.type === 'expense' || c.type === 'both').forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = `${c.icon} ${c.name}`;
+            if (c.id.toString() === val) opt.selected = true;
+            select.appendChild(opt);
         });
     }
 
+    // ─── Budgets ───
     async loadBudgets() {
-        try {
-            const response = await fetch(`/api/budgets?month=${this.currentMonth}&year=${this.currentYear}`);
-            this.budgets = await response.json();
-            this.renderBudgets();
-        } catch (error) {
-            console.error('Error loading budgets:', error);
-        }
+        const res = await fetch(`/api/budgets?month=${this.currentMonth}&year=${this.currentYear}`);
+        this.budgets = await res.json();
+        this.renderBudgets();
     }
 
     renderBudgets() {
         const container = document.getElementById('budget-list');
-        
-        if (this.budgets.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-state-icon">🎯</div>
-                    <p>No budget limits set</p>
-                </div>
-            `;
+        if (!this.budgets.length) {
+            container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🎯</div><p>No budgets set</p></div>';
             return;
         }
-
-        container.innerHTML = this.budgets.map(budget => {
-            const percentage = (budget.spent / budget.amount) * 100;
-            const progressClass = percentage < 70 ? 'low' : percentage < 90 ? 'medium' : 'high';
-            
-            return `
-                <div class="budget-item">
-                    <div class="budget-header">
-                        <div class="budget-info">
-                            <span style="color: ${budget.category_color}; font-size: 1.2rem;">
-                                ${this.categories.find(c => c.id === budget.category_id)?.icon || '🏷️'}
-                            </span>
-                            <span>${budget.category_name}</span>
-                        </div>
-                        <button class="btn btn-small btn-danger" onclick="app.deleteBudget(${budget.id})">Delete</button>
+        container.innerHTML = this.budgets.map((b, i) => {
+            const pct = (b.spent / b.amount) * 100;
+            const cls = pct < 70 ? 'low' : pct < 90 ? 'medium' : 'high';
+            const cat = this.categories.find(c => c.id === b.category_id);
+            const delay = Math.min(i * 50, 300);
+            return `<div class="budget-item stagger-in" style="animation-delay:${delay}ms">
+                <div class="budget-top">
+                    <div class="budget-cat">
+                        <span class="budget-cat-icon">${cat?.icon || '🏷️'}</span>
+                        <span class="budget-cat-name">${b.category_name}</span>
                     </div>
-                    <div class="budget-progress">
-                        <div class="progress-bar">
-                            <div class="progress-fill ${progressClass}" style="width: ${Math.min(percentage, 100)}%"></div>
-                        </div>
-                        <div class="progress-text">
-                            <span>Spent: ${this.formatCurrency(budget.spent)}</span>
-                            <span>Limit: ${this.formatCurrency(budget.amount)}</span>
-                        </div>
-                    </div>
+                    <button class="budget-delete" onclick="app.deleteBudget(${b.id})">×</button>
                 </div>
-            `;
+                <div class="progress-track">
+                    <div class="progress-fill ${cls}" style="width:${Math.min(pct, 100)}%"></div>
+                </div>
+                <div class="progress-labels">
+                    <span>${this.formatCurrency(b.spent)} spent</span>
+                    <span>${this.formatCurrency(b.amount)} limit</span>
+                </div>
+            </div>`;
         }).join('');
     }
 
+    // ─── Trends ───
     async loadTrends() {
-        try {
-            const response = await fetch('/api/trends?months=6');
-            const trends = await response.json();
-            this.renderTrendsChart(trends);
-        } catch (error) {
-            console.error('Error loading trends:', error);
-        }
+        const res = await fetch('/api/trends?months=6');
+        const trends = await res.json();
+        this.renderTrendsChart(trends);
+        this.renderSavingsChart(trends);
     }
 
-    renderTrendsChart(trendsData) {
-        const ctx = document.getElementById('trendsChart').getContext('2d');
-        
-        if (this.trendsChart) {
-            this.trendsChart.destroy();
-        }
+    renderTrendsChart(data) {
+        const ctx = document.getElementById('trendsChart');
+        if (this.trendsChart) this.trendsChart.destroy();
+
+        const labels = data.map(d => {
+            const date = new Date(d.month + '-01');
+            return date.toLocaleDateString('en-US', { month: 'short' });
+        });
 
         this.trendsChart = new Chart(ctx, {
-            type: 'line',
+            type: 'bar',
             data: {
-                labels: trendsData.map(item => {
-                    const date = new Date(item.month + '-01');
-                    return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
-                }),
+                labels,
                 datasets: [
-                    {
-                        label: 'Income',
-                        data: trendsData.map(item => item.income),
-                        borderColor: '#00b894',
-                        backgroundColor: '#00b894',
-                        tension: 0.4
-                    },
-                    {
-                        label: 'Expenses',
-                        data: trendsData.map(item => item.expenses),
-                        borderColor: '#e17055',
-                        backgroundColor: '#e17055',
-                        tension: 0.4
-                    }
+                    { label: 'Income', data: data.map(d => d.income), backgroundColor: 'rgba(0,217,166,0.6)', borderRadius: 6, barPercentage: 0.4 },
+                    { label: 'Expenses', data: data.map(d => d.expenses), backgroundColor: 'rgba(255,92,114,0.6)', borderRadius: 6, barPercentage: 0.4 }
                 ]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            color: '#999',
-                            callback: function(value) {
-                                return '$' + value.toLocaleString();
-                            }
-                        },
-                        grid: {
-                            color: '#333'
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            color: '#999'
-                        },
-                        grid: {
-                            color: '#333'
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        labels: {
-                            color: '#ffffff'
-                        }
-                    }
-                }
-            }
+            options: this.chartOptions()
         });
     }
 
-    // Modal functions
-    openTransactionModal(transaction = null) {
+    renderSavingsChart(data) {
+        const ctx = document.getElementById('savingsChart');
+        if (this.savingsChart) this.savingsChart.destroy();
+
+        const labels = data.map(d => {
+            const date = new Date(d.month + '-01');
+            return date.toLocaleDateString('en-US', { month: 'short' });
+        });
+
+        const savings = data.map(d => d.income - d.expenses);
+
+        this.savingsChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Net Savings',
+                    data: savings,
+                    borderColor: '#7c6cff',
+                    backgroundColor: 'rgba(124,108,255,0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#7c6cff',
+                    pointRadius: 4
+                }]
+            },
+            options: this.chartOptions()
+        });
+    }
+
+    chartOptions() {
+        return {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: 'rgba(255,255,255,0.3)', callback: v => '$' + v.toLocaleString(), font: { size: 11 } },
+                    grid: { color: 'rgba(255,255,255,0.04)' }
+                },
+                x: {
+                    ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 11 } },
+                    grid: { display: false }
+                }
+            },
+            plugins: {
+                legend: { labels: { color: 'rgba(255,255,255,0.5)', font: { size: 12 }, usePointStyle: true, pointStyle: 'circle' } },
+                tooltip: {
+                    backgroundColor: 'rgba(20,20,30,0.9)',
+                    borderColor: 'rgba(255,255,255,0.1)',
+                    borderWidth: 1,
+                    titleColor: '#f0f0f5',
+                    bodyColor: '#f0f0f5',
+                    cornerRadius: 10,
+                    padding: 12,
+                    callbacks: { label: ctx => ` ${ctx.dataset.label}: ${this.formatCurrency(ctx.raw)}` }
+                }
+            },
+            animation: { duration: 600 }
+        };
+    }
+
+    // ─── Modals ───
+    openTransactionModal(tx = null) {
         const modal = document.getElementById('transaction-modal');
         const form = document.getElementById('transaction-form');
         const title = document.getElementById('transaction-modal-title');
-        
-        if (transaction) {
+
+        if (tx) {
             title.textContent = 'Edit Transaction';
-            form.elements.type.value = transaction.type;
-            form.elements.amount.value = transaction.amount;
-            form.elements.category_id.value = transaction.category_id;
-            form.elements.description.value = transaction.description || '';
-            form.elements.date.value = transaction.date;
-            form.elements.recurring.checked = transaction.recurring;
-            form.dataset.id = transaction.id;
+            form.elements.type.value = tx.type;
+            document.querySelectorAll('.type-btn').forEach(b => b.classList.toggle('active', b.dataset.type === tx.type));
+            form.elements.amount.value = tx.amount;
+            form.elements.category_id.value = tx.category_id;
+            form.elements.description.value = tx.description || '';
+            form.elements.date.value = tx.date;
+            form.elements.recurring.checked = tx.recurring;
+            form.dataset.id = tx.id;
         } else {
             title.textContent = 'Add Transaction';
             form.reset();
+            form.elements.type.value = 'expense';
+            document.querySelectorAll('.type-btn').forEach(b => b.classList.toggle('active', b.dataset.type === 'expense'));
             form.elements.date.value = new Date().toISOString().split('T')[0];
             delete form.dataset.id;
         }
-        
+        this.updateTransactionCategorySelects();
+        if (tx) form.elements.category_id.value = tx.category_id;
         modal.classList.add('active');
     }
 
-    closeTransactionModal() {
-        document.getElementById('transaction-modal').classList.remove('active');
-    }
+    closeTransactionModal() { document.getElementById('transaction-modal').classList.remove('active'); }
 
     async saveTransaction() {
         const form = document.getElementById('transaction-form');
-        const formData = new FormData(form);
-        const data = Object.fromEntries(formData.entries());
+        const data = Object.fromEntries(new FormData(form).entries());
         data.recurring = form.elements.recurring.checked;
-        
-        try {
-            const method = form.dataset.id ? 'PUT' : 'POST';
-            const url = form.dataset.id ? `/api/transactions/${form.dataset.id}` : '/api/transactions';
-            
-            const response = await fetch(url, {
-                method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            
-            if (response.ok) {
-                this.closeTransactionModal();
-                this.refreshCurrentView();
-            }
-        } catch (error) {
-            console.error('Error saving transaction:', error);
-        }
+
+        const method = form.dataset.id ? 'PUT' : 'POST';
+        const url = form.dataset.id ? `/api/transactions/${form.dataset.id}` : '/api/transactions';
+
+        const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+        if (res.ok) { this.closeTransactionModal(); this.refreshCurrentView(); }
     }
 
-    async editTransaction(id) {
-        const transaction = this.transactions.find(t => t.id === id);
-        if (transaction) {
-            this.openTransactionModal(transaction);
-        }
+    editTransaction(id) {
+        const tx = this.transactions.find(t => t.id === id);
+        if (tx) this.openTransactionModal(tx);
     }
 
     async deleteTransaction(id) {
-        if (confirm('Are you sure you want to delete this transaction?')) {
-            try {
-                const response = await fetch(`/api/transactions/${id}`, { method: 'DELETE' });
-                if (response.ok) {
-                    this.refreshCurrentView();
-                }
-            } catch (error) {
-                console.error('Error deleting transaction:', error);
-            }
-        }
+        if (!confirm('Delete this transaction?')) return;
+        const res = await fetch(`/api/transactions/${id}`, { method: 'DELETE' });
+        if (res.ok) this.refreshCurrentView();
     }
 
-    openCategoryModal() {
-        document.getElementById('category-modal').classList.add('active');
-    }
-
-    closeCategoryModal() {
-        document.getElementById('category-modal').classList.remove('active');
-        document.getElementById('category-form').reset();
-    }
+    openCategoryModal() { document.getElementById('category-modal').classList.add('active'); }
+    closeCategoryModal() { document.getElementById('category-modal').classList.remove('active'); document.getElementById('category-form').reset(); }
 
     async saveCategory() {
-        const form = document.getElementById('category-form');
-        const formData = new FormData(form);
-        const data = Object.fromEntries(formData.entries());
-        
-        try {
-            const response = await fetch('/api/categories', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            
-            if (response.ok) {
-                this.closeCategoryModal();
-                await this.loadCategories();
-                this.renderCategories();
-            }
-        } catch (error) {
-            console.error('Error saving category:', error);
-        }
+        const data = Object.fromEntries(new FormData(document.getElementById('category-form')).entries());
+        const res = await fetch('/api/categories', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+        if (res.ok) { this.closeCategoryModal(); await this.loadCategories(); this.renderCategories(); }
     }
 
     async deleteCategory(id) {
-        if (confirm('Are you sure you want to delete this category?')) {
-            try {
-                const response = await fetch(`/api/categories/${id}`, { method: 'DELETE' });
-                if (response.ok) {
-                    await this.loadCategories();
-                    this.renderCategories();
-                }
-            } catch (error) {
-                console.error('Error deleting category:', error);
-            }
-        }
+        if (!confirm('Delete this category?')) return;
+        const res = await fetch(`/api/categories/${id}`, { method: 'DELETE' });
+        if (res.ok) { await this.loadCategories(); this.renderCategories(); }
     }
 
-    openBudgetModal() {
-        const form = document.getElementById('budget-form');
-        form.elements.month.value = this.currentMonth;
-        form.elements.year.value = this.currentYear;
-        document.getElementById('budget-modal').classList.add('active');
-    }
-
-    closeBudgetModal() {
-        document.getElementById('budget-modal').classList.remove('active');
-        document.getElementById('budget-form').reset();
-    }
+    openBudgetModal() { document.getElementById('budget-modal').classList.add('active'); }
+    closeBudgetModal() { document.getElementById('budget-modal').classList.remove('active'); document.getElementById('budget-form').reset(); }
 
     async saveBudget() {
-        const form = document.getElementById('budget-form');
-        const formData = new FormData(form);
-        const data = Object.fromEntries(formData.entries());
+        const data = Object.fromEntries(new FormData(document.getElementById('budget-form')).entries());
         data.month = this.currentMonth;
         data.year = this.currentYear;
-        
-        try {
-            const response = await fetch('/api/budgets', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            
-            if (response.ok) {
-                this.closeBudgetModal();
-                this.loadBudgets();
-            }
-        } catch (error) {
-            console.error('Error saving budget:', error);
-        }
+        const res = await fetch('/api/budgets', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+        if (res.ok) { this.closeBudgetModal(); this.loadBudgets(); }
     }
 
     async deleteBudget(id) {
-        if (confirm('Are you sure you want to delete this budget?')) {
-            try {
-                const response = await fetch(`/api/budgets/${id}`, { method: 'DELETE' });
-                if (response.ok) {
-                    this.loadBudgets();
-                }
-            } catch (error) {
-                console.error('Error deleting budget:', error);
-            }
-        }
+        if (!confirm('Delete this budget?')) return;
+        const res = await fetch(`/api/budgets/${id}`, { method: 'DELETE' });
+        if (res.ok) this.loadBudgets();
     }
 
     formatCurrency(amount) {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD'
-        }).format(amount);
+        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
     }
 }
 
-// Global functions for onclick handlers
-function openTransactionModal() { app.openTransactionModal(); }
-function closeTransactionModal() { app.closeTransactionModal(); }
-function openCategoryModal() { app.openCategoryModal(); }
-function closeCategoryModal() { app.closeCategoryModal(); }
-function openBudgetModal() { app.openBudgetModal(); }
-function closeBudgetModal() { app.closeBudgetModal(); }
-
-// Initialize app when DOM is loaded
 const app = new BudgetApp();
