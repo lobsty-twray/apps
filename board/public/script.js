@@ -5,11 +5,21 @@ class LobstyBoard {
         this.tasks = [];
         this.labels = [];
         this.draggedTask = null;
+        this.touchDrag = null;
+        this.quillEditor = null;
+        this.currentView = 'board'; // board | calendar | archive
+        this.calYear = new Date().getFullYear();
+        this.calMonth = new Date().getMonth() + 1;
+        this.calTasks = [];
+        this.archivedTasks = [];
         this.init();
     }
 
+    initTheme() {        const saved = localStorage.getItem("board-theme");        if (saved === "dark") {            document.documentElement.setAttribute("data-theme", "dark");            const meta = document.querySelector("meta[name=theme-color]");            if (meta) meta.setAttribute("content", "#0a0a0f");        }    }    toggleTheme() {        const isDark = document.documentElement.getAttribute("data-theme") === "dark";        if (isDark) {            document.documentElement.removeAttribute("data-theme");            localStorage.setItem("board-theme", "light");            const meta = document.querySelector("meta[name=theme-color]");            if (meta) meta.setAttribute("content", "#fafaf9");        } else {            document.documentElement.setAttribute("data-theme", "dark");            localStorage.setItem("board-theme", "dark");            const meta = document.querySelector("meta[name=theme-color]");            if (meta) meta.setAttribute("content", "#0a0a0f");        }    }
     async init() {
+        this.initTheme();
         this.bindEvents();
+        this.initQuill();
         await this.loadProjects();
         await this.loadLabels();
         if (this.projects.length > 0) {
@@ -17,9 +27,28 @@ class LobstyBoard {
         } else {
             this.showWelcomeScreen();
         }
+        this.setupColumnDots();
+    }
+
+    initQuill() {
+        this.quillEditor = new Quill('#task-desc-editor', {
+            theme: 'snow',
+            placeholder: 'Add details...',
+            modules: {
+                toolbar: [
+                    ['bold', 'italic', 'strike'],
+                    [{ 'header': 1 }, { 'header': 2 }, { 'header': 3 }],
+                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                    ['code-block'],
+                    ['link'],
+                    ['clean']
+                ]
+            }
+        });
     }
 
     bindEvents() {
+        document.getElementById("theme-toggle")?.addEventListener("click", () => this.toggleTheme());
         document.getElementById('new-project-btn').addEventListener('click', () => this.showProjectModal());
         document.getElementById('welcome-new-project-btn').addEventListener('click', () => this.showProjectModal());
         document.getElementById('new-task-btn').addEventListener('click', () => this.showTaskModal());
@@ -37,6 +66,30 @@ class LobstyBoard {
             if (e.key === 'Enter') { e.preventDefault(); this.addDocLink(); }
             if (e.key === 'Escape') this.hideDocInput();
         });
+
+        // View toggles
+        document.getElementById('view-board-btn').addEventListener('click', () => this.switchView('board'));
+        document.getElementById('view-calendar-btn').addEventListener('click', () => this.switchView('calendar'));
+        document.getElementById('show-calendar-btn').addEventListener('click', () => {
+            this.closeSidebar();
+            if (this.currentProject) this.switchView('calendar');
+            else this.showGlobalCalendar();
+        });
+        document.getElementById('show-archive-btn').addEventListener('click', () => {
+            this.closeSidebar();
+            this.switchView('archive');
+        });
+        document.getElementById('archive-back-btn').addEventListener('click', () => this.switchView('board'));
+
+        // Calendar nav
+        document.getElementById('cal-prev').addEventListener('click', () => this.calNav(-1));
+        document.getElementById('cal-next').addEventListener('click', () => this.calNav(1));
+        document.getElementById('cal-today').addEventListener('click', () => {
+            const now = new Date();
+            this.calYear = now.getFullYear();
+            this.calMonth = now.getMonth() + 1;
+            this.loadCalendar();
+        });
     }
 
     bindSidebarEvents() {
@@ -50,13 +103,13 @@ class LobstyBoard {
             overlay.classList.add('active');
         });
 
-        const closeSidebar = () => {
-            sidebar.classList.remove('open');
-            overlay.classList.remove('active');
-        };
+        close.addEventListener('click', () => this.closeSidebar());
+        overlay.addEventListener('click', () => this.closeSidebar());
+    }
 
-        close.addEventListener('click', closeSidebar);
-        overlay.addEventListener('click', closeSidebar);
+    closeSidebar() {
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('sidebar-overlay').classList.remove('active');
     }
 
     bindModalEvents() {
@@ -67,11 +120,219 @@ class LobstyBoard {
         document.getElementById('labels-modal-close').addEventListener('click', () => this.hideModal('labels-modal'));
         document.getElementById('labels-close-btn').addEventListener('click', () => this.hideModal('labels-modal'));
         document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal') || e.target.classList.contains('modal-backdrop')) {
+            if (e.target.classList.contains('modal-backdrop')) {
                 const modal = e.target.closest('.modal');
                 if (modal) this.hideModal(modal.id);
             }
         });
+    }
+
+    setupColumnDots() {
+        const board = document.getElementById('kanban-board');
+        const dots = document.querySelectorAll('.column-dots .dot');
+        if (!board || !dots.length) return;
+
+        board.addEventListener('scroll', () => {
+            const scrollLeft = board.scrollLeft;
+            const colWidth = board.querySelector('.column')?.offsetWidth || 300;
+            const gap = 12;
+            const idx = Math.round(scrollLeft / (colWidth + gap));
+            dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+        });
+
+        dots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                const idx = parseInt(dot.dataset.col);
+                const col = board.querySelectorAll('.column')[idx];
+                if (col) col.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            });
+        });
+    }
+
+    // ── View switching ──
+    switchView(view) {
+        this.currentView = view;
+        const board = document.getElementById('kanban-board');
+        const calendar = document.getElementById('calendar-view');
+        const archive = document.getElementById('archive-view');
+        const dots = document.getElementById('column-dots');
+        const header = document.getElementById('project-header');
+        const welcome = document.getElementById('welcome-screen');
+
+        board.style.display = 'none';
+        calendar.style.display = 'none';
+        archive.style.display = 'none';
+        dots.style.display = 'none';
+        welcome.style.display = 'none';
+
+        document.getElementById('view-board-btn').classList.toggle('active', view === 'board');
+        document.getElementById('view-calendar-btn').classList.toggle('active', view === 'calendar');
+
+        if (view === 'board') {
+            if (this.currentProject) {
+                header.style.display = 'flex';
+                board.style.display = 'flex';
+                dots.style.display = '';
+            } else {
+                welcome.style.display = 'flex';
+            }
+        } else if (view === 'calendar') {
+            header.style.display = 'flex';
+            calendar.style.display = 'flex';
+            this.loadCalendar();
+        } else if (view === 'archive') {
+            header.style.display = 'none';
+            archive.style.display = 'flex';
+            this.loadArchive();
+        }
+    }
+
+    showGlobalCalendar() {
+        // Show calendar even without a project selected
+        document.getElementById('welcome-screen').style.display = 'none';
+        document.getElementById('project-header').style.display = 'flex';
+        this.currentView = 'calendar';
+        document.getElementById('kanban-board').style.display = 'none';
+        document.getElementById('archive-view').style.display = 'none';
+        document.getElementById('calendar-view').style.display = 'flex';
+        document.getElementById('column-dots').style.display = 'none';
+        document.getElementById('view-board-btn').classList.remove('active');
+        document.getElementById('view-calendar-btn').classList.add('active');
+        this.loadCalendar();
+    }
+
+    // ── Calendar ──
+    calNav(dir) {
+        this.calMonth += dir;
+        if (this.calMonth > 12) { this.calMonth = 1; this.calYear++; }
+        if (this.calMonth < 1) { this.calMonth = 12; this.calYear--; }
+        this.loadCalendar();
+    }
+
+    async loadCalendar() {
+        const label = document.getElementById('cal-month-label');
+        const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        label.textContent = `${months[this.calMonth - 1]} ${this.calYear}`;
+
+        try {
+            this.calTasks = await this.apiCall(`/api/calendar?year=${this.calYear}&month=${this.calMonth}`);
+        } catch { this.calTasks = []; }
+
+        this.renderCalendar();
+    }
+
+    renderCalendar() {
+        const container = document.getElementById('cal-days');
+        container.innerHTML = '';
+
+        const firstDay = new Date(this.calYear, this.calMonth - 1, 1).getDay();
+        const daysInMonth = new Date(this.calYear, this.calMonth, 0).getDate();
+        const today = new Date();
+        const isCurrentMonth = today.getFullYear() === this.calYear && today.getMonth() + 1 === this.calMonth;
+
+        // Group tasks by day
+        const tasksByDay = {};
+        this.calTasks.forEach(t => {
+            const day = parseInt(t.due_date.split('-')[2]);
+            if (!tasksByDay[day]) tasksByDay[day] = [];
+            tasksByDay[day].push(t);
+        });
+
+        // Empty cells before first day
+        for (let i = 0; i < firstDay; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'cal-day cal-day-empty';
+            container.appendChild(cell);
+        }
+
+        for (let d = 1; d <= daysInMonth; d++) {
+            const cell = document.createElement('div');
+            cell.className = 'cal-day';
+            if (isCurrentMonth && d === today.getDate()) cell.classList.add('cal-today');
+
+            const num = document.createElement('span');
+            num.className = 'cal-day-num';
+            num.textContent = d;
+            cell.appendChild(num);
+
+            const dayTasks = tasksByDay[d] || [];
+            dayTasks.forEach(task => {
+                const chip = document.createElement('div');
+                chip.className = 'cal-task';
+                chip.style.borderLeftColor = task.project_color || '#6366f1';
+                chip.title = `${task.title} (${task.project_name || 'Unknown'})`;
+
+                const statusDot = document.createElement('span');
+                statusDot.className = `priority-badge priority-${task.priority}`;
+                chip.appendChild(statusDot);
+
+                const titleSpan = document.createElement('span');
+                titleSpan.className = 'cal-task-title';
+                titleSpan.textContent = task.title;
+                chip.appendChild(titleSpan);
+
+                chip.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.showTaskModal(task);
+                });
+                cell.appendChild(chip);
+            });
+
+            container.appendChild(cell);
+        }
+    }
+
+    // ── Archive ──
+    async loadArchive() {
+        try {
+            this.archivedTasks = await this.apiCall('/api/archive');
+        } catch { this.archivedTasks = []; }
+        this.renderArchive();
+    }
+
+    renderArchive() {
+        const container = document.getElementById('archive-list');
+        const empty = document.getElementById('archive-empty');
+        container.innerHTML = '';
+
+        if (this.archivedTasks.length === 0) {
+            empty.style.display = 'flex';
+            return;
+        }
+        empty.style.display = 'none';
+
+        this.archivedTasks.forEach(task => {
+            const card = document.createElement('div');
+            card.className = 'archive-card';
+
+            const archivedDate = task.archived_at ? new Date(task.archived_at + 'Z').toLocaleDateString() : '';
+
+            card.innerHTML = `
+                <div class="archive-card-info">
+                    <div class="archive-card-top">
+                        <span class="priority-badge priority-${task.priority}"></span>
+                        <h4>${this.escapeHtml(task.title)}</h4>
+                    </div>
+                    <div class="archive-card-meta">
+                        <span class="archive-project" style="color: ${task.project_color || '#6366f1'}">${this.escapeHtml(task.project_name || 'Unknown')}</span>
+                        <span class="archive-date">Archived ${archivedDate}</span>
+                    </div>
+                </div>
+                <button class="btn btn-glass btn-sm archive-restore-btn" data-task-id="${task.id}">Restore</button>
+            `;
+
+            card.querySelector('.archive-restore-btn').addEventListener('click', () => this.restoreTask(task.id));
+            container.appendChild(card);
+        });
+    }
+
+    async restoreTask(taskId) {
+        try {
+            await this.apiCall(`/api/tasks/${taskId}/restore`, { method: 'PATCH', body: JSON.stringify({ status: 'todo' }) });
+            this.showToast('Task restored');
+            await this.loadArchive();
+            if (this.currentProject) await this.loadTasks(this.currentProject.id);
+        } catch {}
     }
 
     async apiCall(endpoint, options = {}) {
@@ -145,10 +406,14 @@ class LobstyBoard {
             const item = document.createElement('div');
             item.className = 'project-item';
             item.dataset.projectId = project.id;
-            if (this.currentProject && this.currentProject.id === project.id) {
-                item.classList.add('active');
-            }
-            item.innerHTML = `<h3>${this.escapeHtml(project.name)}</h3><p>${this.escapeHtml(project.description || '')}</p>`;
+            if (this.currentProject && this.currentProject.id === project.id) item.classList.add('active');
+            item.innerHTML = `
+                <div class="project-item-dot" style="background:${project.color || '#6366f1'}"></div>
+                <div class="project-item-text">
+                    <h3>${this.escapeHtml(project.name)}</h3>
+                    <p>${this.escapeHtml(project.description || '')}</p>
+                </div>
+            `;
             item.addEventListener('click', () => this.selectProject(project.id));
             container.appendChild(item);
         });
@@ -186,9 +451,23 @@ class LobstyBoard {
         const labels = task.labels || [];
         const labelColors = task.label_colors || [];
         const docs = task.docs || [];
+
+        // Due date display
+        let dueHtml = '';
+        if (task.due_date) {
+            const due = new Date(task.due_date + 'T00:00:00');
+            const now = new Date();
+            now.setHours(0,0,0,0);
+            const isOverdue = due < now && task.status !== 'done';
+            const isSoon = !isOverdue && (due - now) <= 2 * 86400000 && task.status !== 'done';
+            const cls = isOverdue ? 'due-overdue' : isSoon ? 'due-soon' : 'due-normal';
+            const formatted = due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            dueHtml = `<span class="due-badge ${cls}" title="Due ${task.due_date}">📅 ${formatted}</span>`;
+        }
+
         card.innerHTML = `
             <h4>${this.escapeHtml(task.title)}</h4>
-            ${task.description ? `<p>${this.escapeHtml(task.description)}</p>` : ''}
+            ${task.description ? `<div class="task-desc-md">${task.description.startsWith('<') ? task.description : marked.parse(task.description)}</div>` : ''}
             ${docs.length > 0 ? `
                 <div class="card-docs">
                     ${docs.map(doc => `
@@ -199,34 +478,90 @@ class LobstyBoard {
                 </div>
             ` : ''}
             <div class="task-meta">
-                <span class="priority-badge priority-${task.priority}" title="${task.priority} priority"></span>
+                <span class="priority-badge priority-${task.priority}" title="${task.priority}"></span>
+                ${task.assignee ? `<span class="assignee-badge" title="${task.assignee}">${task.assignee === 'Lobsty' ? '🦞' : '👤'} ${task.assignee}</span>` : ''}
+                ${dueHtml}
                 <div class="task-labels">
                     ${labels.map((label, index) => `
-                        <span class="label-tag" style="background-color: ${labelColors[index] || '#2383e2'}">${this.escapeHtml(label)}</span>
+                        <span class="label-tag" style="background-color: ${labelColors[index] || '#6366f1'}">${this.escapeHtml(label)}</span>
                     `).join('')}
                 </div>
                 <button class="card-link-doc-btn" title="Link Doc">📄</button>
             </div>
         `;
+
         card.querySelectorAll('.card-doc-badge').forEach(badge => {
             badge.addEventListener('click', (e) => e.stopPropagation());
         });
+
         card.querySelector('.card-link-doc-btn').addEventListener('click', (e) => {
             e.stopPropagation();
             this.showTaskModal(task);
             setTimeout(() => this.showDocInput(), 150);
         });
+
         card.addEventListener('dragstart', (e) => {
             this.draggedTask = task;
             card.classList.add('dragging');
             e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', task.id);
         });
         card.addEventListener('dragend', () => {
             card.classList.remove('dragging');
             this.draggedTask = null;
         });
+        this.setupTouchDrag(card, task);
         card.addEventListener('click', () => this.showTaskModal(task));
         return card;
+    }
+
+    setupTouchDrag(card, task) {
+        let startX, startY, moved = false, longPress = false, timer;
+        card.addEventListener('touchstart', (e) => {
+            const touch = e.touches[0];
+            startX = touch.clientX; startY = touch.clientY;
+            moved = false; longPress = false;
+            timer = setTimeout(() => {
+                longPress = true;
+                card.classList.add('drag-ghost');
+                if (navigator.vibrate) navigator.vibrate(30);
+            }, 400);
+        }, { passive: true });
+
+        card.addEventListener('touchmove', (e) => {
+            const touch = e.touches[0];
+            const dx = Math.abs(touch.clientX - startX);
+            const dy = Math.abs(touch.clientY - startY);
+            if (dx > 10 || dy > 10) {
+                moved = true;
+                if (!longPress) { clearTimeout(timer); return; }
+            }
+            if (longPress) {
+                e.preventDefault();
+                const el = document.elementFromPoint(touch.clientX, touch.clientY);
+                if (el) {
+                    const col = el.closest('.column');
+                    document.querySelectorAll('.column-content').forEach(c => c.classList.remove('drag-over'));
+                    if (col) {
+                        col.querySelector('.column-content').classList.add('drag-over');
+                        this.touchDrag = { task, targetStatus: col.dataset.status };
+                    }
+                }
+            }
+        }, { passive: false });
+
+        card.addEventListener('touchend', (e) => {
+            clearTimeout(timer);
+            card.classList.remove('drag-ghost');
+            document.querySelectorAll('.column-content').forEach(c => c.classList.remove('drag-over'));
+            if (longPress && this.touchDrag && this.touchDrag.targetStatus !== task.status) {
+                e.preventDefault();
+                this.moveTask(task.id, this.touchDrag.targetStatus);
+                this.touchDrag = null;
+                return;
+            }
+            this.touchDrag = null;
+        });
     }
 
     setupDropZone(container, status) {
@@ -235,9 +570,7 @@ class LobstyBoard {
             e.dataTransfer.dropEffect = 'move';
             container.classList.add('drag-over');
         });
-        container.addEventListener('dragleave', () => {
-            container.classList.remove('drag-over');
-        });
+        container.addEventListener('dragleave', () => container.classList.remove('drag-over'));
         container.addEventListener('drop', async (e) => {
             e.preventDefault();
             container.classList.remove('drag-over');
@@ -251,33 +584,42 @@ class LobstyBoard {
         this.currentProject = this.projects.find(p => p.id == projectId);
         if (!this.currentProject) return;
         await this.loadTasks(projectId);
+        this.currentView = 'board';
         document.getElementById('welcome-screen').style.display = 'none';
         document.getElementById('project-header').style.display = 'flex';
         document.getElementById('kanban-board').style.display = 'flex';
+        document.getElementById('column-dots').style.display = '';
+        document.getElementById('calendar-view').style.display = 'none';
+        document.getElementById('archive-view').style.display = 'none';
+        document.getElementById('view-board-btn').classList.add('active');
+        document.getElementById('view-calendar-btn').classList.remove('active');
         document.getElementById('project-title').textContent = this.currentProject.name;
         document.getElementById('project-description').textContent = this.currentProject.description || '';
         this.renderProjects();
-        // Close sidebar on mobile after selecting project
-        document.getElementById('sidebar').classList.remove('open');
-        document.getElementById('sidebar-overlay').classList.remove('active');
+        this.closeSidebar();
     }
 
     showWelcomeScreen() {
         document.getElementById('welcome-screen').style.display = 'flex';
         document.getElementById('project-header').style.display = 'none';
         document.getElementById('kanban-board').style.display = 'none';
+        document.getElementById('column-dots').style.display = 'none';
+        document.getElementById('calendar-view').style.display = 'none';
+        document.getElementById('archive-view').style.display = 'none';
     }
 
     showModal(modalId) {
-        document.getElementById(modalId).style.display = 'flex';
-        setTimeout(() => {
-            const firstInput = document.querySelector(`#${modalId} input[type="text"], #${modalId} textarea`);
+        const modal = document.getElementById(modalId);
+        modal.style.display = 'flex';
+        requestAnimationFrame(() => {
+            const firstInput = modal.querySelector('input[type="text"], textarea');
             if (firstInput) firstInput.focus();
-        }, 100);
+        });
     }
 
     hideModal(modalId) {
-        document.getElementById(modalId).style.display = 'none';
+        const modal = document.getElementById(modalId);
+        modal.style.display = 'none';
         this.clearForm(modalId);
     }
 
@@ -285,8 +627,7 @@ class LobstyBoard {
         const modal = document.getElementById(modalId);
         const form = modal.querySelector('form');
         if (form) form.reset();
-        const labelCheckboxes = modal.querySelectorAll('.label-checkbox');
-        labelCheckboxes.forEach(cb => {
+        modal.querySelectorAll('.label-checkbox').forEach(cb => {
             cb.classList.remove('selected');
             const input = cb.querySelector('input');
             if (input) input.checked = false;
@@ -299,6 +640,7 @@ class LobstyBoard {
             title.textContent = 'Edit Project';
             document.getElementById('project-name').value = project.name;
             document.getElementById('project-desc').value = project.description || '';
+            document.getElementById('project-color').value = project.color || '#6366f1';
         } else {
             title.textContent = 'New Project';
         }
@@ -311,21 +653,31 @@ class LobstyBoard {
         if (task) {
             title.textContent = 'Edit Task';
             document.getElementById('task-title').value = task.title;
-            document.getElementById('task-desc').value = task.description || '';
+            if (this.quillEditor) {
+                var desc = task.description || '';
+                if (desc.startsWith('<')) { this.quillEditor.root.innerHTML = desc; }
+                else { this.quillEditor.setText(desc || ''); }
+            }
             document.getElementById('task-priority').value = task.priority;
             document.getElementById('task-status').value = task.status;
+            document.getElementById('task-assignee').value = task.assignee || '';
+            document.getElementById('task-due-date').value = task.due_date || '';
             deleteBtn.style.display = 'inline-flex';
             deleteBtn.dataset.taskId = task.id;
         } else {
             title.textContent = 'New Task';
             deleteBtn.style.display = 'none';
+            document.getElementById('task-assignee').value = '';
+            document.getElementById('task-due-date').value = '';
             delete deleteBtn.dataset.taskId;
         }
         this.renderTaskLabels(task);
         this.renderTaskDocs(task);
         this.hideDocInput();
-        // Hide link trigger for new tasks (no ID yet)
         document.getElementById('doc-link-trigger').style.display = task ? 'inline-flex' : 'none';
+        if (this.quillEditor && !deleteBtn.dataset.taskId && title.textContent === 'New Task') {
+            this.quillEditor.setText('');
+        }
         this.showModal('task-modal');
     }
 
@@ -365,7 +717,7 @@ class LobstyBoard {
                     <span class="doc-chip-icon">📄</span>
                     ${this.escapeHtml(doc.title)}
                 </a>
-                <button type="button" class="doc-chip-remove" data-doc-id="${doc.id}" title="Remove link">&times;</button>
+                <button type="button" class="doc-chip-remove" data-doc-id="${doc.id}" title="Remove">&times;</button>
             `;
             chip.querySelector('.doc-chip-link').addEventListener('click', (e) => e.stopPropagation());
             chip.querySelector('.doc-chip-remove').addEventListener('click', (e) => {
@@ -385,7 +737,8 @@ class LobstyBoard {
 
     hideDocInput() {
         document.getElementById('doc-input-row').style.display = 'none';
-        document.getElementById('doc-link-trigger').style.display = 'inline-flex';
+        const trigger = document.getElementById('doc-link-trigger');
+        if (trigger) trigger.style.display = 'inline-flex';
     }
 
     extractDocTitle(url) {
@@ -396,43 +749,29 @@ class LobstyBoard {
             const segments = path.split('/');
             const last = segments[segments.length - 1];
             return decodeURIComponent(last).replace(/[-_]/g, ' ');
-        } catch {
-            return url;
-        }
+        } catch { return url; }
     }
 
     async addDocLink() {
         const input = document.getElementById('doc-url-input');
         const url = input.value.trim();
         if (!url) return;
-
         if (!url.includes('docs.twray.dev')) {
             this.showError('Only docs.twray.dev URLs are allowed');
             return;
         }
-
         const taskId = document.getElementById('task-delete-btn').dataset.taskId;
-        if (!taskId) {
-            // New task - store locally until saved
-            this.showError('Please save the task first, then add doc links');
-            return;
-        }
-
+        if (!taskId) { this.showError('Save the task first, then add doc links'); return; }
         const title = this.extractDocTitle(url);
         try {
-            await this.apiCall(`/api/tasks/${taskId}/docs`, {
-                method: 'POST',
-                body: JSON.stringify({ url, title })
-            });
-            // Refresh task data and re-render docs
+            await this.apiCall(`/api/tasks/${taskId}/docs`, { method: 'POST', body: JSON.stringify({ url, title }) });
             const task = await this.apiCall(`/api/tasks/${taskId}`);
             this.renderTaskDocs(task);
-            // Update the task in local array too
             const idx = this.tasks.findIndex(t => t.id == taskId);
             if (idx !== -1) this.tasks[idx] = task;
             this.renderTasks();
             this.hideDocInput();
-        } catch (error) {}
+        } catch {}
     }
 
     async removeDocLink(docId) {
@@ -445,7 +784,7 @@ class LobstyBoard {
             const idx = this.tasks.findIndex(t => t.id == taskId);
             if (idx !== -1) this.tasks[idx] = task;
             this.renderTasks();
-        } catch (error) {}
+        } catch {}
     }
 
     showLabelsModal() {
@@ -472,12 +811,13 @@ class LobstyBoard {
     async handleProjectSubmit(e) {
         e.preventDefault();
         const formData = new FormData(e.target);
-        const data = { name: formData.get('name'), description: formData.get('description') };
+        const data = { name: formData.get('name'), description: formData.get('description'), color: formData.get('color') || '#6366f1' };
         try {
             const project = await this.createProject(data);
             this.hideModal('project-modal');
             if (this.projects.length === 1) this.selectProject(project.id);
-        } catch (error) {}
+            this.showToast(`Project "${data.name}" created`);
+        } catch {}
     }
 
     async handleTaskSubmit(e) {
@@ -487,10 +827,12 @@ class LobstyBoard {
             .map(input => parseInt(input.value));
         const data = {
             title: formData.get('title'),
-            description: formData.get('description'),
+            description: this.quillEditor ? (this.quillEditor.root.innerHTML === '<p><br></p>' ? '' : this.quillEditor.root.innerHTML) : '',
             priority: formData.get('priority'),
             status: formData.get('status'),
-            labels: selectedLabels
+            labels: selectedLabels,
+            assignee: formData.get('assignee') || null,
+            due_date: formData.get('due_date') || null
         };
         try {
             const taskId = document.getElementById('task-delete-btn').dataset.taskId;
@@ -500,7 +842,9 @@ class LobstyBoard {
                 await this.createTask(data);
             }
             this.hideModal('task-modal');
-        } catch (error) {}
+            // Refresh calendar if visible
+            if (this.currentView === 'calendar') this.loadCalendar();
+        } catch {}
     }
 
     async handleLabelSubmit(e) {
@@ -511,18 +855,28 @@ class LobstyBoard {
             await this.createLabel(data);
             this.renderLabelsManager();
             e.target.reset();
-        } catch (error) {}
+        } catch {}
     }
 
     async deleteTask() {
         const taskId = document.getElementById('task-delete-btn').dataset.taskId;
         if (!taskId) return;
-        if (confirm('Are you sure you want to delete this task?')) {
+        if (confirm('Delete this task?')) {
             try {
                 await this.deleteTaskById(taskId);
                 this.hideModal('task-modal');
-            } catch (error) {}
+                this.showToast('Task deleted');
+            } catch {}
         }
+    }
+
+    showToast(message, isError = false) {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast${isError ? ' error' : ''}`;
+        toast.textContent = message;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
     }
 
     escapeHtml(text) {
@@ -532,11 +886,7 @@ class LobstyBoard {
         return div.innerHTML;
     }
 
-    showError(message) {
-        alert(`Error: ${message}`);
-    }
+    showError(message) { this.showToast(message, true); }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    new LobstyBoard();
-});
+document.addEventListener('DOMContentLoaded', () => { new LobstyBoard(); });
