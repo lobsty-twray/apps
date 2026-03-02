@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Build with Ray — Custom Web Apps That Replace Your Spreadsheets</title>
+<meta name="description" content="Ray builds custom web apps that kill your Excel dependency. 25+ production apps running. React, Node.js, PostgreSQL. Jersey City, NJ.">
+<meta name="keywords" content="custom web app development, replace excel, spreadsheet replacement, React developer, Node.js developer">
+<meta property="og:title" content="Build with Ray — Excel Is Dead">
+<meta property="og:description" content="Custom web apps that replace your spreadsheets. 25+ production apps and counting.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--purple:#13041e;--pink:#ec4899;--cyan:#06b6d4;
+--dark:#0a0118;--card:#1a0a2e;--text:#e2e8f0;--muted:#94a3b8;
+--grad:linear-gradient(135deg,var(--pink),var(--cyan));
+}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--dark);color:var(--text);line-height:1.6;overflow-x:hidden}
+h1,h2,h3,.bold-text{font-family:'Space Grotesk',sans-serif}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+
+/* FLOATING CTA */
+.floating-cta{
+position:fixed;bottom:24px;right:24px;z-index:1000;
+background:var(--grad);color:#fff;font-family:'Space Grotesk',sans-serif;
+font-weight:800;font-size:1rem;padding:16px 28px;border-radius:60px;
+border:none;cursor:pointer;box-shadow:0 8px 32px rgba(236,72,153,.4);
+transition:transform .2s,box-shadow .2s;min-height:52px;
+}
+.floating-cta:hover{transform:translateY(-2px) scale(1.05);box-shadow:0 12px 40px rgba(236,72,153,.5)}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:999;padding:16px 24px;
+background:rgba(10,1,24,.85);backdrop-filter:blur(16px);border-bottom:1px solid rgba(236,72,153,.1);
+display:flex;align-items:center;justify-content:space-between}
+.nav-brand{font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:1.2rem;
+background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-links{display:flex;gap:24px;align-items:center}
+.nav-links a{font-size:.9rem;color:var(--muted);transition:color .2s;min-height:44px;display:flex;align-items:center}
+.nav-links a:hover{color:#fff}
+.nav-cta{background:var(--grad);padding:10px 20px;border-radius:30px;color:#fff !important;font-weight:600;-webkit-text-fill-color:#fff}
+@media(max-width:768px){.nav-links a:not(.nav-cta){display:none}}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;
+padding:120px 24px 80px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50%;right:-30%;width:80vw;height:80vw;
+background:radial-gradient(circle,rgba(236,72,153,.15),transparent 60%);pointer-events:none}
+.hero::after{content:'';position:absolute;bottom:-30%;left:-20%;width:60vw;height:60vw;
+background:radial-gradient(circle,rgba(6,182,212,.1),transparent 60%);pointer-events:none}
+.hero-content{max-width:1200px;margin:0 auto;position:relative;z-index:1}
+.hero-eyebrow{font-size:.9rem;text-transform:uppercase;letter-spacing:4px;color:var(--cyan);margin-bottom:24px;font-weight:600}
+.hero h1{font-size:clamp(3.5rem,12vw,9rem);font-weight:800;line-height:.9;margin-bottom:32px}
+.hero h1 .line1{display:block;color:#fff}
+.hero h1 .line2{display:block;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:clamp(1.1rem,2.5vw,1.5rem);color:var(--muted);max-width:600px;margin-bottom:48px;line-height:1.5}
+.hero-buttons{display:flex;gap:16px;flex-wrap:wrap}
+.btn-primary{background:var(--grad);color:#fff;padding:16px 36px;border-radius:50px;
+font-weight:700;font-size:1.1rem;transition:transform .2s,box-shadow .2s;min-height:52px;display:inline-flex;align-items:center}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(236,72,153,.4)}
+.btn-outline{border:2px solid rgba(236,72,153,.4);color:#fff;padding:16px 36px;border-radius:50px;
+font-weight:600;font-size:1.1rem;transition:all .2s;min-height:52px;display:inline-flex;align-items:center}
+.btn-outline:hover{border-color:var(--pink);background:rgba(236,72,153,.1)}
+
+/* MARQUEE */
+.marquee-section{padding:40px 0;border-top:1px solid rgba(236,72,153,.1);border-bottom:1px solid rgba(236,72,153,.1);overflow:hidden}
+.marquee-track{display:flex;gap:48px;animation:marquee 20s linear infinite;width:max-content}
+.marquee-track span{font-family:'Space Grotesk',sans-serif;font-size:1.2rem;font-weight:700;
+color:rgba(255,255,255,.15);white-space:nowrap;text-transform:uppercase;letter-spacing:3px}
+@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* SECTION UTILS */
+.section{padding:100px 24px}
+.section-inner{max-width:1200px;margin:0 auto}
+.section-label{font-size:.85rem;text-transform:uppercase;letter-spacing:4px;color:var(--pink);font-weight:600;margin-bottom:12px}
+.section-title{font-size:clamp(2rem,5vw,3.5rem);font-weight:800;margin-bottom:24px;line-height:1.1}
+.gradient-text{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+
+/* BOLD STATEMENT */
+.bold-statement{padding:80px 24px;text-align:center}
+.bold-statement p{font-family:'Space Grotesk',sans-serif;font-size:clamp(1.5rem,4vw,3rem);
+font-weight:800;color:var(--muted);max-width:900px;margin:0 auto;line-height:1.3}
+.bold-statement span{color:#fff}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:32px;margin-top:60px}
+.stat{text-align:center;padding:40px 24px;border:1px solid rgba(236,72,153,.15);border-radius:20px;
+background:rgba(26,10,46,.5);position:relative;overflow:hidden}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad)}
+.stat-num{font-family:'Space Grotesk',sans-serif;font-size:clamp(2.5rem,5vw,4rem);font-weight:800;
+background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
+.stat-label{color:var(--muted);font-size:.95rem;margin-top:8px}
+
+/* APP SHOWCASE HORIZONTAL SCROLL */
+.showcase-scroll{overflow-x:auto;overflow-y:hidden;display:flex;gap:24px;
+padding:40px 24px 40px 24px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.showcase-scroll::-webkit-scrollbar{display:none}
+.app-card{flex:0 0 300px;scroll-snap-align:start;background:var(--card);
+border-radius:20px;padding:32px;border:1px solid rgba(236,72,153,.1);
+transition:transform .3s,border-color .3s;position:relative;overflow:hidden}
+.app-card:hover{transform:translateY(-4px);border-color:rgba(236,72,153,.3)}
+.app-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--grad);opacity:0;transition:opacity .3s}
+.app-card:hover::before{opacity:1}
+.app-icon{width:48px;height:48px;border-radius:12px;background:var(--grad);
+display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:16px}
+.app-card h3{font-size:1.2rem;font-weight:700;margin-bottom:8px}
+.app-card p{color:var(--muted);font-size:.9rem;line-height:1.5}
+
+/* ASYMMETRIC GRID - SERVICES */
+.asym-grid{display:grid;grid-template-columns:1fr;gap:24px;margin-top:48px}
+@media(min-width:768px){
+.asym-grid{grid-template-columns:1.2fr .8fr;grid-template-rows:auto auto}
+.asym-grid .big{grid-row:span 2}
+}
+.service-card{background:var(--card);border-radius:24px;padding:40px 32px;
+border:1px solid rgba(236,72,153,.1);position:relative;overflow:hidden;transition:border-color .3s}
+.service-card:hover{border-color:rgba(6,182,212,.3)}
+.service-card.big{display:flex;flex-direction:column;justify-content:center}
+.service-card h3{font-size:1.5rem;font-weight:800;margin-bottom:12px}
+.service-card p{color:var(--muted);font-size:1rem;line-height:1.6}
+.service-num{font-family:'Space Grotesk',sans-serif;font-size:5rem;font-weight:800;
+color:rgba(236,72,153,.1);position:absolute;top:-10px;right:16px;line-height:1}
+
+/* TECH STACK */
+.tech-grid{display:flex;flex-wrap:wrap;gap:16px;margin-top:32px}
+.tech-pill{padding:12px 24px;border-radius:50px;border:1px solid rgba(6,182,212,.2);
+background:rgba(6,182,212,.05);font-weight:600;font-size:.9rem;color:var(--cyan);transition:all .2s}
+.tech-pill:hover{background:rgba(6,182,212,.15);border-color:rgba(6,182,212,.4)}
+
+/* TESTIMONIALS */
+.testimonial-grid{display:grid;grid-template-columns:1fr;gap:32px;margin-top:48px}
+@media(min-width:768px){.testimonial-grid{grid-template-columns:1fr 1fr}}
+.testimonial{padding:40px;background:var(--card);border-radius:24px;border-left:4px solid var(--pink);position:relative}
+.testimonial .quote{font-size:1.2rem;font-style:italic;line-height:1.6;margin-bottom:20px}
+.testimonial .quote::before{content:'"';font-family:'Space Grotesk',sans-serif;font-size:4rem;
+color:var(--pink);opacity:.3;position:absolute;top:16px;left:20px;line-height:1}
+.testimonial .author{font-weight:700;color:var(--cyan);font-size:.95rem}
+.testimonial .role{color:var(--muted);font-size:.85rem}
+
+/* PRICING */
+.pricing-grid{display:grid;grid-template-columns:1fr;gap:24px;margin-top:48px}
+@media(min-width:768px){.pricing-grid{grid-template-columns:repeat(3,1fr)}}
+.price-card{background:var(--card);border-radius:24px;padding:40px 32px;
+border:1px solid rgba(236,72,153,.1);text-align:center;position:relative;transition:transform .3s,border-color .3s}
+.price-card:hover{transform:translateY(-4px)}
+.price-card.featured{border:2px solid transparent;background-image:linear-gradient(var(--card),var(--card)),var(--grad);
+background-origin:border-box;background-clip:padding-box,border-box}
+.price-card .tier{font-size:.85rem;text-transform:uppercase;letter-spacing:3px;color:var(--cyan);font-weight:600;margin-bottom:8px}
+.price-card .price{font-family:'Space Grotesk',sans-serif;font-size:2.5rem;font-weight:800;margin:16px 0 8px}
+.price-card .price-note{color:var(--muted);font-size:.9rem;margin-bottom:24px}
+.price-card ul{list-style:none;text-align:left;margin-bottom:32px}
+.price-card li{padding:8px 0;color:var(--muted);font-size:.95rem;display:flex;align-items:center;gap:10px}
+.price-card li::before{content:'→';color:var(--pink);font-weight:700}
+.price-card a{display:block;padding:14px;border-radius:50px;font-weight:700;text-align:center;min-height:48px;
+display:flex;align-items:center;justify-content:center;transition:all .2s}
+.price-card a.btn-grad{background:var(--grad);color:#fff}
+.price-card a.btn-ghost{border:2px solid rgba(236,72,153,.3);color:#fff}
+.price-card a.btn-grad:hover,.price-card a.btn-ghost:hover{transform:scale(1.03)}
+
+/* PROCESS */
+.process-steps{display:grid;grid-template-columns:1fr;gap:32px;margin-top:48px;counter-reset:step}
+@media(min-width:768px){.process-steps{grid-template-columns:repeat(4,1fr)}}
+.step{text-align:center;counter-increment:step}
+.step::before{content:counter(step,decimal-leading-zero);display:block;
+font-family:'Space Grotesk',sans-serif;font-size:3rem;font-weight:800;
+background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:16px}
+.step h3{font-size:1.1rem;font-weight:700;margin-bottom:8px}
+.step p{color:var(--muted);font-size:.9rem}
+
+/* CTA SECTION */
+.cta-section{text-align:center;padding:120px 24px;position:relative}
+.cta-section::before{content:'';position:absolute;inset:0;
+background:radial-gradient(ellipse at center,rgba(236,72,153,.12),transparent 70%);pointer-events:none}
+.cta-section h2{font-size:clamp(2.5rem,6vw,5rem);font-weight:800;margin-bottom:24px;line-height:1}
+.cta-section p{color:var(--muted);font-size:1.2rem;max-width:500px;margin:0 auto 40px}
+
+/* FOOTER */
+footer{border-top:1px solid rgba(236,72,153,.1);padding:60px 24px 40px}
+.footer-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr;gap:40px}
+@media(min-width:768px){.footer-inner{grid-template-columns:2fr 1fr 1fr}}
+.footer-brand{font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:800;
+background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px}
+.footer-desc{color:var(--muted);font-size:.9rem;max-width:300px}
+.footer-links h4{font-size:.85rem;text-transform:uppercase;letter-spacing:3px;color:var(--pink);margin-bottom:16px;font-weight:600}
+.footer-links a{display:block;color:var(--muted);padding:6px 0;font-size:.9rem;transition:color .2s;min-height:44px;display:flex;align-items:center}
+.footer-links a:hover{color:#fff}
+.footer-bottom{text-align:center;padding-top:40px;border-top:1px solid rgba(236,72,153,.05);
+color:var(--muted);font-size:.8rem;max-width:1200px;margin:40px auto 0}
+
+/* SCROLL REVEAL */
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .6s ease,transform .6s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* RESPONSIVE */
+@media(max-width:480px){
+.app-card{flex:0 0 260px}
+.section{padding:60px 16px}
+.hero{padding:100px 16px 60px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+<div class="nav-brand">Build with Ray</div>
+<div class="nav-links">
+<a href="#work">Work</a>
+<a href="#services">Services</a>
+<a href="#pricing">Pricing</a>
+<a href="mailto:ray@twray.dev" class="nav-cta">Let's Talk</a>
+</div>
+</nav>
+
+<!-- FLOATING CTA -->
+<a href="mailto:ray@twray.dev" class="floating-cta" id="floatingCta" style="opacity:0;pointer-events:none">
+Let's Build →
+</a>
+
+<!-- HERO -->
+<section class="hero">
+<div class="hero-content">
+<p class="hero-eyebrow">Custom Web App Development</p>
+<h1>
+<span class="line1">EXCEL</span>
+<span class="line2">IS DEAD.</span>
+</h1>
+<p class="hero-sub">I build custom web apps that replace your messy spreadsheets with fast, modern tools your team actually wants to use.</p>
+<div class="hero-buttons">
+<a href="mailto:ray@twray.dev" class="btn-primary">Start Your Project →</a>
+<a href="#work" class="btn-outline">See My Work</a>
+</div>
+</div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-section">
+<div class="marquee-track">
+<span>React</span><span>•</span><span>Node.js</span><span>•</span><span>PostgreSQL</span><span>•</span>
+<span>TypeScript</span><span>•</span><span>Docker</span><span>•</span><span>Next.js</span><span>•</span>
+<span>Python</span><span>•</span><span>Full Stack</span><span>•</span>
+<span>React</span><span>•</span><span>Node.js</span><span>•</span><span>PostgreSQL</span><span>•</span>
+<span>TypeScript</span><span>•</span><span>Docker</span><span>•</span><span>Next.js</span><span>•</span>
+<span>Python</span><span>•</span><span>Full Stack</span><span>•</span>
+</div>
+</div>
+
+<!-- BOLD STATEMENT -->
+<div class="bold-statement reveal">
+<p>Your business runs on <span>duct-taped spreadsheets</span>. Your competitors are building <span>real software</span>. Which side do you want to be on?</p>
+</div>
+
+<!-- STATS -->
+<section class="section">
+<div class="section-inner reveal">
+<div class="stats">
+<div class="stat"><div class="stat-num">25+</div><div class="stat-label">Production Apps Running</div></div>
+<div class="stat"><div class="stat-num">6.8K</div><div class="stat-label">YouTube Subscribers</div></div>
+<div class="stat"><div class="stat-num">79</div><div class="stat-label">Tech Videos Published</div></div>
+<div class="stat"><div class="stat-num">24/7</div><div class="stat-label">Apps Running Non-Stop</div></div>
+</div>
+</div>
+</section>
+
+<!-- APP SHOWCASE -->
+<section class="section" id="work">
+<div class="section-inner">
+<p class="section-label reveal">Live Apps</p>
+<h2 class="section-title reveal">Apps I've Built <span class="gradient-text">& Actually Use</span></h2>
+</div>
+<div class="showcase-scroll">
+<div class="app-card"><div class="app-icon">📋</div><h3>Kanban Board</h3><p>Drag-and-drop project management with doc linking and real-time updates.</p></div>
+<div class="app-card"><div class="app-icon">💰</div><h3>Budget Tracker</h3><p>Full financial dashboard with transaction imports and category analytics.</p></div>
+<div class="app-card"><div class="app-icon">📄</div><h3>Docs Platform</h3><p>Notion-like documents with Google OAuth, sharing, and real-time collaboration.</p></div>
+<div class="app-card"><div class="app-icon">📺</div><h3>YouTube Studio</h3><p>Custom analytics dashboard for tracking video performance and growth metrics.</p></div>
+<div class="app-card"><div class="app-icon">🛒</div><h3>Restock Monitor</h3><p>Auto-detection of product restocks with instant alerts and auto-buy.</p></div>
+<div class="app-card"><div class="app-icon">🎬</div><h3>Video Pipeline</h3><p>End-to-end content production tracker from idea to published video.</p></div>
+<div class="app-card"><div class="app-icon">🖥️</div><h3>Hardware Monitor</h3><p>Real-time system monitoring for servers, temps, and network health.</p></div>
+<div class="app-card"><div class="app-icon">📝</div><h3>Script Writer</h3><p>Templated script creation tool for consistent video production.</p></div>
+<div class="app-card"><div class="app-icon">🤝</div><h3>Sponsor Manager</h3><p>Track sponsor deals, deliverables, payments, and contract timelines.</p></div>
+<div class="app-card"><div class="app-icon">🏠</div><h3>App Hub</h3><p>Central navigation portal for all 25+ apps in one dashboard.</p></div>
+</div>
+</section>
+
+<!-- SERVICES - ASYMMETRIC -->
+<section class="section" id="services">
+<div class="section-inner">
+<p class="section-label reveal">What I Do</p>
+<h2 class="section-title reveal">Not Websites. <span class="gradient-text">Web Applications.</span></h2>
+<div class="asym-grid reveal">
+<div class="service-card big">
+<span class="service-num">01</span>
+<h3>Spreadsheet → Web App</h3>
+<p>Your team's entire workflow lives in a Google Sheet with 47 tabs and a prayer. I turn that chaos into a fast, modern web app with real databases, user accounts, and actual reliability. No more "who broke the formula?"</p>
+</div>
+<div class="service-card">
+<span class="service-num">02</span>
+<h3>Custom Dashboards</h3>
+<p>Real-time data visualization that updates itself. No more exporting CSVs and making pivot tables at midnight.</p>
+</div>
+<div class="service-card">
+<span class="service-num">03</span>
+<h3>Internal Tools</h3>
+<p>Admin panels, CRMs, inventory trackers — tools that fit your workflow, not the other way around.</p>
+</div>
+</div>
+</div>
+</section>
+
+<!-- TECH STACK -->
+<section class="section">
+<div class="section-inner reveal">
+<p class="section-label">Tech Stack</p>
+<h2 class="section-title">Built with <span class="gradient-text">Modern Tools</span></h2>
+<div class="tech-grid">
+<span class="tech-pill">React</span>
+<span class="tech-pill">Next.js</span>
+<span class="tech-pill">TypeScript</span>
+<span class="tech-pill">Node.js</span>
+<span class="tech-pill">PostgreSQL</span>
+<span class="tech-pill">Docker</span>
+<span class="tech-pill">Python</span>
+<span class="tech-pill">REST APIs</span>
+<span class="tech-pill">OAuth 2.0</span>
+<span class="tech-pill">Real-time WebSockets</span>
+</div>
+</div>
+</section>
+
+<!-- PROCESS -->
+<section class="section">
+<div class="section-inner">
+<p class="section-label reveal">Process</p>
+<h2 class="section-title reveal">From <span class="gradient-text">Idea to Production</span></h2>
+<div class="process-steps reveal">
+<div class="step"><h3>Discovery</h3><p>We talk about your pain points, workflows, and what "done" looks like.</p></div>
+<div class="step"><h3>Design</h3><p>I map out the data model, UI, and architecture. You approve before code starts.</p></div>
+<div class="step"><h3>Build</h3><p>Rapid development with weekly demos. You see progress, not excuses.</p></div>
+<div class="step"><h3>Launch</h3><p>Deployed, tested, documented. I stick around to make sure it works.</p></div>
+</div>
+</div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="section">
+<div class="section-inner">
+<p class="section-label reveal">What People Say</p>
+<h2 class="section-title reveal">Real <span class="gradient-text">Results</span></h2>
+<div class="testimonial-grid reveal">
+<div class="testimonial">
+<p class="quote">We were drowning in spreadsheets. Ray built us a custom app in 3 weeks that our whole team actually uses every day. Game changer.</p>
+<p class="author">Operations Manager</p>
+<p class="role">Small Business, NJ</p>
+</div>
+<div class="testimonial">
+<p class="quote">The app paid for itself in the first month. We cut our data entry time by 80% and eliminated errors that were costing us thousands.</p>
+<p class="author">Founder</p>
+<p class="role">E-commerce Startup</p>
+</div>
+</div>
+</div>
+</section>
+
+<!-- BOLD STATEMENT 2 -->
+<div class="bold-statement reveal">
+<p>You don't need a <span>"digital transformation."</span> You need someone who can <span>actually build the thing.</span></p>
+</div>
+
+<!-- PRICING -->
+<section class="section" id="pricing">
+<div class="section-inner">
+<p class="section-label reveal">Pricing</p>
+<h2 class="section-title reveal">Simple. <span class="gradient-text">Transparent.</span></h2>
+<div class="pricing-grid reveal">
+<div class="price-card">
+<div class="tier">Starter</div>
+<div class="price">$2K–5K</div>
+<p class="price-note">One-time project</p>
+<ul>
+<li>Single-purpose app</li>
+<li>Up to 5 core features</li>
+<li>Mobile-responsive</li>
+<li>User authentication</li>
+<li>2-4 week delivery</li>
+</ul>
+<a href="mailto:ray@twray.dev" class="btn-ghost">Get Started</a>
+</div>
+<div class="price-card featured">
+<div class="tier">Professional</div>
+<div class="price">$5K–15K</div>
+<p class="price-note">One-time project</p>
+<ul>
+<li>Complex multi-feature app</li>
+<li>Custom database design</li>
+<li>Third-party integrations</li>
+<li>Admin dashboard</li>
+<li>4-8 week delivery</li>
+</ul>
+<a href="mailto:ray@twray.dev" class="btn-grad">Let's Talk</a>
+</div>
+<div class="price-card">
+<div class="tier">Retainer</div>
+<div class="price">$500–2K</div>
+<p class="price-note">Per month</p>
+<ul>
+<li>Ongoing development</li>
+<li>Feature additions</li>
+<li>Bug fixes & maintenance</li>
+<li>Priority support</li>
+<li>Monthly progress reports</li>
+</ul>
+<a href="mailto:ray@twray.dev" class="btn-ghost">Learn More</a>
+</div>
+</div>
+</div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="cta-section">
+<div class="reveal">
+<h2>READY TO <span class="gradient-text">KILL THE SPREADSHEET?</span></h2>
+<p>Let's talk about what you need. No pitch decks, no jargon — just a conversation about your problem.</p>
+<a href="mailto:ray@twray.dev" class="btn-primary">Email ray@twray.dev →</a>
+</div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+<div class="footer-inner">
+<div>
+<div class="footer-brand">Build with Ray</div>
+<p class="footer-desc">Custom web app development from Jersey City, NJ. Replacing spreadsheets with real software since day one.</p>
+</div>
+<div class="footer-links">
+<h4>Links</h4>
+<a href="https://youtube.com/@techwithray" target="_blank" rel="noopener">YouTube ↗</a>
+<a href="https://github.com/rayovims" target="_blank" rel="noopener">GitHub ↗</a>
+<a href="https://techwithray.com" target="_blank" rel="noopener">Store ↗</a>
+</div>
+<div class="footer-links">
+<h4>Contact</h4>
+<a href="mailto:ray@twray.dev">ray@twray.dev</a>
+<a href="#pricing">Pricing</a>
+</div>
+</div>
+<div class="footer-bottom">© 2026 Ray. Built by hand, not by committee.</div>
+</footer>
+
+<script>
+// Scroll reveal
+const obs=new IntersectionObserver((entries)=>{
+entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}})
+},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+// Floating CTA - show after scrolling past hero
+const cta=document.getElementById('floatingCta');
+const hero=document.querySelector('.hero');
+const ctaObs=new IntersectionObserver(([e])=>{
+if(!e.isIntersecting){cta.style.opacity='1';cta.style.pointerEvents='auto'}
+else{cta.style.opacity='0';cta.style.pointerEvents='none'}
+},{threshold:0});
+ctaObs.observe(hero);
+</script>
+</body>
+</html>

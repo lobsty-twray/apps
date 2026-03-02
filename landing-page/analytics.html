@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analytics — twray.dev</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: #0a0a0f;
+    color: #e0e0e8;
+    min-height: 100vh;
+    padding: 16px;
+  }
+  h1 { font-size: 1.5rem; margin-bottom: 8px; color: #fff; }
+  .subtitle { color: #888; font-size: 0.85rem; margin-bottom: 24px; }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  @media (min-width: 768px) {
+    body { padding: 32px 48px; }
+    .stats-grid { grid-template-columns: repeat(4, 1fr); }
+    h1 { font-size: 2rem; }
+  }
+  .stat-card {
+    background: #141420;
+    border: 1px solid #1e1e30;
+    border-radius: 12px;
+    padding: 16px;
+    min-height: 44px;
+  }
+  .stat-card .label { color: #888; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .stat-card .value { font-size: 1.75rem; font-weight: 700; color: #fff; }
+  .chart-container {
+    background: #141420;
+    border: 1px solid #1e1e30;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 24px;
+  }
+  .chart-container h2 { font-size: 1rem; margin-bottom: 12px; color: #ccc; }
+  .chart-container canvas { max-height: 300px; }
+  .tables-grid {
+    display: grid;
+    gap: 24px;
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 768px) {
+    .tables-grid { grid-template-columns: 1fr 1fr; }
+  }
+  .table-card {
+    background: #141420;
+    border: 1px solid #1e1e30;
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .table-card h2 { font-size: 1rem; margin-bottom: 12px; color: #ccc; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 10px 8px; font-size: 0.85rem; min-height: 44px; }
+  th { color: #666; font-weight: 500; border-bottom: 1px solid #1e1e30; }
+  td { color: #ccc; border-bottom: 1px solid #111; }
+  tr:last-child td { border-bottom: none; }
+  .bar { display: inline-block; height: 8px; background: #6366f1; border-radius: 4px; margin-left: 8px; vertical-align: middle; }
+  .loading { text-align: center; padding: 80px 0; color: #666; }
+  .refresh-btn {
+    background: #1e1e30; border: 1px solid #2a2a40; color: #ccc;
+    padding: 12px 20px; border-radius: 8px; cursor: pointer;
+    font-size: 0.85rem; min-height: 44px; min-width: 44px;
+    transition: background 0.2s;
+  }
+  .refresh-btn:hover { background: #2a2a40; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <h1>📊 Analytics</h1>
+    <div class="subtitle">twray.dev — Last 30 days</div>
+  </div>
+  <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card"><div class="label">Total Visits</div><div class="value" id="totalVisits">—</div></div>
+  <div class="stat-card"><div class="label">Unique Visitors</div><div class="value" id="uniqueVisitors">—</div></div>
+  <div class="stat-card"><div class="label">Today Visits</div><div class="value" id="todayVisits">—</div></div>
+  <div class="stat-card"><div class="label">Today Unique</div><div class="value" id="todayUnique">—</div></div>
+</div>
+
+<div class="chart-container">
+  <h2>Visits per Day</h2>
+  <canvas id="visitsChart"></canvas>
+</div>
+
+<div class="tables-grid">
+  <div class="table-card">
+    <h2>Top Referral Sources</h2>
+    <table><thead><tr><th>Source</th><th>Visits</th></tr></thead><tbody id="referrersBody"></tbody></table>
+  </div>
+  <div class="table-card">
+    <h2>Device Breakdown</h2>
+    <table><thead><tr><th>Device</th><th>Visits</th><th></th></tr></thead><tbody id="devicesBody"></tbody></table>
+  </div>
+  <div class="table-card">
+    <h2>Top Pages</h2>
+    <table><thead><tr><th>Path</th><th>Visits</th></tr></thead><tbody id="pagesBody"></tbody></table>
+  </div>
+</div>
+
+<script>
+let chart = null;
+
+async function loadData() {
+  try {
+    const res = await fetch('/analytics/api/data');
+    const d = await res.json();
+    
+    document.getElementById('totalVisits').textContent = d.totalVisits.toLocaleString();
+    document.getElementById('uniqueVisitors').textContent = d.uniqueVisitors.toLocaleString();
+    document.getElementById('todayVisits').textContent = d.todayVisits.toLocaleString();
+    document.getElementById('todayUnique').textContent = d.todayUnique.toLocaleString();
+    
+    // Chart
+    const ctx = document.getElementById('visitsChart').getContext('2d');
+    if (chart) chart.destroy();
+    chart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: d.visitsPerDay.map(r => { const p = r.day.split('-'); return p[1]+'/'+p[2]; }),
+        datasets: [{
+          label: 'Visits',
+          data: d.visitsPerDay.map(r => r.count),
+          backgroundColor: '#6366f1',
+          borderRadius: 4,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: '#666', maxRotation: 45 }, grid: { display: false } },
+          y: { ticks: { color: '#666' }, grid: { color: '#1e1e30' }, beginAtZero: true }
+        }
+      }
+    });
+    
+    // Referrers
+    const maxRef = d.topReferrers[0]?.count || 1;
+    document.getElementById('referrersBody').innerHTML = d.topReferrers.length ? 
+      d.topReferrers.map(r => {
+        let src = r.referrer;
+        try { src = new URL(r.referrer).hostname; } catch(e) {}
+        return `<tr><td>${esc(src)}</td><td>${r.count}<span class="bar" style="width:${r.count/maxRef*80}px"></span></td></tr>`;
+      }).join('') : '<tr><td colspan="2" style="color:#666">No referral data yet</td></tr>';
+    
+    // Devices
+    const maxDev = d.deviceBreakdown[0]?.count || 1;
+    const icons = { desktop: '🖥️', mobile: '📱', tablet: '📱' };
+    document.getElementById('devicesBody').innerHTML = d.deviceBreakdown.map(r =>
+      `<tr><td>${icons[r.device_type]||''} ${r.device_type}</td><td>${r.count}</td><td><span class="bar" style="width:${r.count/maxDev*80}px"></span></td></tr>`
+    ).join('');
+    
+    // Pages
+    document.getElementById('pagesBody').innerHTML = d.topPages.map(r =>
+      `<tr><td>${esc(r.path)}</td><td>${r.count}</td></tr>`
+    ).join('');
+    
+  } catch(e) { console.error('Failed to load analytics:', e); }
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+loadData();
+</script>
+</body>
+</html>

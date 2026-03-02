@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Build with Ray — Custom Web Apps That Replace Your Spreadsheets</title>
+<meta name="description" content="Ray builds production-grade web applications that replace Excel and spreadsheet workflows. 25+ apps deployed. React, Node.js, PostgreSQL, Docker.">
+<meta name="theme-color" content="#0f1729">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--slate:#0f1729;--slate-800:#1e293b;--slate-700:#334155;--slate-600:#475569;--slate-400:#94a3b8;--slate-300:#cbd5e1;--slate-200:#e2e8f0;
+--teal:#0d9488;--teal-400:#2dd4bf;--teal-600:#0d9488;--teal-900:#134e4a;
+--silver:#c0c0c0;
+--font-sans:'Inter',system-ui,sans-serif;--font-mono:'JetBrains Mono',monospace;
+}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:var(--font-sans);background:var(--slate);color:var(--slate-300);line-height:1.6;overflow-x:hidden}
+a{color:var(--teal-400);text-decoration:none;transition:color .2s}
+a:hover{color:#5eead4}
+img{max-width:100%;display:block}
+.container{max-width:1120px;margin:0 auto;padding:0 20px}
+@media(min-width:768px){.container{padding:0 32px}}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,23,41,.85);backdrop-filter:blur(12px);border-bottom:1px solid rgba(51,65,85,.4)}
+nav .inner{display:flex;align-items:center;justify-content:space-between;max-width:1120px;margin:0 auto;padding:12px 20px}
+nav .logo{font-family:var(--font-mono);font-weight:700;font-size:1.1rem;color:#fff}
+nav .logo span{color:var(--teal)}
+nav .links{display:flex;gap:8px}
+nav .links a{font-size:.8rem;padding:8px 14px;border-radius:6px;color:var(--slate-300);transition:all .2s;min-height:44px;display:flex;align-items:center}
+nav .links a:hover{color:#fff;background:rgba(255,255,255,.06)}
+nav .links .cta-btn{background:var(--teal);color:#fff;font-weight:600}
+nav .links .cta-btn:hover{background:#0f766e}
+.nav-toggle{display:none;background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer;padding:8px;min-width:44px;min-height:44px}
+@media(max-width:767px){
+nav .links{display:none;position:absolute;top:100%;left:0;right:0;flex-direction:column;background:rgba(15,23,41,.97);border-bottom:1px solid var(--slate-700);padding:12px 20px}
+nav .links.open{display:flex}
+.nav-toggle{display:block}
+}
+
+/* ── HERO ── */
+.hero{min-height:100vh;display:flex;align-items:center;position:relative;padding:100px 0 60px;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:
+  linear-gradient(rgba(13,148,136,.05) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(13,148,136,.05) 1px,transparent 1px);
+  background-size:48px 48px;pointer-events:none}
+.hero::after{content:'';position:absolute;top:-30%;right:-20%;width:600px;height:600px;background:radial-gradient(circle,rgba(13,148,136,.12),transparent 70%);pointer-events:none}
+.hero-content{position:relative;z-index:1;max-width:720px}
+.hero .badge{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:.75rem;color:var(--teal-400);background:rgba(13,148,136,.1);border:1px solid rgba(13,148,136,.25);padding:6px 14px;border-radius:999px;margin-bottom:24px}
+.hero .badge .dot{width:6px;height:6px;border-radius:50%;background:var(--teal-400);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.hero h1{font-size:clamp(2rem,5vw,3.5rem);font-weight:800;color:#fff;line-height:1.1;margin-bottom:20px}
+.hero h1 .accent{color:var(--teal)}
+.hero p{font-size:clamp(1rem,2vw,1.2rem);color:var(--slate-400);max-width:560px;margin-bottom:36px}
+.hero-btns{display:flex;flex-wrap:wrap;gap:12px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 28px;border-radius:8px;font-weight:600;font-size:.95rem;min-height:48px;transition:all .25s;cursor:pointer;border:none}
+.btn-primary{background:var(--teal);color:#fff}
+.btn-primary:hover{background:#0f766e;color:#fff;transform:translateY(-1px)}
+.btn-outline{background:transparent;color:var(--slate-200);border:1px solid var(--slate-600)}
+.btn-outline:hover{border-color:var(--teal);color:var(--teal-400)}
+.hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:48px;padding-top:32px;border-top:1px solid var(--slate-700)}
+.hero-stats .stat-val{font-family:var(--font-mono);font-size:1.5rem;font-weight:700;color:var(--teal-400)}
+.hero-stats .stat-lbl{font-size:.8rem;color:var(--slate-400);margin-top:2px}
+
+/* ── SECTIONS ── */
+section{padding:80px 0}
+@media(min-width:768px){section{padding:100px 0}}
+.section-label{font-family:var(--font-mono);font-size:.75rem;text-transform:uppercase;letter-spacing:2px;color:var(--teal);margin-bottom:12px}
+.section-title{font-size:clamp(1.5rem,3.5vw,2.4rem);font-weight:800;color:#fff;margin-bottom:16px}
+.section-desc{color:var(--slate-400);max-width:600px;margin-bottom:48px;font-size:1rem}
+
+/* ── CHALLENGES ── */
+.challenges{background:linear-gradient(180deg,var(--slate) 0%,#0c1322 100%)}
+.challenge-grid{display:grid;gap:16px}
+@media(min-width:768px){.challenge-grid{grid-template-columns:repeat(2,1fr)}}
+.challenge-card{background:var(--slate-800);border:1px solid var(--slate-700);border-radius:12px;overflow:hidden;transition:border-color .3s}
+.challenge-card:hover{border-color:rgba(13,148,136,.4)}
+.challenge-header{display:flex;align-items:center;justify-content:space-between;padding:20px;cursor:pointer;min-height:64px;-webkit-tap-highlight-color:transparent}
+.challenge-header h3{font-size:.95rem;color:var(--slate-200);font-weight:600;display:flex;align-items:center;gap:10px}
+.challenge-header .icon{font-size:1.2rem}
+.challenge-header .toggle{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;background:rgba(255,255,255,.05);color:var(--slate-400);transition:transform .3s,color .3s;font-size:.9rem}
+.challenge-card.open .toggle{transform:rotate(45deg);color:var(--teal)}
+.challenge-body{max-height:0;overflow:hidden;transition:max-height .4s ease}
+.challenge-body-inner{padding:0 20px 20px;color:var(--slate-400);font-size:.9rem;line-height:1.7}
+.challenge-body-inner code{font-family:var(--font-mono);color:var(--teal-400);background:rgba(13,148,136,.1);padding:2px 6px;border-radius:4px;font-size:.8rem}
+
+/* ── SOLUTION ── */
+.solution-grid{display:grid;gap:24px}
+@media(min-width:768px){.solution-grid{grid-template-columns:repeat(3,1fr)}}
+.sol-card{background:var(--slate-800);border:1px solid var(--slate-700);border-radius:12px;padding:28px 24px;position:relative;overflow:hidden;transition:transform .3s,border-color .3s}
+.sol-card:hover{transform:translateY(-3px);border-color:rgba(13,148,136,.4)}
+.sol-card .num{font-family:var(--font-mono);font-size:3rem;font-weight:800;color:rgba(13,148,136,.1);position:absolute;top:-8px;right:12px}
+.sol-card .sol-icon{font-size:1.8rem;margin-bottom:16px}
+.sol-card h3{color:#fff;font-size:1.05rem;margin-bottom:10px}
+.sol-card p{color:var(--slate-400);font-size:.88rem}
+
+/* ── TECH STACK ── */
+.stack-section{background:#0c1322}
+.stack-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:16px}
+.stack-item{display:flex;flex-direction:column;align-items:center;gap:10px;padding:24px 16px;background:var(--slate-800);border:1px solid var(--slate-700);border-radius:10px;transition:border-color .3s,transform .3s}
+.stack-item:hover{border-color:var(--teal);transform:translateY(-2px)}
+.stack-item .s-icon{font-size:2rem}
+.stack-item span{font-family:var(--font-mono);font-size:.78rem;color:var(--slate-300);text-align:center}
+
+/* ── CASE STUDIES ── */
+.case-grid{display:grid;gap:24px}
+@media(min-width:768px){.case-grid{grid-template-columns:repeat(3,1fr)}}
+.case-card{background:var(--slate-800);border:1px solid var(--slate-700);border-radius:12px;overflow:hidden;transition:transform .3s,border-color .3s}
+.case-card:hover{transform:translateY(-3px);border-color:rgba(13,148,136,.4)}
+.case-img{height:180px;background:linear-gradient(135deg,var(--teal-900),var(--slate-800));display:flex;align-items:center;justify-content:center;font-size:2.5rem;position:relative}
+.case-img .tag{position:absolute;top:12px;left:12px;font-family:var(--font-mono);font-size:.65rem;background:rgba(13,148,136,.2);color:var(--teal-400);padding:4px 10px;border-radius:999px;border:1px solid rgba(13,148,136,.3)}
+.case-body{padding:24px}
+.case-body h3{color:#fff;font-size:1rem;margin-bottom:8px}
+.case-body p{color:var(--slate-400);font-size:.85rem;margin-bottom:16px}
+.case-body .metrics{display:flex;gap:20px}
+.case-body .metric{text-align:center}
+.case-body .metric .val{font-family:var(--font-mono);font-size:1.1rem;font-weight:700;color:var(--teal-400)}
+.case-body .metric .lbl{font-size:.7rem;color:var(--slate-400)}
+
+/* ── PRICING ── */
+.pricing-section{background:linear-gradient(180deg,var(--slate) 0%,#0c1322 100%)}
+.pricing-grid{display:grid;gap:24px}
+@media(min-width:768px){.pricing-grid{grid-template-columns:repeat(3,1fr)}}
+.price-card{background:var(--slate-800);border:1px solid var(--slate-700);border-radius:14px;padding:32px 24px;position:relative;transition:transform .3s,border-color .3s}
+.price-card:hover{transform:translateY(-3px)}
+.price-card.featured{border-color:var(--teal);box-shadow:0 0 40px rgba(13,148,136,.1)}
+.price-card.featured::before{content:'MOST POPULAR';position:absolute;top:-12px;left:50%;transform:translateX(-50%);font-family:var(--font-mono);font-size:.65rem;background:var(--teal);color:#fff;padding:4px 14px;border-radius:999px;font-weight:600;letter-spacing:1px}
+.price-card .tier{font-family:var(--font-mono);font-size:.75rem;text-transform:uppercase;letter-spacing:2px;color:var(--teal);margin-bottom:8px}
+.price-card .price{font-size:2rem;font-weight:800;color:#fff;margin-bottom:4px}
+.price-card .price-note{font-size:.8rem;color:var(--slate-400);margin-bottom:24px}
+.price-card .divider{height:1px;background:var(--slate-700);margin-bottom:24px}
+.price-card ul{list-style:none;margin-bottom:28px}
+.price-card li{padding:8px 0;font-size:.88rem;color:var(--slate-300);display:flex;align-items:flex-start;gap:10px}
+.price-card li::before{content:'✓';color:var(--teal);font-weight:700;flex-shrink:0}
+.price-card .btn{width:100%;text-align:center}
+
+/* ── INTEGRATIONS ── */
+.int-section{background:#0c1322}
+.int-logos{display:flex;flex-wrap:wrap;justify-content:center;gap:24px;padding:20px 0}
+.int-logo{display:flex;align-items:center;justify-content:center;width:100px;height:60px;background:var(--slate-800);border:1px solid var(--slate-700);border-radius:8px;font-family:var(--font-mono);font-size:.7rem;color:var(--slate-400);transition:border-color .3s,color .3s}
+.int-logo:hover{border-color:var(--teal);color:var(--slate-200)}
+
+/* ── CTA ── */
+.final-cta{text-align:center;padding:100px 0}
+.final-cta h2{font-size:clamp(1.8rem,4vw,3rem);font-weight:800;color:#fff;margin-bottom:16px}
+.final-cta p{color:var(--slate-400);max-width:500px;margin:0 auto 36px;font-size:1.05rem}
+.terminal-box{max-width:480px;margin:0 auto 36px;background:#0a0f1c;border:1px solid var(--slate-700);border-radius:10px;overflow:hidden;text-align:left}
+.terminal-bar{display:flex;align-items:center;gap:6px;padding:10px 14px;background:rgba(255,255,255,.03);border-bottom:1px solid var(--slate-700)}
+.terminal-bar .dot{width:10px;height:10px;border-radius:50%}
+.terminal-bar .dot:nth-child(1){background:#ef4444}
+.terminal-bar .dot:nth-child(2){background:#eab308}
+.terminal-bar .dot:nth-child(3){background:#22c55e}
+.terminal-body{padding:16px;font-family:var(--font-mono);font-size:.82rem;color:var(--slate-300);line-height:1.8}
+.terminal-body .prompt{color:var(--teal-400)}
+.terminal-body .cmd{color:#fff}
+.terminal-body .output{color:var(--slate-400)}
+
+/* ── FOOTER ── */
+footer{border-top:1px solid var(--slate-700);padding:40px 0;text-align:center}
+footer .links{display:flex;justify-content:center;flex-wrap:wrap;gap:20px;margin-bottom:16px}
+footer .links a{font-size:.85rem;color:var(--slate-400);min-height:44px;display:flex;align-items:center}
+footer .links a:hover{color:var(--teal-400)}
+footer .copy{font-size:.75rem;color:var(--slate-600)}
+
+/* ── REVEAL ── */
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .6s ease,transform .6s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+<div class="inner">
+<div class="logo">build<span>WithRay</span>()</div>
+<button class="nav-toggle" onclick="document.querySelector('.links').classList.toggle('open')" aria-label="Menu">☰</button>
+<div class="links">
+<a href="#challenges">Challenges</a>
+<a href="#solution">Solution</a>
+<a href="#stack">Stack</a>
+<a href="#cases">Work</a>
+<a href="#pricing">Pricing</a>
+<a href="mailto:ray@twray.dev" class="cta-btn">Start a Project →</a>
+</div>
+</div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+<div class="container">
+<div class="hero-content">
+<div class="badge"><span class="dot"></span> Available for new projects</div>
+<h1>Your spreadsheets deserve<br>to be <span class="accent">real software</span>.</h1>
+<p>I build production-grade web applications that replace your Excel workflows — faster, safer, and built to scale. Based in Jersey City, shipping worldwide.</p>
+<div class="hero-btns">
+<a href="mailto:ray@twray.dev" class="btn btn-primary">Start a Project →</a>
+<a href="#cases" class="btn btn-outline">See My Work</a>
+</div>
+<div class="hero-stats">
+<div><div class="stat-val">25+</div><div class="stat-lbl">Apps in Production</div></div>
+<div><div class="stat-val">6.8K</div><div class="stat-lbl">YouTube Subscribers</div></div>
+<div><div class="stat-val">79</div><div class="stat-lbl">Tech Videos Published</div></div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- CHALLENGES -->
+<section class="challenges" id="challenges">
+<div class="container">
+<div class="section-label reveal">// the_problem</div>
+<h2 class="section-title reveal">The Hidden Cost of Spreadsheet Workflows</h2>
+<p class="section-desc reveal">Excel feels free — until it isn't. These are the real challenges businesses face when critical operations live in <code style="font-family:var(--font-mono);color:var(--teal-400);background:rgba(13,148,136,.1);padding:2px 6px;border-radius:4px;font-size:.85rem">.xlsx</code> files.</p>
+<div class="challenge-grid">
+
+<div class="challenge-card reveal">
+<div class="challenge-header" onclick="toggleCard(this)">
+<h3><span class="icon">⚠️</span> Version Control Chaos</h3>
+<span class="toggle">+</span>
+</div>
+<div class="challenge-body"><div class="challenge-body-inner">
+Multiple people editing <code>Budget_v3_FINAL_really_final.xlsx</code> — sound familiar? Without real version control, you lose data, overwrite changes, and waste hours reconciling. A web app provides a <code>single source of truth</code> with full audit trails.
+</div></div>
+</div>
+
+<div class="challenge-card reveal">
+<div class="challenge-header" onclick="toggleCard(this)">
+<h3><span class="icon">🔓</span> Zero Access Control</h3>
+<span class="toggle">+</span>
+</div>
+<div class="challenge-body"><div class="challenge-body-inner">
+Spreadsheets have no concept of <code>role-based access</code>. Everyone sees everything — financial data, personal info, proprietary formulas. A web app lets you define who sees what, down to individual fields and rows.
+</div></div>
+</div>
+
+<div class="challenge-card reveal">
+<div class="challenge-header" onclick="toggleCard(this)">
+<h3><span class="icon">🐌</span> Performance at Scale</h3>
+<span class="toggle">+</span>
+</div>
+<div class="challenge-body"><div class="challenge-body-inner">
+Hit 50K rows and Excel starts crawling. Complex <code>VLOOKUP</code> chains turn into minutes-long recalculations. PostgreSQL handles millions of rows in milliseconds. Your data shouldn't slow you down.
+</div></div>
+</div>
+
+<div class="challenge-card reveal">
+<div class="challenge-header" onclick="toggleCard(this)">
+<h3><span class="icon">🔌</span> No Real Integrations</h3>
+<span class="toggle">+</span>
+</div>
+<div class="challenge-body"><div class="challenge-body-inner">
+Copy-pasting between systems isn't integration. Real web apps connect via <code>REST APIs</code> — pulling live data from your CRM, pushing updates to Slack, syncing with payment processors. Automatically. Every time.
+</div></div>
+</div>
+
+<div class="challenge-card reveal">
+<div class="challenge-header" onclick="toggleCard(this)">
+<h3><span class="icon">📱</span> Not Mobile-Ready</h3>
+<span class="toggle">+</span>
+</div>
+<div class="challenge-body"><div class="challenge-body-inner">
+Try editing a pivot table on your phone. Spreadsheets weren't designed for mobile. Modern web apps are <code>responsive-first</code> — your team can update data, approve workflows, and review dashboards from anywhere.
+</div></div>
+</div>
+
+<div class="challenge-card reveal">
+<div class="challenge-header" onclick="toggleCard(this)">
+<h3><span class="icon">🤖</span> Manual Everything</h3>
+<span class="toggle">+</span>
+</div>
+<div class="challenge-body"><div class="challenge-body-inner">
+Every formula, every conditional format, every manual email notification — it all breaks eventually. Web apps enable <code>automated workflows</code>: scheduled reports, triggered notifications, calculated fields that never drift.
+</div></div>
+</div>
+
+</div>
+</div>
+</section>
+
+<!-- SOLUTION -->
+<section id="solution">
+<div class="container">
+<div class="section-label reveal">// the_solution</div>
+<h2 class="section-title reveal">How I Replace Your Spreadsheets</h2>
+<p class="section-desc reveal">A systematic approach to turning your Excel workflows into production web applications.</p>
+<div class="solution-grid">
+
+<div class="sol-card reveal">
+<span class="num">01</span>
+<div class="sol-icon">🔍</div>
+<h3>Audit & Map</h3>
+<p>I reverse-engineer your spreadsheets — every formula, macro, and workflow — into a structured data model and feature spec.</p>
+</div>
+
+<div class="sol-card reveal">
+<span class="num">02</span>
+<div class="sol-icon">⚙️</div>
+<h3>Build & Iterate</h3>
+<p>Rapid development in 2-week sprints. You see working software early, provide feedback, and we iterate until it's right.</p>
+</div>
+
+<div class="sol-card reveal">
+<span class="num">03</span>
+<div class="sol-icon">🚀</div>
+<h3>Deploy & Support</h3>
+<p>Containerized deployment with Docker. Automated backups, monitoring, and optional ongoing retainer for updates.</p>
+</div>
+
+</div>
+</div>
+</section>
+
+<!-- TECH STACK -->
+<section class="stack-section" id="stack">
+<div class="container">
+<div class="section-label reveal">// tech_stack</div>
+<h2 class="section-title reveal">Built With Modern, Battle-Tested Tools</h2>
+<p class="section-desc reveal">Every project uses production-grade infrastructure. No toy tools, no shortcuts.</p>
+<div class="stack-grid reveal">
+<div class="stack-item"><span class="s-icon">⚛️</span><span>React</span></div>
+<div class="stack-item"><span class="s-icon">▲</span><span>Next.js</span></div>
+<div class="stack-item"><span class="s-icon">🟦</span><span>TypeScript</span></div>
+<div class="stack-item"><span class="s-icon">🟢</span><span>Node.js</span></div>
+<div class="stack-item"><span class="s-icon">🐘</span><span>PostgreSQL</span></div>
+<div class="stack-item"><span class="s-icon">🐳</span><span>Docker</span></div>
+<div class="stack-item"><span class="s-icon">🐍</span><span>Python</span></div>
+<div class="stack-item"><span class="s-icon">☁️</span><span>Cloudflare</span></div>
+</div>
+</div>
+</section>
+
+<!-- CASE STUDIES -->
+<section id="cases">
+<div class="container">
+<div class="section-label reveal">// case_studies</div>
+<h2 class="section-title reveal">From Spreadsheet to Software</h2>
+<p class="section-desc reveal">Real projects. Real results. Here's what the transition looks like.</p>
+<div class="case-grid">
+
+<div class="case-card reveal">
+<div class="case-img">📊<span class="tag">Finance</span></div>
+<div class="case-body">
+<h3>Budget Tracker</h3>
+<p>Replaced a 47-tab Excel workbook with a real-time budget dashboard. Multi-user, role-based access, automated reports.</p>
+<div class="metrics">
+<div class="metric"><div class="val">47→1</div><div class="lbl">Tabs Eliminated</div></div>
+<div class="metric"><div class="val">3x</div><div class="lbl">Faster Reports</div></div>
+</div>
+</div>
+</div>
+
+<div class="case-card reveal">
+<div class="case-img">📋<span class="tag">Operations</span></div>
+<div class="case-body">
+<h3>Kanban Board</h3>
+<p>Team tracked projects in shared Google Sheets. Built a drag-and-drop Kanban with document linking and real-time sync.</p>
+<div class="metrics">
+<div class="metric"><div class="val">100%</div><div class="lbl">Real-Time</div></div>
+<div class="metric"><div class="val">0</div><div class="lbl">Lost Updates</div></div>
+</div>
+</div>
+</div>
+
+<div class="case-card reveal">
+<div class="case-img">📦<span class="tag">Inventory</span></div>
+<div class="case-body">
+<h3>Stock Monitor</h3>
+<p>Manual inventory checks became automated real-time monitoring with instant notifications and auto-purchase capabilities.</p>
+<div class="metrics">
+<div class="metric"><div class="val">24/7</div><div class="lbl">Monitoring</div></div>
+<div class="metric"><div class="val">&lt;1s</div><div class="lbl">Alert Time</div></div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing-section" id="pricing">
+<div class="container">
+<div class="section-label reveal">// pricing</div>
+<h2 class="section-title reveal">Transparent Pricing</h2>
+<p class="section-desc reveal">No hidden fees. No hourly guessing. Flat-rate projects with clear deliverables.</p>
+<div class="pricing-grid">
+
+<div class="price-card reveal">
+<div class="tier">Starter</div>
+<div class="price">$2K–$5K</div>
+<div class="price-note">One-time project fee</div>
+<div class="divider"></div>
+<ul>
+<li>Single-purpose web app</li>
+<li>Up to 5 core features</li>
+<li>Mobile-responsive design</li>
+<li>PostgreSQL database</li>
+<li>Docker deployment</li>
+<li>Basic authentication</li>
+<li>2–4 week delivery</li>
+<li>30 days post-launch support</li>
+</ul>
+<a href="mailto:ray@twray.dev?subject=Starter%20Project%20Inquiry" class="btn btn-outline" style="width:100%">Get Started →</a>
+</div>
+
+<div class="price-card featured reveal">
+<div class="tier">Professional</div>
+<div class="price">$5K–$15K</div>
+<div class="price-note">One-time project fee</div>
+<div class="divider"></div>
+<ul>
+<li>Multi-feature application</li>
+<li>Complex data models & relations</li>
+<li>Role-based access control</li>
+<li>API integrations</li>
+<li>Real-time updates</li>
+<li>Automated workflows</li>
+<li>Advanced reporting & dashboards</li>
+<li>Google/SSO authentication</li>
+<li>4–10 week delivery</li>
+<li>60 days post-launch support</li>
+</ul>
+<a href="mailto:ray@twray.dev?subject=Professional%20Project%20Inquiry" class="btn btn-primary" style="width:100%">Start a Project →</a>
+</div>
+
+<div class="price-card reveal">
+<div class="tier">Retainer</div>
+<div class="price">$500–$2K<span style="font-size:.9rem;font-weight:400;color:var(--slate-400)">/mo</span></div>
+<div class="price-note">Ongoing monthly support</div>
+<div class="divider"></div>
+<ul>
+<li>Ongoing feature development</li>
+<li>Bug fixes & maintenance</li>
+<li>Performance optimization</li>
+<li>Database management</li>
+<li>Infrastructure updates</li>
+<li>Priority response time</li>
+<li>Monthly progress reports</li>
+<li>Cancel anytime</li>
+</ul>
+<a href="mailto:ray@twray.dev?subject=Retainer%20Inquiry" class="btn btn-outline" style="width:100%">Discuss Retainer →</a>
+</div>
+
+</div>
+</div>
+</section>
+
+<!-- INTEGRATIONS -->
+<section class="int-section">
+<div class="container" style="text-align:center">
+<div class="section-label reveal">// integrations</div>
+<h2 class="section-title reveal">Connects With Your Stack</h2>
+<p class="section-desc reveal" style="margin-left:auto;margin-right:auto">Your app doesn't live in isolation. I build integrations that connect to the tools you already use.</p>
+<div class="int-logos reveal">
+<div class="int-logo">Slack</div>
+<div class="int-logo">Stripe</div>
+<div class="int-logo">Shopify</div>
+<div class="int-logo">Google</div>
+<div class="int-logo">GitHub</div>
+<div class="int-logo">Zapier</div>
+<div class="int-logo">AWS</div>
+<div class="int-logo">Twilio</div>
+</div>
+</div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+<div class="container">
+<div class="terminal-box reveal">
+<div class="terminal-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+<div class="terminal-body">
+<span class="prompt">ray@build</span> <span class="cmd">~ $ describe-project</span><br>
+<span class="output">> Analyzing spreadsheet workflows...</span><br>
+<span class="output">> Mapping data models...</span><br>
+<span class="output">> Generating proposal...</span><br>
+<span class="prompt">✓</span> <span class="cmd">Ready. Let's build.</span>
+</div>
+</div>
+<h2 class="reveal">Ready to upgrade<br>from <code style="font-family:var(--font-mono);color:var(--teal-400)">.xlsx</code> to <code style="font-family:var(--font-mono);color:var(--teal-400)">.app</code>?</h2>
+<p class="reveal">Tell me about your spreadsheet workflow. I'll send you a free project assessment within 48 hours.</p>
+<div class="hero-btns reveal" style="justify-content:center">
+<a href="mailto:ray@twray.dev?subject=Project%20Inquiry&body=Hi%20Ray%2C%0A%0AI%27d%20like%20to%20discuss%20turning%20my%20spreadsheet%20workflow%20into%20a%20web%20app.%0A%0AHere%27s%20what%20I%27m%20working%20with%3A%0A" class="btn btn-primary">Start a Project →</a>
+<a href="https://youtube.com/@techwithray" target="_blank" rel="noopener" class="btn btn-outline">Watch My Work →</a>
+</div>
+</div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+<div class="container">
+<div class="links">
+<a href="https://youtube.com/@techwithray" target="_blank" rel="noopener">YouTube</a>
+<a href="https://github.com/rayovims" target="_blank" rel="noopener">GitHub</a>
+<a href="https://techwithray.com" target="_blank" rel="noopener">Store</a>
+<a href="mailto:ray@twray.dev">ray@twray.dev</a>
+</div>
+<p class="copy">© 2026 Ray · Jersey City, NJ · Build with Ray</p>
+</div>
+</footer>
+
+<script>
+// Expandable challenge cards
+function toggleCard(header){
+const card=header.parentElement;
+const body=card.querySelector('.challenge-body');
+const inner=body.querySelector('.challenge-body-inner');
+const isOpen=card.classList.contains('open');
+// close all
+document.querySelectorAll('.challenge-card.open').forEach(c=>{
+c.classList.remove('open');
+c.querySelector('.challenge-body').style.maxHeight='0';
+});
+if(!isOpen){
+card.classList.add('open');
+body.style.maxHeight=inner.scrollHeight+'px';
+}
+}
+
+// Scroll reveal
+const revealEls=document.querySelectorAll('.reveal');
+const observer=new IntersectionObserver((entries)=>{
+entries.forEach(e=>{
+if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}
+});
+},{threshold:0.1,rootMargin:'0px 0px -40px 0px'});
+revealEls.forEach(el=>observer.observe(el));
+
+// Close mobile nav on link click
+document.querySelectorAll('nav .links a').forEach(a=>{
+a.addEventListener('click',()=>document.querySelector('.links').classList.remove('open'));
+});
+</script>
+</body>
+</html>

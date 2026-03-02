@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Build with Ray — Custom Web Apps That Replace Your Spreadsheets</title>
+<meta name="description" content="Stop running your business on spreadsheets. Ray builds custom web apps that streamline your operations. 25+ production apps delivered. Based in Jersey City, NJ.">
+<meta property="og:title" content="Build with Ray — Custom Web App Development">
+<meta property="og:description" content="Replace spreadsheets with powerful custom web apps. React, Node.js, PostgreSQL. 25+ apps delivered.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://twray.dev">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#0f172a;--navy-light:#1e293b;--navy-mid:#334155;--blue:#3b82f6;--blue-hover:#2563eb;--blue-glow:rgba(59,130,246,.15);--white:#ffffff;--gray-100:#f1f5f9;--gray-200:#e2e8f0;--gray-300:#cbd5e1;--gray-400:#94a3b8;--gray-500:#64748b;--text:#e2e8f0;--text-muted:#94a3b8;--font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--navy);color:var(--text);line-height:1.6;overflow-x:hidden}
+a{color:var(--blue);text-decoration:none;transition:color .2s}
+a:hover{color:var(--blue-hover)}
+img{max-width:100%;display:block}
+
+/* Utility */
+.container{max-width:1200px;margin:0 auto;padding:0 20px}
+.section{padding:80px 0}
+.section-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:3px;color:var(--blue);margin-bottom:12px}
+.section-title{font-size:clamp(1.75rem,4vw,2.75rem);font-weight:800;line-height:1.2;margin-bottom:16px}
+.section-subtitle{font-size:1.1rem;color:var(--text-muted);max-width:640px;line-height:1.7}
+.text-center{text-align:center}
+.mx-auto{margin-left:auto;margin-right:auto}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:14px 32px;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;border:none;transition:all .25s;gap:8px}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:var(--blue-hover);color:#fff;transform:translateY(-2px);box-shadow:0 8px 30px rgba(59,130,246,.35)}
+.btn-outline{background:transparent;color:var(--white);border:2px solid var(--gray-500)}
+.btn-outline:hover{border-color:var(--blue);color:var(--blue);transform:translateY(-2px)}
+.btn-lg{min-height:56px;padding:16px 40px;font-size:1.1rem;border-radius:10px}
+
+/* Nav */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,23,42,.92);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.06);transition:all .3s}
+nav .container{display:flex;align-items:center;justify-content:space-between;height:64px}
+.nav-brand{font-size:1.2rem;font-weight:800;color:var(--white)}
+.nav-brand span{color:var(--blue)}
+.nav-links{display:flex;gap:32px;list-style:none;align-items:center}
+.nav-links a{color:var(--gray-400);font-size:.9rem;font-weight:500;transition:color .2s}
+.nav-links a:hover{color:var(--white)}
+.nav-cta{background:var(--blue);color:#fff!important;padding:8px 20px;border-radius:6px;font-weight:600}
+.nav-cta:hover{background:var(--blue-hover);color:#fff}
+.mobile-toggle{display:none;background:none;border:none;color:var(--white);font-size:1.5rem;cursor:pointer;padding:8px;min-width:44px;min-height:44px}
+@media(max-width:768px){
+.nav-links{display:none;position:absolute;top:64px;left:0;right:0;flex-direction:column;background:var(--navy-light);padding:20px;gap:16px;border-bottom:1px solid rgba(255,255,255,.06)}
+.nav-links.open{display:flex}
+.mobile-toggle{display:flex;align-items:center;justify-content:center}
+}
+
+/* Hero */
+.hero{padding:140px 0 100px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50%;right:-20%;width:600px;height:600px;background:radial-gradient(circle,rgba(59,130,246,.08) 0%,transparent 70%);pointer-events:none}
+.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.hero h1{font-size:clamp(2rem,5vw,3.25rem);font-weight:800;line-height:1.15;margin-bottom:24px}
+.hero h1 span{color:var(--blue)}
+.hero p{font-size:1.15rem;color:var(--text-muted);margin-bottom:32px;line-height:1.7;max-width:520px}
+.hero-buttons{display:flex;gap:16px;flex-wrap:wrap}
+.hero-visual{position:relative}
+.hero-card{background:var(--navy-light);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:32px;position:relative}
+.hero-card::before{content:'';position:absolute;inset:-1px;border-radius:16px;background:linear-gradient(135deg,rgba(59,130,246,.3),transparent 50%);z-index:-1;padding:1px}
+.hero-stat{display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.hero-stat:last-child{border-bottom:none}
+.hero-stat-num{font-size:2rem;font-weight:800;color:var(--blue);min-width:64px}
+.hero-stat-text{font-size:.95rem;color:var(--gray-400)}
+@media(max-width:768px){
+.hero-grid{grid-template-columns:1fr;gap:40px}
+.hero{padding:100px 0 60px}
+}
+
+/* Problem Section */
+.problem{background:var(--navy-light)}
+.problem-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;margin-top:48px}
+.problem-card{background:var(--navy);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:32px}
+.problem-icon{font-size:2rem;margin-bottom:16px}
+.problem-card h3{font-size:1.1rem;font-weight:700;margin-bottom:8px}
+.problem-card p{font-size:.95rem;color:var(--gray-400);line-height:1.6}
+
+/* Logo Strip */
+.logo-strip{border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06);padding:40px 0}
+.logo-strip p{text-align:center;color:var(--gray-500);font-size:.85rem;font-weight:600;text-transform:uppercase;letter-spacing:2px;margin-bottom:24px}
+.logos{display:flex;justify-content:center;gap:48px;flex-wrap:wrap;align-items:center;opacity:.4}
+.logo-placeholder{width:120px;height:40px;background:var(--gray-500);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--navy)}
+
+/* Alternating Sections */
+.alt-section .container{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.alt-section:nth-child(even) .alt-visual{order:-1}
+.alt-content .section-label{margin-bottom:8px}
+.alt-content .section-title{margin-bottom:16px}
+.alt-content p{color:var(--text-muted);line-height:1.7;margin-bottom:24px}
+.alt-visual{background:var(--navy-light);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:40px;min-height:300px;display:flex;align-items:center;justify-content:center}
+.alt-visual .code-block{font-family:'SF Mono',Monaco,monospace;font-size:.85rem;color:var(--blue);line-height:2;white-space:pre}
+.check-list{list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:24px}
+.check-list li{display:flex;align-items:flex-start;gap:10px;font-size:.95rem;color:var(--gray-300)}
+.check-list li::before{content:'✓';color:var(--blue);font-weight:700;min-width:20px}
+@media(max-width:768px){
+.alt-section .container{grid-template-columns:1fr;gap:32px}
+.alt-section:nth-child(even) .alt-visual{order:0}
+}
+
+/* Process */
+.process-timeline{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-top:48px;position:relative}
+.process-timeline::before{content:'';position:absolute;top:40px;left:10%;right:10%;height:2px;background:linear-gradient(90deg,var(--blue),var(--navy-mid));z-index:0}
+.process-step{text-align:center;position:relative;z-index:1}
+.step-num{width:64px;height:64px;border-radius:50%;background:var(--navy);border:2px solid var(--blue);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:800;color:var(--blue);margin:0 auto 20px}
+.process-step h3{font-size:1rem;font-weight:700;margin-bottom:8px}
+.process-step p{font-size:.85rem;color:var(--gray-400);line-height:1.5}
+@media(max-width:768px){
+.process-timeline{grid-template-columns:1fr 1fr;gap:32px}
+.process-timeline::before{display:none}
+}
+@media(max-width:480px){
+.process-timeline{grid-template-columns:1fr}
+}
+
+/* Features Grid */
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;margin-top:48px}
+.feature-card{background:var(--navy-light);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:32px;transition:all .3s}
+.feature-card:hover{border-color:rgba(59,130,246,.3);transform:translateY(-4px)}
+.feature-icon{font-size:2rem;margin-bottom:16px}
+.feature-card h3{font-size:1.1rem;font-weight:700;margin-bottom:8px}
+.feature-card p{font-size:.95rem;color:var(--gray-400);line-height:1.6}
+
+/* Upload CTA */
+.upload-section{background:linear-gradient(135deg,rgba(59,130,246,.08),rgba(59,130,246,.02));border:1px solid rgba(59,130,246,.15);border-radius:20px;padding:60px 40px;text-align:center;margin:0 auto;max-width:800px}
+.upload-icon{font-size:4rem;margin-bottom:20px}
+.upload-section h2{font-size:clamp(1.5rem,3vw,2rem);font-weight:800;margin-bottom:12px}
+.upload-section p{color:var(--text-muted);margin-bottom:32px;max-width:500px;margin-left:auto;margin-right:auto}
+
+/* Testimonials */
+.testimonial-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;margin-top:48px}
+.testimonial-card{background:var(--navy-light);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:32px}
+.testimonial-card .stars{color:#fbbf24;margin-bottom:16px;font-size:1.1rem}
+.testimonial-card blockquote{font-size:1rem;color:var(--gray-300);line-height:1.7;margin-bottom:20px;font-style:italic}
+.testimonial-author{display:flex;align-items:center;gap:12px}
+.testimonial-avatar{width:44px;height:44px;border-radius:50%;background:var(--navy-mid);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--blue)}
+.testimonial-name{font-weight:600;font-size:.9rem}
+.testimonial-role{font-size:.8rem;color:var(--gray-500)}
+
+/* Trust Badges */
+.trust-badges{display:flex;justify-content:center;gap:48px;flex-wrap:wrap;margin-top:40px}
+.trust-badge{text-align:center}
+.trust-badge .num{font-size:2.5rem;font-weight:800;color:var(--blue)}
+.trust-badge .label{font-size:.85rem;color:var(--gray-400);margin-top:4px}
+
+/* Pricing */
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;margin-top:48px}
+.pricing-card{background:var(--navy-light);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:40px 32px;position:relative;transition:all .3s}
+.pricing-card:hover{transform:translateY(-4px)}
+.pricing-card.featured{border-color:var(--blue);box-shadow:0 0 40px rgba(59,130,246,.15)}
+.pricing-card.featured::before{content:'MOST POPULAR';position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--blue);color:#fff;font-size:.7rem;font-weight:700;padding:4px 16px;border-radius:20px;letter-spacing:1px}
+.pricing-name{font-size:1.1rem;font-weight:700;margin-bottom:4px}
+.pricing-price{font-size:2.5rem;font-weight:800;margin:16px 0 8px}
+.pricing-price span{font-size:1rem;color:var(--gray-400);font-weight:400}
+.pricing-desc{font-size:.9rem;color:var(--gray-400);margin-bottom:24px;line-height:1.5}
+.pricing-features{list-style:none;margin-bottom:32px;display:flex;flex-direction:column;gap:12px}
+.pricing-features li{font-size:.9rem;color:var(--gray-300);display:flex;align-items:flex-start;gap:8px}
+.pricing-features li::before{content:'✓';color:var(--blue);font-weight:700}
+
+/* Big CTA */
+.big-cta{text-align:center;padding:100px 0;position:relative}
+.big-cta::before{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:600px;height:300px;background:radial-gradient(circle,rgba(59,130,246,.1),transparent 70%);pointer-events:none}
+.big-cta h2{font-size:clamp(2rem,5vw,3rem);font-weight:800;margin-bottom:16px}
+.big-cta p{font-size:1.15rem;color:var(--text-muted);margin-bottom:40px;max-width:560px;margin-left:auto;margin-right:auto}
+.big-cta .btn{margin:0 8px}
+
+/* Footer */
+footer{border-top:1px solid rgba(255,255,255,.06);padding:48px 0 32px}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px}
+.footer-brand{font-size:1.2rem;font-weight:800;margin-bottom:12px}
+.footer-brand span{color:var(--blue)}
+footer p{font-size:.85rem;color:var(--gray-500);line-height:1.6}
+.footer-col h4{font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--gray-400);margin-bottom:16px}
+.footer-col a{display:block;font-size:.9rem;color:var(--gray-500);padding:4px 0;transition:color .2s}
+.footer-col a:hover{color:var(--white)}
+.footer-bottom{margin-top:40px;padding-top:24px;border-top:1px solid rgba(255,255,255,.06);text-align:center;font-size:.8rem;color:var(--gray-500)}
+@media(max-width:768px){
+.footer-grid{grid-template-columns:1fr 1fr;gap:32px}
+}
+@media(max-width:480px){
+.footer-grid{grid-template-columns:1fr}
+}
+
+/* Scroll Reveal */
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .6s ease,transform .6s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+<div class="container">
+<a href="#" class="nav-brand">Build with <span>Ray</span></a>
+<button class="mobile-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">☰</button>
+<ul class="nav-links">
+<li><a href="#problem">Why</a></li>
+<li><a href="#process">Process</a></li>
+<li><a href="#features">Features</a></li>
+<li><a href="#pricing">Pricing</a></li>
+<li><a href="mailto:ray@twray.dev" class="nav-cta">Get Started</a></li>
+</ul>
+</div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+<div class="container">
+<div class="hero-grid">
+<div>
+<h1>Your Business Runs on <span>Spreadsheets.</span><br>It Shouldn't.</h1>
+<p>I build custom web applications that replace the Excel files, Google Sheets, and manual processes holding your business back. Real software. Built for how you actually work.</p>
+<div class="hero-buttons">
+<a href="mailto:ray@twray.dev" class="btn btn-primary btn-lg">Start Your Project →</a>
+<a href="#process" class="btn btn-outline btn-lg">See How It Works</a>
+</div>
+</div>
+<div class="hero-visual">
+<div class="hero-card">
+<div class="hero-stat"><div class="hero-stat-num">25+</div><div class="hero-stat-text">Production web apps built and running</div></div>
+<div class="hero-stat"><div class="hero-stat-num">6.8K</div><div class="hero-stat-text">YouTube subscribers learning tech</div></div>
+<div class="hero-stat"><div class="hero-stat-num">79</div><div class="hero-stat-text">Videos sharing real dev experience</div></div>
+<div class="hero-stat"><div class="hero-stat-num">7+</div><div class="hero-stat-text">Tech stack expertise (React, Node, etc.)</div></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- Problem -->
+<section class="section problem" id="problem">
+<div class="container">
+<div class="text-center">
+<p class="section-label">The Problem</p>
+<h2 class="section-title">Spreadsheets Were Never Meant to Run Your Business</h2>
+<p class="section-subtitle mx-auto">Sound familiar? You're not alone. Most growing businesses hit the same walls.</p>
+</div>
+<div class="problem-grid reveal">
+<div class="problem-card">
+<div class="problem-icon">📊</div>
+<h3>Version Control Chaos</h3>
+<p>Multiple copies of "Final_v3_REAL_final.xlsx" floating around. No one knows which version is current.</p>
+</div>
+<div class="problem-card">
+<div class="problem-icon">🔒</div>
+<h3>No Access Control</h3>
+<p>Everyone sees everything — or no one can access what they need. There's no middle ground in a shared spreadsheet.</p>
+</div>
+<div class="problem-card">
+<div class="problem-icon">⚠️</div>
+<h3>One Wrong Formula Breaks Everything</h3>
+<p>Someone accidentally deletes a row or overwrites a formula. Hours of work gone. No audit trail.</p>
+</div>
+<div class="problem-card">
+<div class="problem-icon">🐌</div>
+<h3>It's Painfully Slow</h3>
+<p>10,000+ rows and your spreadsheet takes 30 seconds to load. Filtering is a nightmare. Reporting is manual.</p>
+</div>
+<div class="problem-card">
+<div class="problem-icon">📱</div>
+<h3>Unusable on Mobile</h3>
+<p>Try editing a complex spreadsheet on your phone. Pinching, zooming, accidentally overwriting cells. It doesn't work.</p>
+</div>
+<div class="problem-card">
+<div class="problem-icon">🔗</div>
+<h3>No Integration</h3>
+<p>Your spreadsheet can't talk to your email, CRM, inventory, or payment systems without brittle workarounds.</p>
+</div>
+</div>
+</div>
+</section>
+
+<!-- Logo Strip -->
+<div class="logo-strip reveal">
+<div class="container">
+<p>Trusted Technology Partners</p>
+<div class="logos">
+<div class="logo-placeholder">Client 1</div>
+<div class="logo-placeholder">Client 2</div>
+<div class="logo-placeholder">Client 3</div>
+<div class="logo-placeholder">Client 4</div>
+<div class="logo-placeholder">Client 5</div>
+</div>
+</div>
+</div>
+
+<!-- Alt Section 1 -->
+<section class="section alt-section">
+<div class="container reveal">
+<div class="alt-content">
+<p class="section-label">The Solution</p>
+<h2 class="section-title">Custom Web Apps Built Around Your Workflow</h2>
+<p>I don't sell templates or off-the-shelf software. I study how your team actually works, then build an application that fits like a glove. Your data, your rules, your interface.</p>
+<ul class="check-list">
+<li>Role-based access control — everyone sees exactly what they need</li>
+<li>Real-time collaboration without the conflicts</li>
+<li>Works beautifully on desktop, tablet, and phone</li>
+<li>Built-in validation so bad data can't get in</li>
+</ul>
+<a href="mailto:ray@twray.dev" class="btn btn-primary">Let's Talk About Your Workflow →</a>
+</div>
+<div class="alt-visual">
+<div class="code-block">const app = {
+  stack: ['React', 'Node.js',
+    'PostgreSQL', 'Docker'],
+  deploy: 'production',
+  uptime: '99.9%',
+  clients: 'happy'
+};</div>
+</div>
+</div>
+</section>
+
+<!-- Alt Section 2 -->
+<section class="section alt-section" style="background:var(--navy-light)">
+<div class="container reveal">
+<div class="alt-content">
+<p class="section-label">Built to Last</p>
+<h2 class="section-title">Enterprise-Grade Tech. Startup Speed.</h2>
+<p>Every app is built on a modern, proven tech stack used by companies like Netflix, Airbnb, and Uber. You get Fortune 500 technology at a fraction of the cost.</p>
+<ul class="check-list">
+<li>React & Next.js for fast, responsive frontends</li>
+<li>Node.js & Python for powerful backends</li>
+<li>PostgreSQL for reliable, scalable data storage</li>
+<li>Docker containers for consistent deployment</li>
+<li>TypeScript for fewer bugs and better maintainability</li>
+</ul>
+<a href="mailto:ray@twray.dev" class="btn btn-primary">Discuss Your Tech Needs →</a>
+</div>
+<div class="alt-visual">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%">
+<div style="background:var(--navy);padding:20px;border-radius:10px;text-align:center"><div style="font-size:2rem">⚛️</div><div style="font-size:.85rem;color:var(--gray-400);margin-top:8px">React</div></div>
+<div style="background:var(--navy);padding:20px;border-radius:10px;text-align:center"><div style="font-size:2rem">🟢</div><div style="font-size:.85rem;color:var(--gray-400);margin-top:8px">Node.js</div></div>
+<div style="background:var(--navy);padding:20px;border-radius:10px;text-align:center"><div style="font-size:2rem">🐘</div><div style="font-size:.85rem;color:var(--gray-400);margin-top:8px">PostgreSQL</div></div>
+<div style="background:var(--navy);padding:20px;border-radius:10px;text-align:center"><div style="font-size:2rem">🐳</div><div style="font-size:.85rem;color:var(--gray-400);margin-top:8px">Docker</div></div>
+<div style="background:var(--navy);padding:20px;border-radius:10px;text-align:center"><div style="font-size:2rem">🐍</div><div style="font-size:.85rem;color:var(--gray-400);margin-top:8px">Python</div></div>
+<div style="background:var(--navy);padding:20px;border-radius:10px;text-align:center"><div style="font-size:2rem">📘</div><div style="font-size:.85rem;color:var(--gray-400);margin-top:8px">TypeScript</div></div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- Upload CTA -->
+<section class="section">
+<div class="container reveal">
+<div class="upload-section">
+<div class="upload-icon">📤</div>
+<h2>Got a Spreadsheet Running Your Business?</h2>
+<p>Send me the spreadsheet you wish was an app. I'll review it and show you what's possible — no commitment, no pressure.</p>
+<a href="mailto:ray@twray.dev?subject=Spreadsheet%20to%20Web%20App&body=Hi%20Ray%2C%0A%0AI%20have%20a%20spreadsheet%20I%27d%20like%20to%20turn%20into%20a%20web%20app.%20Here%27s%20what%20it%20does%3A%0A%0A" class="btn btn-primary btn-lg">Upload Your Spreadsheet →</a>
+</div>
+</div>
+</section>
+
+<!-- Process -->
+<section class="section" style="background:var(--navy-light)" id="process">
+<div class="container">
+<div class="text-center">
+<p class="section-label">How It Works</p>
+<h2 class="section-title">From Spreadsheet to Software in 4 Steps</h2>
+<p class="section-subtitle mx-auto">A proven process that keeps you in the loop at every stage.</p>
+</div>
+<div class="process-timeline reveal">
+<div class="process-step">
+<div class="step-num">1</div>
+<h3>Discovery Call</h3>
+<p>We review your current workflow, pain points, and goals. You show me your spreadsheets, I ask the right questions.</p>
+</div>
+<div class="process-step">
+<div class="step-num">2</div>
+<h3>Blueprint & Proposal</h3>
+<p>I map out the app architecture, features, and timeline. You get a clear scope and fixed price before any code is written.</p>
+</div>
+<div class="process-step">
+<div class="step-num">3</div>
+<h3>Build & Iterate</h3>
+<p>Weekly demos so you see real progress. Your feedback shapes every feature. No surprises at the end.</p>
+</div>
+<div class="process-step">
+<div class="step-num">4</div>
+<h3>Launch & Support</h3>
+<p>Deployment, data migration, team training. I stick around to make sure everything runs smoothly.</p>
+</div>
+</div>
+</div>
+</section>
+
+<!-- Features Grid -->
+<section class="section" id="features">
+<div class="container">
+<div class="text-center">
+<p class="section-label">What You Get</p>
+<h2 class="section-title">Every App Comes Fully Loaded</h2>
+<p class="section-subtitle mx-auto">No half-baked MVPs. Every project ships with the features modern businesses need.</p>
+</div>
+<div class="features-grid reveal">
+<div class="feature-card">
+<div class="feature-icon">📱</div>
+<h3>Mobile-First Design</h3>
+<p>Looks and works great on any device. Built for foldables, tablets, and desktops from day one.</p>
+</div>
+<div class="feature-card">
+<div class="feature-icon">🔐</div>
+<h3>Authentication & Roles</h3>
+<p>Google OAuth, email login, role-based permissions. Your team sees exactly what they should.</p>
+</div>
+<div class="feature-card">
+<div class="feature-icon">📊</div>
+<h3>Dashboards & Reports</h3>
+<p>Real-time analytics and visualizations. No more manually building charts in Excel every Monday.</p>
+</div>
+<div class="feature-card">
+<div class="feature-icon">🔔</div>
+<h3>Notifications & Alerts</h3>
+<p>Email, push, and in-app notifications. Know when something needs your attention instantly.</p>
+</div>
+<div class="feature-card">
+<div class="feature-icon">🔄</div>
+<h3>API Integrations</h3>
+<p>Connect to Shopify, Stripe, QuickBooks, Google Workspace, or any service with an API.</p>
+</div>
+<div class="feature-card">
+<div class="feature-icon">☁️</div>
+<h3>Cloud Deployment</h3>
+<p>Hosted, secured, backed up. Automatic updates and 99.9% uptime. You never think about servers.</p>
+</div>
+</div>
+</div>
+</section>
+
+<!-- Trust Badges -->
+<section class="section" style="background:var(--navy-light)">
+<div class="container reveal">
+<div class="text-center">
+<p class="section-label">Track Record</p>
+<h2 class="section-title">Built to Deliver</h2>
+</div>
+<div class="trust-badges">
+<div class="trust-badge"><div class="num">25+</div><div class="label">Apps in Production</div></div>
+<div class="trust-badge"><div class="num">6.8K</div><div class="label">YouTube Subscribers</div></div>
+<div class="trust-badge"><div class="num">79</div><div class="label">Tutorial Videos</div></div>
+<div class="trust-badge"><div class="num">7+</div><div class="label">Years Building</div></div>
+</div>
+</div>
+</section>
+
+<!-- Testimonials -->
+<section class="section">
+<div class="container">
+<div class="text-center">
+<p class="section-label">Client Stories</p>
+<h2 class="section-title">What People Are Saying</h2>
+</div>
+<div class="testimonial-grid reveal">
+<div class="testimonial-card">
+<div class="stars">★★★★★</div>
+<blockquote>"We were managing inventory across 6 spreadsheets. Ray built us a single app that our whole team uses daily. Game changer."</blockquote>
+<div class="testimonial-author">
+<div class="testimonial-avatar">JM</div>
+<div><div class="testimonial-name">— Small Business Owner</div><div class="testimonial-role">Inventory Management App</div></div>
+</div>
+</div>
+<div class="testimonial-card">
+<div class="stars">★★★★★</div>
+<blockquote>"Ray didn't just build what I asked for — he understood the business problem and built something better than I imagined."</blockquote>
+<div class="testimonial-author">
+<div class="testimonial-avatar">SK</div>
+<div><div class="testimonial-name">— Startup Founder</div><div class="testimonial-role">Operations Dashboard</div></div>
+</div>
+</div>
+<div class="testimonial-card">
+<div class="stars">★★★★★</div>
+<blockquote>"The weekly demos kept us aligned. No surprises, no scope creep. Delivered on time and under budget."</blockquote>
+<div class="testimonial-author">
+<div class="testimonial-avatar">LR</div>
+<div><div class="testimonial-name">— Project Manager</div><div class="testimonial-role">Client Portal</div></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- Pricing -->
+<section class="section" style="background:var(--navy-light)" id="pricing">
+<div class="container">
+<div class="text-center">
+<p class="section-label">Pricing</p>
+<h2 class="section-title">Transparent Pricing. No Surprises.</h2>
+<p class="section-subtitle mx-auto">Every project gets a fixed quote upfront. Pick the tier that matches your needs.</p>
+</div>
+<div class="pricing-grid reveal">
+<div class="pricing-card">
+<div class="pricing-name">Starter</div>
+<div class="pricing-price">$2K–5K</div>
+<div class="pricing-desc">Perfect for single-purpose apps replacing one spreadsheet or manual process.</div>
+<ul class="pricing-features">
+<li>Single-function web application</li>
+<li>Mobile-responsive design</li>
+<li>User authentication</li>
+<li>Database setup & migration</li>
+<li>Cloud deployment</li>
+<li>2 weeks of post-launch support</li>
+</ul>
+<a href="mailto:ray@twray.dev?subject=Starter%20Project%20Inquiry" class="btn btn-outline" style="width:100%">Get Started</a>
+</div>
+<div class="pricing-card featured">
+<div class="pricing-name">Professional</div>
+<div class="pricing-price">$5K–15K</div>
+<div class="pricing-desc">For complex workflows needing multiple features, integrations, and user roles.</div>
+<ul class="pricing-features">
+<li>Multi-feature application</li>
+<li>Role-based access control</li>
+<li>Third-party API integrations</li>
+<li>Dashboards & reporting</li>
+<li>Automated notifications</li>
+<li>1 month of post-launch support</li>
+</ul>
+<a href="mailto:ray@twray.dev?subject=Professional%20Project%20Inquiry" class="btn btn-primary" style="width:100%">Get Started</a>
+</div>
+<div class="pricing-card">
+<div class="pricing-name">Retainer</div>
+<div class="pricing-price">$500–2K<span>/mo</span></div>
+<div class="pricing-desc">Ongoing development, maintenance, and feature additions for growing apps.</div>
+<ul class="pricing-features">
+<li>Continuous feature development</li>
+<li>Priority bug fixes</li>
+<li>Performance monitoring</li>
+<li>Security updates & patches</li>
+<li>Monthly strategy calls</li>
+<li>Dedicated Slack/email support</li>
+</ul>
+<a href="mailto:ray@twray.dev?subject=Retainer%20Inquiry" class="btn btn-outline" style="width:100%">Get Started</a>
+</div>
+</div>
+</div>
+</section>
+
+<!-- Big CTA -->
+<section class="big-cta">
+<div class="container reveal">
+<h2>Ready to Ditch the Spreadsheet?</h2>
+<p>Let's talk about your business, your workflow, and how a custom web app can save you hours every week.</p>
+<a href="mailto:ray@twray.dev" class="btn btn-primary btn-lg">Email Ray →</a>
+<a href="https://youtube.com/@techwithray" target="_blank" rel="noopener" class="btn btn-outline btn-lg">Watch My Work</a>
+</div>
+</section>
+
+<!-- Footer -->
+<footer>
+<div class="container">
+<div class="footer-grid">
+<div>
+<div class="footer-brand">Build with <span>Ray</span></div>
+<p>Custom web app development for businesses ready to move beyond spreadsheets. Based in Jersey City, NJ.</p>
+</div>
+<div class="footer-col">
+<h4>Services</h4>
+<a href="#problem">Why Web Apps</a>
+<a href="#process">Process</a>
+<a href="#features">Features</a>
+<a href="#pricing">Pricing</a>
+</div>
+<div class="footer-col">
+<h4>Connect</h4>
+<a href="https://youtube.com/@techwithray" target="_blank" rel="noopener">YouTube</a>
+<a href="https://github.com/rayovims" target="_blank" rel="noopener">GitHub</a>
+<a href="https://techwithray.com" target="_blank" rel="noopener">Store</a>
+</div>
+<div class="footer-col">
+<h4>Contact</h4>
+<a href="mailto:ray@twray.dev">ray@twray.dev</a>
+<a href="#">Jersey City, NJ</a>
+</div>
+</div>
+<div class="footer-bottom">
+© 2026 Build with Ray. All rights reserved.
+</div>
+</div>
+</footer>
+
+<script>
+// Scroll reveal
+const obs=new IntersectionObserver((entries)=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}})},{threshold:.15});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+// Close mobile nav on link click
+document.querySelectorAll('.nav-links a').forEach(a=>{a.addEventListener('click',()=>{document.querySelector('.nav-links').classList.remove('open')})});
+</script>
+</body>
+</html>

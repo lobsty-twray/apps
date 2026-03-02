@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Build with Ray — Custom Web Apps That Replace Your Spreadsheets</title>
+<meta name="description" content="Ray builds custom web applications that replace your Excel spreadsheets. 25+ production apps running. Based in Jersey City, NJ.">
+<meta name="author" content="Ray">
+<meta property="og:title" content="Build with Ray — Custom Web Apps">
+<meta property="og:description" content="Replace Excel with modern web apps. 25+ production apps built and running.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--green:#22c55e;--green-dim:#16a34a;--black:#000;--white:#fff;--gray-100:#f3f4f6;--gray-300:#d1d5db;--gray-400:#9ca3af;--gray-500:#6b7280;--gray-600:#4b5563;--gray-700:#374151;--gray-800:#1f2937;--gray-900:#111827}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--black);color:var(--white);line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+
+/* Utility */
+.container{max-width:1200px;margin:0 auto;padding:0 20px}
+@media(min-width:768px){.container{padding:0 40px}}
+
+/* Reveal animations */
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .7s ease,transform .7s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal-delay-1{transition-delay:.1s}
+.reveal-delay-2{transition-delay:.2s}
+.reveal-delay-3{transition-delay:.3s}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 0;backdrop-filter:blur(20px);background:rgba(0,0,0,.7);border-bottom:1px solid rgba(255,255,255,.06)}
+nav .container{display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-weight:800;font-size:1.1rem;letter-spacing:-.02em}
+.nav-logo span{color:var(--green)}
+.nav-links{display:none;gap:28px;align-items:center}
+.nav-links a{font-size:.875rem;color:var(--gray-400);transition:color .2s}
+.nav-links a:hover{color:var(--white)}
+.nav-cta{background:var(--green);color:var(--black);padding:8px 20px;border-radius:8px;font-weight:600;font-size:.875rem;transition:all .2s}
+.nav-cta:hover{background:#2dd469;transform:translateY(-1px)}
+@media(min-width:768px){.nav-links{display:flex}}
+
+/* HERO */
+.hero{padding:140px 0 80px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse at 50% 0%,rgba(34,197,94,.08) 0%,transparent 60%);pointer-events:none}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border-radius:100px;border:1px solid rgba(34,197,94,.3);background:rgba(34,197,94,.08);font-size:.8rem;color:var(--green);margin-bottom:28px;font-weight:500}
+.hero-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.hero h1{font-size:clamp(2.2rem,6vw,4.5rem);font-weight:900;line-height:1.05;letter-spacing:-.04em;margin-bottom:24px;max-width:800px;margin-left:auto;margin-right:auto}
+.gradient-text{background:linear-gradient(135deg,var(--green),#4ade80,#86efac,var(--green));background-size:300% 300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:gradientShift 4s ease infinite}
+@keyframes gradientShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.hero p{font-size:clamp(1rem,2vw,1.25rem);color:var(--gray-400);max-width:560px;margin:0 auto 40px;line-height:1.7}
+.hero-buttons{display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center}
+@media(min-width:480px){.hero-buttons{flex-direction:row}}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;background:var(--green);color:var(--black);padding:14px 32px;border-radius:12px;font-weight:700;font-size:1rem;transition:all .25s;min-height:48px}
+.btn-primary:hover{background:#2dd469;transform:translateY(-2px);box-shadow:0 8px 30px rgba(34,197,94,.3)}
+.btn-secondary{display:inline-flex;align-items:center;gap:8px;background:transparent;color:var(--white);padding:14px 32px;border-radius:12px;font-weight:600;font-size:1rem;border:1px solid rgba(255,255,255,.15);transition:all .25s;min-height:48px}
+.btn-secondary:hover{border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.05)}
+
+/* STATS STRIP */
+.stats{padding:60px 0;border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06)}
+.stats .container{display:grid;grid-template-columns:repeat(2,1fr);gap:32px;text-align:center}
+@media(min-width:768px){.stats .container{grid-template-columns:repeat(4,1fr)}}
+.stat-item h3{font-size:clamp(2rem,4vw,3rem);font-weight:900;color:var(--green);letter-spacing:-.03em}
+.stat-item p{font-size:.85rem;color:var(--gray-500);margin-top:4px;font-weight:500}
+
+/* HOW IT WORKS */
+.how-it-works{padding:100px 0}
+.section-label{font-size:.8rem;text-transform:uppercase;letter-spacing:.15em;color:var(--green);font-weight:600;margin-bottom:12px;text-align:center}
+.section-title{font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:800;text-align:center;letter-spacing:-.03em;margin-bottom:60px}
+.steps{display:grid;grid-template-columns:1fr;gap:24px}
+@media(min-width:768px){.steps{grid-template-columns:repeat(3,1fr);gap:32px}}
+.step{background:var(--gray-900);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:36px 28px;position:relative;transition:all .3s}
+.step:hover{border-color:rgba(34,197,94,.3);transform:translateY(-4px)}
+.step-num{width:40px;height:40px;border-radius:10px;background:rgba(34,197,94,.12);color:var(--green);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem;margin-bottom:20px}
+.step h3{font-size:1.15rem;font-weight:700;margin-bottom:10px;letter-spacing:-.01em}
+.step p{font-size:.9rem;color:var(--gray-400);line-height:1.7}
+.step-connector{display:none}
+@media(min-width:768px){.step-connector{display:block;position:absolute;top:56px;right:-18px;width:36px;height:2px;background:linear-gradient(90deg,rgba(34,197,94,.4),transparent)}}
+
+/* FEATURES */
+.features{padding:100px 0}
+.features-grid{display:grid;grid-template-columns:1fr;gap:20px}
+@media(min-width:480px){.features-grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1024px){.features-grid{grid-template-columns:repeat(3,1fr)}}
+.feature-card{background:var(--gray-900);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:32px 24px;transition:all .3s}
+.feature-card:hover{border-color:rgba(34,197,94,.3);transform:translateY(-4px)}
+.feature-icon{width:44px;height:44px;border-radius:12px;background:rgba(34,197,94,.1);display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin-bottom:18px}
+.feature-card h3{font-size:1.05rem;font-weight:700;margin-bottom:8px}
+.feature-card p{font-size:.875rem;color:var(--gray-400);line-height:1.7}
+
+/* COMPARISON TABLE */
+.comparison{padding:100px 0}
+.comparison-table{max-width:800px;margin:0 auto;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.06)}
+.comp-header{display:grid;grid-template-columns:1fr 1fr 1fr;background:var(--gray-900);font-weight:700;font-size:.85rem}
+.comp-header div{padding:16px 20px}
+.comp-header div:last-child{color:var(--green)}
+.comp-row{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid rgba(255,255,255,.04);font-size:.875rem}
+.comp-row div{padding:14px 20px}
+.comp-row div:first-child{color:var(--gray-400);font-weight:500}
+.comp-row .bad{color:#ef4444}
+.comp-row .good{color:var(--green)}
+
+/* TECH STACK */
+.tech-stack{padding:80px 0;border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06);text-align:center}
+.tech-logos{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;margin-top:32px}
+.tech-pill{padding:10px 20px;border-radius:100px;background:var(--gray-900);border:1px solid rgba(255,255,255,.06);font-size:.85rem;font-weight:500;color:var(--gray-300);transition:all .2s}
+.tech-pill:hover{border-color:rgba(34,197,94,.3);color:var(--green)}
+
+/* PRICING */
+.pricing{padding:100px 0}
+.pricing-grid{display:grid;grid-template-columns:1fr;gap:20px;max-width:960px;margin:0 auto}
+@media(min-width:768px){.pricing-grid{grid-template-columns:repeat(3,1fr)}}
+.pricing-card{background:var(--gray-900);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:36px 28px;transition:all .3s;position:relative}
+.pricing-card:hover{border-color:rgba(34,197,94,.2);transform:translateY(-4px)}
+.pricing-card.featured{border-color:var(--green);background:linear-gradient(180deg,rgba(34,197,94,.06) 0%,var(--gray-900) 100%)}
+.pricing-card.featured::before{content:'Most Popular';position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--green);color:var(--black);padding:4px 16px;border-radius:100px;font-size:.75rem;font-weight:700}
+.pricing-card h3{font-size:1.1rem;font-weight:700;margin-bottom:8px}
+.pricing-card .price{font-size:clamp(1.8rem,3vw,2.4rem);font-weight:900;margin-bottom:4px;letter-spacing:-.03em}
+.pricing-card .price span{font-size:.9rem;font-weight:400;color:var(--gray-500)}
+.pricing-card .price-desc{font-size:.8rem;color:var(--gray-500);margin-bottom:24px}
+.pricing-features{list-style:none;margin-bottom:28px}
+.pricing-features li{padding:8px 0;font-size:.875rem;color:var(--gray-300);display:flex;align-items:center;gap:10px}
+.pricing-features li::before{content:'✓';color:var(--green);font-weight:700;font-size:.8rem}
+.pricing-btn{display:block;text-align:center;padding:12px;border-radius:10px;font-weight:600;font-size:.9rem;transition:all .25s;min-height:44px}
+.pricing-btn-primary{background:var(--green);color:var(--black)}
+.pricing-btn-primary:hover{background:#2dd469}
+.pricing-btn-secondary{border:1px solid rgba(255,255,255,.15);color:var(--white)}
+.pricing-btn-secondary:hover{border-color:rgba(255,255,255,.4)}
+
+/* CTA SECTION */
+.cta-section{padding:100px 0;text-align:center;position:relative}
+.cta-section::before{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:600px;height:400px;background:radial-gradient(ellipse,rgba(34,197,94,.1),transparent 70%);pointer-events:none}
+.cta-section h2{font-size:clamp(2rem,4vw,3.2rem);font-weight:900;letter-spacing:-.03em;margin-bottom:16px}
+.cta-section p{color:var(--gray-400);font-size:1.1rem;margin-bottom:36px}
+
+/* FOOTER */
+footer{padding:48px 0;border-top:1px solid rgba(255,255,255,.06)}
+.footer-inner{display:flex;flex-direction:column;gap:24px;align-items:center;text-align:center}
+@media(min-width:768px){.footer-inner{flex-direction:row;justify-content:space-between;text-align:left}}
+.footer-brand{font-weight:700;font-size:1rem}.footer-brand span{color:var(--green)}
+.footer-links{display:flex;gap:24px;flex-wrap:wrap;justify-content:center}
+.footer-links a{font-size:.85rem;color:var(--gray-500);transition:color .2s}
+.footer-links a:hover{color:var(--green)}
+.footer-copy{font-size:.8rem;color:var(--gray-600)}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+<div class="container">
+<div class="nav-logo">build<span>with</span>ray</div>
+<div class="nav-links">
+<a href="#how">How It Works</a>
+<a href="#features">Features</a>
+<a href="#compare">Compare</a>
+<a href="#pricing">Pricing</a>
+<a href="mailto:ray@twray.dev" class="nav-cta">Get Started →</a>
+</div>
+</div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+<div class="container">
+<div class="hero-badge reveal"><span class="dot"></span> 25+ Production Apps Running</div>
+<h1 class="reveal reveal-delay-1">Replace Your Spreadsheets with <span class="gradient-text">Custom Web Apps</span></h1>
+<p class="reveal reveal-delay-2">Stop wrestling with Excel. Get a modern, fast, and reliable web application built specifically for your business — by a developer with 25+ production apps running right now.</p>
+<div class="hero-buttons reveal reveal-delay-3">
+<a href="mailto:ray@twray.dev" class="btn-primary">Start Your Project →</a>
+<a href="#how" class="btn-secondary">See How It Works</a>
+</div>
+</div>
+</section>
+
+<!-- STATS -->
+<section class="stats">
+<div class="container">
+<div class="stat-item reveal">
+<h3><span class="counter" data-target="25">0</span>+</h3>
+<p>Production Apps</p>
+</div>
+<div class="stat-item reveal reveal-delay-1">
+<h3><span class="counter" data-target="99">0</span>.9%</h3>
+<p>Uptime</p>
+</div>
+<div class="stat-item reveal reveal-delay-2">
+<h3><span class="counter" data-target="7">0</span>+</h3>
+<p>Tech Stack Tools</p>
+</div>
+<div class="stat-item reveal reveal-delay-3">
+<h3>&lt;<span class="counter" data-target="48">0</span>h</h3>
+<p>Response Time</p>
+</div>
+</div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-it-works" id="how">
+<div class="container">
+<p class="section-label reveal">How It Works</p>
+<h2 class="section-title reveal">From idea to production<br>in three steps</h2>
+<div class="steps">
+<div class="step reveal">
+<div class="step-num">1</div>
+<h3>Discovery Call</h3>
+<p>We discuss your current workflow, pain points, and what you need your app to do. No jargon, no pressure — just a conversation.</p>
+<div class="step-connector"></div>
+</div>
+<div class="step reveal reveal-delay-1">
+<div class="step-num">2</div>
+<h3>Build & Iterate</h3>
+<p>I design and develop your app using modern tech. You see progress weekly and provide feedback at every stage.</p>
+<div class="step-connector"></div>
+</div>
+<div class="step reveal reveal-delay-2">
+<div class="step-num">3</div>
+<h3>Launch & Support</h3>
+<p>Your app goes live with full deployment, monitoring, and ongoing support. It just works — 99.9% uptime guaranteed.</p>
+</div>
+</div>
+</div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+<div class="container">
+<p class="section-label reveal">Features</p>
+<h2 class="section-title reveal">Everything your spreadsheet<br>can't do</h2>
+<div class="features-grid">
+<div class="feature-card reveal">
+<div class="feature-icon">⚡</div>
+<h3>Lightning Fast</h3>
+<p>React-powered frontends that load instantly. No more waiting for Excel to calculate 10,000 rows.</p>
+</div>
+<div class="feature-card reveal reveal-delay-1">
+<div class="feature-icon">🔒</div>
+<h3>Secure by Default</h3>
+<p>Role-based access, OAuth authentication, and encrypted data. Not a shared file anyone can edit.</p>
+</div>
+<div class="feature-card reveal reveal-delay-2">
+<div class="feature-icon">📱</div>
+<h3>Mobile-First</h3>
+<p>Use your app on any device — phone, tablet, desktop. Works perfectly on foldable screens too.</p>
+</div>
+<div class="feature-card reveal reveal-delay-1">
+<div class="feature-icon">🔄</div>
+<h3>Real-Time Data</h3>
+<p>Live updates, instant syncing. Multiple users can work simultaneously without version conflicts.</p>
+</div>
+<div class="feature-card reveal reveal-delay-2">
+<div class="feature-icon">📊</div>
+<h3>Smart Dashboards</h3>
+<p>Interactive charts and analytics built into your app. Get insights without exporting to another tool.</p>
+</div>
+<div class="feature-card reveal reveal-delay-3">
+<div class="feature-icon">🚀</div>
+<h3>Auto-Deploy</h3>
+<p>CI/CD pipeline with Docker. Updates ship seamlessly with zero downtime.</p>
+</div>
+</div>
+</div>
+</section>
+
+<!-- COMPARISON -->
+<section class="comparison" id="compare">
+<div class="container">
+<p class="section-label reveal">Compare</p>
+<h2 class="section-title reveal">Excel vs Custom Web App</h2>
+<div class="comparison-table reveal">
+<div class="comp-header">
+<div>Feature</div>
+<div>Excel / Sheets</div>
+<div>Custom Web App</div>
+</div>
+<div class="comp-row"><div>Multi-user editing</div><div class="bad">Conflicts & overwrites</div><div class="good">Real-time sync</div></div>
+<div class="comp-row"><div>Mobile experience</div><div class="bad">Terrible</div><div class="good">Native-like</div></div>
+<div class="comp-row"><div>Access control</div><div class="bad">All or nothing</div><div class="good">Role-based</div></div>
+<div class="comp-row"><div>10K+ rows</div><div class="bad">Freezes & crashes</div><div class="good">Instant queries</div></div>
+<div class="comp-row"><div>Automations</div><div class="bad">Fragile macros</div><div class="good">Built-in workflows</div></div>
+<div class="comp-row"><div>Data integrity</div><div class="bad">Anyone can break it</div><div class="good">Validated & enforced</div></div>
+<div class="comp-row"><div>Uptime</div><div class="bad">Local file risk</div><div class="good">99.9% guaranteed</div></div>
+</div>
+</div>
+</section>
+
+<!-- TECH STACK -->
+<section class="tech-stack">
+<div class="container">
+<p class="section-label reveal">Built With</p>
+<h2 class="section-title reveal" style="margin-bottom:0">Modern, proven technology</h2>
+<div class="tech-logos reveal">
+<span class="tech-pill">React</span>
+<span class="tech-pill">Next.js</span>
+<span class="tech-pill">TypeScript</span>
+<span class="tech-pill">Node.js</span>
+<span class="tech-pill">PostgreSQL</span>
+<span class="tech-pill">Docker</span>
+<span class="tech-pill">Python</span>
+</div>
+</div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+<div class="container">
+<p class="section-label reveal">Pricing</p>
+<h2 class="section-title reveal">Simple, transparent pricing</h2>
+<div class="pricing-grid">
+<div class="pricing-card reveal">
+<h3>Starter</h3>
+<div class="price">$2K–5K</div>
+<div class="price-desc">One-time project</div>
+<ul class="pricing-features">
+<li>Single-purpose app</li>
+<li>Mobile responsive</li>
+<li>User authentication</li>
+<li>Basic dashboard</li>
+<li>Deployment & hosting setup</li>
+</ul>
+<a href="mailto:ray@twray.dev?subject=Starter%20Project" class="pricing-btn pricing-btn-secondary">Get Started</a>
+</div>
+<div class="pricing-card featured reveal reveal-delay-1">
+<h3>Professional</h3>
+<div class="price">$5K–15K</div>
+<div class="price-desc">One-time project</div>
+<ul class="pricing-features">
+<li>Multi-feature application</li>
+<li>Advanced role-based access</li>
+<li>API integrations</li>
+<li>Analytics dashboards</li>
+<li>CI/CD pipeline</li>
+<li>30-day post-launch support</li>
+</ul>
+<a href="mailto:ray@twray.dev?subject=Professional%20Project" class="pricing-btn pricing-btn-primary">Get Started</a>
+</div>
+<div class="pricing-card reveal reveal-delay-2">
+<h3>Retainer</h3>
+<div class="price">$500–2K <span>/mo</span></div>
+<div class="price-desc">Ongoing partnership</div>
+<ul class="pricing-features">
+<li>Continuous development</li>
+<li>Feature additions</li>
+<li>Priority support</li>
+<li>Performance monitoring</li>
+<li>Security updates</li>
+</ul>
+<a href="mailto:ray@twray.dev?subject=Retainer%20Inquiry" class="pricing-btn pricing-btn-secondary">Get Started</a>
+</div>
+</div>
+</div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+<div class="container reveal">
+<h2>Ready to ditch the<br><span class="gradient-text">spreadsheet?</span></h2>
+<p>Let's talk about turning your workflow into a real app.</p>
+<a href="mailto:ray@twray.dev" class="btn-primary">Start Your Project →</a>
+</div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+<div class="container">
+<div class="footer-inner">
+<div class="footer-brand">build<span>with</span>ray</div>
+<div class="footer-links">
+<a href="https://youtube.com/@techwithray" target="_blank" rel="noopener">YouTube</a>
+<a href="https://github.com/rayovims" target="_blank" rel="noopener">GitHub</a>
+<a href="https://techwithray.com" target="_blank" rel="noopener">Store</a>
+<a href="mailto:ray@twray.dev">Contact</a>
+</div>
+<div class="footer-copy">© 2026 Ray · Jersey City, NJ</div>
+</div>
+</div>
+</footer>
+
+<script>
+// Scroll reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }});
+}, { threshold: 0.15 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// Counter animation
+const counterObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    const el = e.target;
+    const target = +el.dataset.target;
+    let current = 0;
+    const step = Math.max(1, Math.floor(target / 40));
+    const timer = setInterval(() => {
+      current += step;
+      if (current >= target) { current = target; clearInterval(timer); }
+      el.textContent = current;
+    }, 30);
+    counterObs.unobserve(el);
+  });
+}, { threshold: 0.5 });
+document.querySelectorAll('.counter').forEach(el => counterObs.observe(el));
+</script>
+</body>
+</html>
