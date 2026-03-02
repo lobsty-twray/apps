@@ -1,4 +1,24 @@
 services:
+  shared-assets:
+    build: ./shared-assets
+    container_name: lobsty-shared-assets
+    restart: always
+    ports:
+    - 8199:3000
+    volumes:
+    - ./shared:/app/shared:ro
+  lobsty-dashboard:
+    build: ./lobsty-dashboard
+    container_name: lobsty-dashboard
+    ports:
+    - 8115:3000
+    environment:
+    - DATABASE_URL=postgresql://lobsty:lobsty2026@postgres:5432/lobsty_dashboard
+    - ADMIN_PASSWORD=ray2026
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
   board:
     build: ./board
     container_name: lobsty-board
@@ -28,7 +48,7 @@ services:
     - 8093:3000
     environment:
     - NODE_ENV=production
-    - DATABASE_URL=postgresql://lobsty:lobsty2026@lobsty-postgres:5432/docs
+    - DATABASE_URL=postgresql://lobsty:lobsty2026@postgres:5432/docs
     - JWT_SECRET=***REMOVED***
     - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
     - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
@@ -53,7 +73,7 @@ services:
     - 8094:3000
     environment:
     - NODE_ENV=production
-    - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/drafts
+    - DATABASE_URL=postgresql://lobsty:lobsty2026@postgres:5432/drafts
     - JWT_SECRET=lobsty-drafts-jwt-secret-2026
     depends_on:
       postgres:
@@ -78,7 +98,7 @@ services:
     - shop-uploads:/app/uploads
     environment:
     - NODE_ENV=production
-    - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/shop
+    - DATABASE_URL=postgresql://lobsty:lobsty2026@postgres:5432/shop
     - JWT_SECRET=lobsty-shop-jwt-secret-2026
     - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
     - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}
@@ -107,7 +127,7 @@ services:
     - video-pipeline-uploads:/app/uploads
     environment:
     - NODE_ENV=production
-    - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/video-pipeline
+    - DATABASE_URL=postgresql://lobsty:lobsty2026@postgres:5432/video-pipeline
     - JWT_SECRET=lobsty-video-pipeline-jwt-secret-2026
     depends_on:
       postgres:
@@ -130,14 +150,13 @@ services:
     - 8098:3000
     environment:
     - NODE_ENV=production
-    - DATABASE_URL=postgresql://lobsty:lobsty2026@lobsty-postgres:5432/stock_monitor
+    - DATABASE_URL=postgresql://lobsty:lobsty2026@postgres:5432/stock_monitor
     - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
     - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
     - BESTBUY_API_KEY=${BESTBUY_API_KEY:-}
     - NTFY_URL=${NTFY_URL:-https://ntfy.sh}
     - NTFY_TOPIC=${NTFY_TOPIC:-}
-    - AUTOBUY_ENCRYPTION_KEY=${AUTOBUY_ENCRYPTION_KEY:-}
-      - AUTOBUY_ADMIN_PASSWORD=${AUTOBUY_ADMIN_PASSWORD:-ray2026}
+    - AUTOBUY_ENCRYPTION_KEY=${AUTOBUY_ENCRYPTION_KEY:-} - AUTOBUY_ADMIN_PASSWORD=${AUTOBUY_ADMIN_PASSWORD:-ray2026}
     depends_on:
       postgres:
         condition: service_healthy
@@ -163,7 +182,7 @@ services:
     - 5432:5432
     environment:
     - POSTGRES_USER=lobsty
-    - POSTGRES_PASSWORD=***REMOVED***
+    - POSTGRES_PASSWORD=lobsty2026
     - POSTGRES_DB=lobsty_main
     volumes:
     - postgres-data:/var/lib/postgresql/data
@@ -186,7 +205,7 @@ services:
     - 8099:3000
     environment:
     - NODE_ENV=production
-    - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/youtube_studio
+    - DATABASE_URL=postgresql://lobsty:lobsty2026@postgres:5432/youtube_studio
     depends_on:
       postgres:
         condition: service_healthy
@@ -208,7 +227,7 @@ services:
     - 8101:3000
     environment:
     - NODE_ENV=production
-    - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/gear_inventory
+    - DATABASE_URL=postgresql://lobsty:lobsty2026@postgres:5432/gear_inventory
     volumes:
     - gear-uploads:/app/uploads
     depends_on:
@@ -222,7 +241,7 @@ services:
     - 8102:3000
     environment:
     - NODE_ENV=production
-    - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/content_calendar
+    - DATABASE_URL=postgresql://lobsty:lobsty2026@postgres:5432/content_calendar
     depends_on:
       postgres:
         condition: service_healthy
@@ -234,7 +253,7 @@ services:
     - 8103:3000
     environment:
     - NODE_ENV=production
-    - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/benchmark_tracker
+    - DATABASE_URL=postgresql://lobsty:lobsty2026@postgres:5432/benchmark_tracker
     depends_on:
       postgres:
         condition: service_healthy
@@ -246,7 +265,7 @@ services:
     - 8104:3000
     environment:
     - NODE_ENV=production
-    - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/script_writer
+    - DATABASE_URL=postgresql://lobsty:lobsty2026@postgres:5432/script_writer
     depends_on:
       postgres:
         condition: service_healthy
@@ -258,7 +277,7 @@ services:
     - 8105:3000
     environment:
     - NODE_ENV=production
-    - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/sponsor_manager
+    - DATABASE_URL=postgresql://lobsty:lobsty2026@postgres:5432/sponsor_manager
     depends_on:
       postgres:
         condition: service_healthy
@@ -270,7 +289,7 @@ services:
     - 8106:3000
     environment:
     - NODE_ENV=production
-    - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/content_ideas
+    - DATABASE_URL=postgresql://lobsty:lobsty2026@postgres:5432/content_ideas
     depends_on:
       postgres:
         condition: service_healthy
@@ -282,7 +301,7 @@ services:
     - 8107:3000
     environment:
     - NODE_ENV=production
-    - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/gaming_logger
+    - DATABASE_URL=postgresql://lobsty:lobsty2026@postgres:5432/gaming_logger
     depends_on:
       postgres:
         condition: service_healthy
@@ -294,7 +313,7 @@ services:
     - 8108:3000
     environment:
     - NODE_ENV=production
-    - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/thumbnail_analyzer
+    - DATABASE_URL=postgresql://lobsty:lobsty2026@postgres:5432/thumbnail_analyzer
     depends_on:
       postgres:
         condition: service_healthy
@@ -306,7 +325,7 @@ services:
     - 8109:3000
     environment:
     - NODE_ENV=production
-    - DATABASE_URL=postgresql://lobsty:***REMOVED***@lobsty-postgres:5432/stream_planner
+    - DATABASE_URL=postgresql://lobsty:lobsty2026@postgres:5432/stream_planner
     depends_on:
       postgres:
         condition: service_healthy
@@ -349,14 +368,14 @@ services:
     healthcheck:
       test:
       - CMD
-      - wget
-      - --no-verbose
-      - --tries=1
-      - --spider
-      - http://localhost:80
+      - node
+      - -e
+      - require('http').get('http://localhost:80',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))
       interval: 30s
       timeout: 10s
       retries: 3
+    volumes:
+    - landing-page-data:/data
   admin-dashboard:
     build: ./admin-dashboard
     container_name: lobsty-admin-dashboard
@@ -488,32 +507,87 @@ services:
     container_name: lobsty-open-webui
     restart: unless-stopped
     ports:
-      - "8113:8080"
+    - 8113:8080
     volumes:
-      - open-webui-data:/app/backend/data
+    - open-webui-data:/app/backend/data
     environment:
-      - OLLAMA_BASE_URL=
-      - OPENAI_API_BASE_URLS=http://192.168.50.59:1234/v1;http://REPLACE_WITH_5090_IP:1234/v1
-      - OPENAI_API_KEYS=lm-studio;lm-studio
-      - WEBUI_AUTH=true
-      - WEBUI_NAME=Tech with Ray AI
-      - DEFAULT_LOCALE=en
-      - ENABLE_SIGNUP=true
-      - DEFAULT_USER_ROLE=pending
-      - ENABLE_LOGIN_FORM=true
-      - ENABLE_WEB_SEARCH=true
-      - WEB_SEARCH_ENGINE=duckduckgo
-      - ENABLE_COMMUNITY_SHARING=false
-      - ENABLE_MODEL_FILTER=false
-      - ENABLE_AUTOCOMPLETE_GENERATION=true
-      - AUTOCOMPLETE_GENERATION_INPUT_MAX_LENGTH=4096
-      - WEBUI_BANNERS=[{"id":"welcome","type":"info","title":"Welcome to Tech with Ray AI","content":"Powered by local models on Apple Silicon & NVIDIA GPUs","dismissible":true}]
+    - OLLAMA_BASE_URL=
+    - OPENAI_API_BASE_URLS=http://192.168.50.59:1234/v1;http://REPLACE_WITH_5090_IP:1234/v1
+    - OPENAI_API_KEYS=lm-studio;lm-studio
+    - WEBUI_AUTH=true
+    - WEBUI_NAME=Tech with Ray AI
+    - DEFAULT_LOCALE=en
+    - ENABLE_SIGNUP=true
+    - DEFAULT_USER_ROLE=pending
+    - ENABLE_LOGIN_FORM=true
+    - ENABLE_WEB_SEARCH=true
+    - WEB_SEARCH_ENGINE=duckduckgo
+    - ENABLE_COMMUNITY_SHARING=false
+    - ENABLE_MODEL_FILTER=false
+    - ENABLE_AUTOCOMPLETE_GENERATION=true
+    - AUTOCOMPLETE_GENERATION_INPUT_MAX_LENGTH=4096
+    - WEBUI_BANNERS=[{"id":"welcome","type":"info","title":"Welcome to Tech with Ray
+      AI","content":"Powered by local models on Apple Silicon & NVIDIA GPUs","dismissible":true}]
+  todo:
+    build: ./todo
+    container_name: lobsty-todo
+    restart: unless-stopped
+    ports:
+    - 8090:80
+  budget-tracker:
+    build: ./budget
+    container_name: lobsty-budget
+    restart: always
+    ports:
+    - 8092:3000
+    volumes:
+    - budget-data:/app/data
+    environment:
+    - NODE_ENV=production
+    healthcheck:
+      test:
+      - CMD
+      - wget
+      - --no-verbose
+      - --tries=1
+      - --spider
+      - http://localhost:3000/api/categories
+      interval: 30s
+      timeout: 10s
+      retries: 3
+  chat:
+    build: ./chat
+    container_name: chat
+    extra_hosts:
+    - nas:192.100.2.1
+    restart: unless-stopped
+    ports:
+    - 8114:8114
+    environment:
+    - PORT=8114
+    - DATABASE_URL=postgresql://lobsty:lobsty2026@postgres:5432/chat
+    - GATEWAY_WS=ws://192.100.2.1:18789
+    depends_on:
+      postgres:
+        condition: service_healthy
+  form-api:
+    build: ./form-api
+    container_name: lobsty-form-api
+    restart: unless-stopped
+    ports:
+    - 8116:3000
+    environment:
+    - DEST_EMAIL=rayscriptsjs@gmail.com
+    - SMTP_USER=rayscriptsjs@gmail.com
+    - SMTP_PASS=dyqo rmqm cluq qolk
 volumes:
   open-webui-data:
     driver: local
   pihole-etc:
     driver: local
   pihole-dnsmasq:
+    driver: local
+  budget-data:
     driver: local
   board-data:
     driver: local
@@ -539,3 +613,5 @@ volumes:
     driver: local
   netdata-cache:
     driver: local
+  budget-tracker: null
+  landing-page-data: null

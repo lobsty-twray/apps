@@ -1,12 +1,8 @@
-name: Deploy Docs
+name: Deploy Apps
 
 on:
   push:
     branches: [main]
-    paths:
-      - 'docs/**'
-      - 'docker-compose.yml'
-      - '.github/workflows/deploy.yml'
 
 jobs:
   deploy:
@@ -20,5 +16,19 @@ jobs:
       - name: Build and deploy
         run: |
           cd ~/apps
-          docker compose up --build -d docs
+          docker compose up --build -d
           docker image prune -f
+
+      - name: Take screenshots
+        run: |
+          cd ~/apps
+          bash scripts/screenshot-all.sh
+        continue-on-error: true
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-screenshots
+          path: ~/apps/screenshots/
+          retention-days: 30
+        if: always()
