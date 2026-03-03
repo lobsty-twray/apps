@@ -47,7 +47,6 @@ body {
   padding-bottom: env(safe-area-inset-bottom, 20px);
 }
 
-/* Animated gradient bg */
 .bg-glow {
   position: fixed; top: -40%; left: -20%; width: 140%; height: 80%;
   background: radial-gradient(ellipse at 30% 50%, rgba(124,58,237,0.08) 0%, transparent 60%),
@@ -62,22 +61,18 @@ body {
 
 .app { position: relative; z-index: 1; max-width: 540px; margin: 0 auto; padding: 20px 16px; }
 
-/* Header */
 .header { padding: 20px 0 24px; }
 .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
 .header h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.5px; background: linear-gradient(135deg, #fff 0%, #aaa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 .header-subtitle { font-size: 0.85rem; color: var(--text-muted); font-weight: 400; }
-.stats-row {
-  display: flex; gap: 8px; margin-top: 16px;
-}
+.stats-row { display: flex; gap: 8px; margin-top: 16px; }
 .stat-card {
   flex: 1; padding: 12px 14px;
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
   backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-  text-align: center;
-  transition: var(--transition);
+  text-align: center; transition: var(--transition);
 }
 .stat-card:hover { background: var(--glass-hover); }
 .stat-num { font-size: 1.4rem; font-weight: 700; color: var(--text-primary); }
@@ -85,15 +80,12 @@ body {
 .stat-num.success { color: var(--success); }
 .stat-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
 
-/* Add form */
 .add-section {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
   backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-  padding: 16px;
-  margin-bottom: 20px;
-  transition: var(--transition);
+  padding: 16px; margin-bottom: 20px; transition: var(--transition);
 }
 .add-section:focus-within {
   border-color: rgba(124,58,237,0.3);
@@ -105,10 +97,8 @@ body {
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.06);
   border-radius: var(--radius-sm);
-  color: var(--text-primary);
-  font-size: 1rem; font-family: inherit;
-  outline: none; transition: var(--transition);
-  -webkit-appearance: none;
+  color: var(--text-primary); font-size: 1rem; font-family: inherit;
+  outline: none; transition: var(--transition); -webkit-appearance: none;
 }
 .add-input::placeholder { color: var(--text-muted); }
 .add-input:focus { border-color: rgba(124,58,237,0.4); background: rgba(255,255,255,0.05); }
@@ -118,15 +108,13 @@ body {
   background: linear-gradient(135deg, #7c3aed 0%, #6a5aee 100%);
   color: #fff; font-size: 1.5rem; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  transition: var(--transition);
-  touch-action: manipulation;
+  transition: var(--transition); touch-action: manipulation;
   box-shadow: 0 2px 12px var(--accent-glow);
 }
 .add-btn:hover { transform: scale(1.05); box-shadow: 0 4px 20px var(--accent-glow); }
 .add-btn:active { transform: scale(0.95); }
 .add-btn svg { width: 22px; height: 22px; }
 
-/* Options row */
 .add-options { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
 .opt-btn {
   padding: 6px 12px; border: 1px solid var(--glass-border);
@@ -140,10 +128,10 @@ body {
 .opt-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
 .opt-btn .dot { width: 8px; height: 8px; border-radius: 50%; }
 
-.priority-selector, .category-selector {
-  display: none; flex-wrap: wrap; gap: 6px; margin-top: 8px;
+.priority-selector, .category-selector, .due-date-selector {
+  display: none; flex-wrap: wrap; gap: 6px; margin-top: 8px; align-items: center;
 }
-.priority-selector.show, .category-selector.show { display: flex; }
+.priority-selector.show, .category-selector.show, .due-date-selector.show { display: flex; }
 
 .pri-btn, .cat-btn {
   padding: 6px 14px; border: 1px solid var(--glass-border);
@@ -158,7 +146,24 @@ body {
 .pri-btn.active.p-low { border-color: var(--success); color: var(--success); background: var(--success-soft); }
 .cat-btn.active { border-color: var(--cat-color, var(--accent)); color: var(--cat-color, var(--accent)); background: color-mix(in srgb, var(--cat-color, var(--accent)) 12%, transparent); }
 
-/* Filters */
+/* Due date input */
+.due-date-input {
+  padding: 6px 14px; border: 1px solid var(--glass-border);
+  border-radius: 20px; background: rgba(255,255,255,0.03);
+  color: var(--text-secondary); font-size: 0.78rem; font-family: inherit;
+  outline: none; transition: var(--transition); min-height: 34px;
+  color-scheme: dark; cursor: pointer;
+}
+.due-date-input:focus { border-color: rgba(124,58,237,0.4); }
+.due-clear-btn {
+  padding: 6px 12px; border: 1px solid var(--glass-border);
+  border-radius: 20px; background: transparent;
+  color: var(--text-muted); font-size: 0.78rem; font-family: inherit;
+  cursor: pointer; transition: var(--transition); min-height: 34px;
+  touch-action: manipulation;
+}
+.due-clear-btn:hover { color: var(--danger); border-color: var(--danger); }
+
 .filter-bar {
   display: flex; gap: 6px; margin-bottom: 16px;
   overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
@@ -170,14 +175,10 @@ body {
   border-radius: 20px; background: transparent;
   color: var(--text-secondary); font-size: 0.82rem; font-family: inherit;
   cursor: pointer; transition: var(--transition);
-  min-height: 38px; white-space: nowrap;
-  touch-action: manipulation;
+  min-height: 38px; white-space: nowrap; touch-action: manipulation;
 }
 .filter-chip:hover { background: var(--glass-hover); }
-.filter-chip.active {
-  border-color: var(--accent); color: var(--accent);
-  background: var(--accent-soft);
-}
+.filter-chip.active { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
 .filter-chip .count {
   display: inline-block; min-width: 18px; height: 18px; line-height: 18px;
   text-align: center; font-size: 0.7rem; border-radius: 9px;
@@ -185,7 +186,6 @@ body {
 }
 .filter-chip.active .count { background: var(--accent-soft); }
 
-/* Todo list */
 .todo-list { list-style: none; }
 
 .todo-card {
@@ -194,9 +194,8 @@ body {
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
   backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-  margin-bottom: 8px;
-  overflow: hidden;
-  transition: transform var(--transition), opacity var(--transition), margin var(--transition);
+  margin-bottom: 8px; overflow: hidden;
+  transition: transform var(--transition), opacity var(--transition), margin var(--transition), border-color var(--transition), box-shadow var(--transition);
   animation: cardIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
 }
 @keyframes cardIn {
@@ -204,28 +203,23 @@ body {
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 .todo-card:hover { background: var(--glass-hover); }
-.todo-card.removing {
-  animation: cardOut 0.3s ease both;
-}
+.todo-card.removing { animation: cardOut 0.3s ease both; }
 @keyframes cardOut {
   to { opacity: 0; transform: translateX(-100%) scale(0.9); height: 0; margin: 0; padding: 0; border: 0; }
 }
-.todo-card.checking {
-  animation: checkPop 0.4s cubic-bezier(0.34,1.56,0.64,1);
-}
-@keyframes checkPop {
-  0% { transform: scale(1); }
-  30% { transform: scale(1.02); }
-  100% { transform: scale(1); }
-}
+.todo-card.checking { animation: checkPop 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes checkPop { 0% { transform: scale(1); } 30% { transform: scale(1.02); } 100% { transform: scale(1); } }
+
+/* Due date visual indicators */
+.todo-card.due-overdue:not(.done) { border-left: 3px solid var(--danger); box-shadow: inset 3px 0 12px -4px rgba(255,68,102,0.15); }
+.todo-card.due-today:not(.done) { border-left: 3px solid var(--warning); box-shadow: inset 3px 0 12px -4px rgba(255,170,51,0.12); }
+.todo-card.due-tomorrow:not(.done) { border-left: 3px solid rgba(255,170,51,0.4); }
 
 .todo-inner { display: flex; align-items: center; gap: 12px; padding: 14px 16px; }
 
-/* Checkbox */
 .check-wrap {
   position: relative; width: 26px; height: 26px; min-width: 26px;
   cursor: pointer; touch-action: manipulation;
-  /* 44px touch target */
   padding: 9px; margin: -9px; box-sizing: content-box;
 }
 .check-circle {
@@ -236,12 +230,9 @@ body {
 }
 .check-wrap:hover .check-circle { border-color: var(--accent); }
 .check-circle svg { width: 14px; height: 14px; opacity: 0; transform: scale(0); transition: var(--bounce); }
-.todo-card.done .check-circle {
-  border-color: var(--success); background: var(--success);
-}
+.todo-card.done .check-circle { border-color: var(--success); background: var(--success); }
 .todo-card.done .check-circle svg { opacity: 1; transform: scale(1); color: #0a0a0f; }
 
-/* Priority indicator */
 .priority-dot {
   width: 4px; border-radius: 2px; align-self: stretch; min-height: 20px;
   transition: var(--transition);
@@ -251,16 +242,13 @@ body {
 .priority-dot.low { background: var(--success); opacity: 0.5; }
 .priority-dot.none { background: transparent; width: 0; }
 
-/* Todo content */
 .todo-content { flex: 1; min-width: 0; }
 .todo-text {
   font-size: 0.95rem; line-height: 1.45; word-break: break-word;
   transition: var(--transition);
 }
 .todo-card.done .todo-text {
-  text-decoration: line-through;
-  text-decoration-color: var(--text-muted);
-  color: var(--text-muted);
+  text-decoration: line-through; text-decoration-color: var(--text-muted); color: var(--text-muted);
 }
 .todo-meta { display: flex; gap: 8px; margin-top: 4px; align-items: center; flex-wrap: wrap; }
 .todo-cat {
@@ -268,21 +256,25 @@ body {
   font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px;
 }
 .todo-time { font-size: 0.7rem; color: var(--text-muted); }
+.todo-due {
+  font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; font-weight: 500;
+}
+.todo-due.overdue { color: var(--danger); background: var(--danger-soft); }
+.todo-due.today { color: var(--warning); background: var(--warning-soft); }
+.todo-due.tomorrow { color: #ddbb55; background: rgba(221,187,85,0.1); }
+.todo-due.upcoming { color: var(--text-secondary); background: rgba(255,255,255,0.05); }
 
-/* Delete btn */
 .del-btn {
   background: none; border: none; color: var(--text-muted);
   width: 44px; height: 44px; min-width: 44px;
   display: flex; align-items: center; justify-content: center;
   border-radius: var(--radius-sm); cursor: pointer;
-  transition: var(--transition); touch-action: manipulation;
-  opacity: 0.4;
+  transition: var(--transition); touch-action: manipulation; opacity: 0.4;
 }
 .del-btn:hover { color: var(--danger); background: var(--danger-soft); opacity: 1; }
 .del-btn:active { transform: scale(0.9); }
 .del-btn svg { width: 18px; height: 18px; }
 
-/* Swipe delete bg */
 .swipe-bg {
   position: absolute; right: 0; top: 0; bottom: 0;
   background: linear-gradient(90deg, transparent, var(--danger));
@@ -292,17 +284,12 @@ body {
 }
 .todo-card.swiping .swipe-bg { opacity: 1; }
 
-/* Empty state */
-.empty-state {
-  text-align: center; padding: 60px 20px;
-  animation: fadeIn 0.5s ease;
-}
+.empty-state { text-align: center; padding: 60px 20px; animation: fadeIn 0.5s ease; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 .empty-icon { font-size: 3.5rem; margin-bottom: 16px; opacity: 0.6; }
 .empty-title { font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 6px; font-weight: 500; }
 .empty-sub { font-size: 0.85rem; color: var(--text-muted); }
 
-/* Clear done button */
 .clear-done {
   display: none; width: 100%; padding: 12px;
   border: 1px solid var(--glass-border); border-radius: var(--radius-md);
@@ -315,7 +302,6 @@ body {
 .clear-done:hover { background: var(--danger-soft); color: var(--danger); border-color: var(--danger); }
 .clear-done.show { display: block; }
 
-/* Responsive */
 @media (max-width: 480px) {
   .app { padding: 12px 12px; }
   .header { padding: 16px 0 20px; }
@@ -337,12 +323,10 @@ body {
   .app { max-width: 600px; }
 }
 
-/* Scrollbar */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
 
-/* Focus Mode toggle */
 .focus-btn {
   padding: 6px 16px; border: 1px solid rgba(124,58,237,0.3);
   border-radius: 20px; background: rgba(124,58,237,0.08);
@@ -354,8 +338,7 @@ body {
 .focus-btn:hover { background: rgba(124,58,237,0.15); color: var(--text-primary); }
 .focus-btn.active {
   background: linear-gradient(135deg, rgba(124,58,237,0.3), rgba(106,90,238,0.3));
-  border-color: rgba(124,58,237,0.6);
-  color: #e8e8f0;
+  border-color: rgba(124,58,237,0.6); color: #e8e8f0;
   box-shadow: 0 0 16px rgba(124,58,237,0.3), 0 0 4px rgba(124,58,237,0.2);
   animation: focusGlow 2s ease-in-out infinite alternate;
 }
@@ -367,30 +350,22 @@ body {
   width: 6px; height: 6px; border-radius: 50%;
   background: var(--text-muted); transition: var(--transition);
 }
-.focus-btn.active .focus-dot {
-  background: #c4b5fd;
-  box-shadow: 0 0 6px rgba(124,58,237,0.6);
-}
+.focus-btn.active .focus-dot { background: #c4b5fd; box-shadow: 0 0 6px rgba(124,58,237,0.6); }
 
-/* Drag handle */
 .drag-handle {
   width: 28px; min-width: 28px; height: 44px;
   display: flex; align-items: center; justify-content: center;
   color: var(--text-muted); font-size: 1.1rem; cursor: grab;
   touch-action: none; user-select: none; -webkit-user-select: none;
-  opacity: 0.35; transition: var(--transition);
-  margin-left: -4px;
+  opacity: 0.35; transition: var(--transition); margin-left: -4px;
 }
 .drag-handle:hover { opacity: 0.7; color: var(--text-secondary); }
 .drag-handle:active { cursor: grabbing; }
 .todo-card.dragging {
   opacity: 0.5; transform: scale(0.97);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-  z-index: 100;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4); z-index: 100;
 }
-.todo-card.drag-over {
-  border-top: 2px solid rgba(124,58,237,0.6);
-}
+.todo-card.drag-over { border-top: 2px solid rgba(124,58,237,0.6); }
 </style>
 </head>
 <body>
@@ -419,6 +394,7 @@ body {
     <div class="add-options">
       <button class="opt-btn" onclick="togglePriority()" id="priToggle">⚡ Priority</button>
       <button class="opt-btn" onclick="toggleCategory()" id="catToggle">📂 Category</button>
+      <button class="opt-btn" onclick="toggleDueDate()" id="dueToggle">📅 Due Date</button>
     </div>
     <div class="priority-selector" id="priSelector">
       <button class="pri-btn p-high" onclick="setPriority('high')">🔴 High</button>
@@ -433,6 +409,10 @@ body {
       <button class="cat-btn" style="--cat-color:var(--cat-errands)" onclick="setCategory('errands')">Errands</button>
       <button class="cat-btn" style="--cat-color:var(--cat-learning)" onclick="setCategory('learning')">Learning</button>
       <button class="cat-btn" onclick="setCategory('')">None</button>
+    </div>
+    <div class="due-date-selector" id="dueSelector">
+      <input type="date" class="due-date-input" id="dueInput">
+      <button class="due-clear-btn" onclick="clearDueInput()">✕ Clear</button>
     </div>
   </div>
 
@@ -456,14 +436,16 @@ const CATEGORIES = {
 };
 
 let todos = JSON.parse(localStorage.getItem('todos_v2') || '[]');
-// Migrate old todos
 if (!todos.length) {
   const old = JSON.parse(localStorage.getItem('todos') || '[]');
   if (old.length) {
-    todos = old.map(t => ({ text: t.text, done: t.done, priority: 'none', category: '', created: Date.now() }));
+    todos = old.map(t => ({ text: t.text, done: t.done, priority: 'none', category: '', due: '', created: Date.now() }));
     save();
   }
 }
+// Migrate: add due field to existing todos
+todos.forEach(t => { if (t.due === undefined) t.due = ''; });
+save();
 
 let filter = 'all';
 let currentPriority = 'none';
@@ -473,7 +455,6 @@ const $ = id => document.getElementById(id);
 const input = $('input');
 input.addEventListener('keydown', e => { if (e.key === 'Enter') addTodo(); });
 
-// Date label
 const now = new Date();
 $('dateLabel').textContent = now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
 
@@ -486,6 +467,13 @@ function togglePriority() {
 function toggleCategory() {
   $('catSelector').classList.toggle('show');
   $('catToggle').classList.toggle('active');
+}
+function toggleDueDate() {
+  $('dueSelector').classList.toggle('show');
+  $('dueToggle').classList.toggle('active');
+}
+function clearDueInput() {
+  $('dueInput').value = '';
 }
 
 function setPriority(p) {
@@ -503,21 +491,54 @@ function setCategory(c) {
   });
 }
 
-function setFilter(f) {
-  filter = f;
-  renderFilters();
-  renderList();
+function setFilter(f) { filter = f; renderFilters(); renderList(); }
+
+// Due date helpers
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function tomorrowStr() {
+  const d = new Date(); d.setDate(d.getDate()+1);
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function daysDiff(dateStr) {
+  if (!dateStr) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const due = new Date(dateStr + 'T00:00:00'); 
+  return Math.round((due - today) / 86400000);
+}
+function dueLabel(dateStr) {
+  if (!dateStr) return null;
+  const diff = daysDiff(dateStr);
+  if (diff < 0) return { text: 'Overdue!', cls: 'overdue' };
+  if (diff === 0) return { text: 'Due today', cls: 'today' };
+  if (diff === 1) return { text: 'Due tomorrow', cls: 'tomorrow' };
+  const d = new Date(dateStr + 'T00:00:00');
+  return { text: 'Due ' + d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), cls: 'upcoming' };
+}
+function dueSortKey(t) {
+  if (!t.due) return 9999;
+  const diff = daysDiff(t.due);
+  return diff;
+}
+function isDueSoon(t) {
+  if (!t.due || t.done) return false;
+  const diff = daysDiff(t.due);
+  return diff !== null && diff <= 3;
 }
 
 function getFiltered() {
   let items = todos.map((t,i) => ({...t, idx:i}));
   if (filter === 'active') items = items.filter(t => !t.done);
   else if (filter === 'done') items = items.filter(t => t.done);
+  else if (filter === 'due-soon') items = items.filter(t => isDueSoon(t));
   else if (CATEGORIES[filter]) items = items.filter(t => t.category === filter);
-  // Sort: undone first, then by priority
   const priOrder = { high: 0, medium: 1, low: 2, none: 3 };
   items.sort((a,b) => {
     if (a.done !== b.done) return a.done ? 1 : -1;
+    const da = dueSortKey(a), db = dueSortKey(b);
+    if (da !== db) return da - db;
     return (priOrder[a.priority]||3) - (priOrder[b.priority]||3);
   });
   return items;
@@ -526,11 +547,13 @@ function getFiltered() {
 function renderFilters() {
   const active = todos.filter(t=>!t.done).length;
   const done = todos.filter(t=>t.done).length;
+  const dueSoon = todos.filter(t => isDueSoon(t)).length;
   const cats = {};
   todos.forEach(t => { if(t.category && !t.done) cats[t.category] = (cats[t.category]||0)+1; });
 
   let html = `<button class="filter-chip ${filter==='all'?'active':''}" onclick="setFilter('all')">All<span class="count">${todos.length}</span></button>`;
   html += `<button class="filter-chip ${filter==='active'?'active':''}" onclick="setFilter('active')">Active<span class="count">${active}</span></button>`;
+  if (dueSoon > 0) html += `<button class="filter-chip ${filter==='due-soon'?'active':''}" onclick="setFilter('due-soon')">⏰ Due Soon<span class="count">${dueSoon}</span></button>`;
   html += `<button class="filter-chip ${filter==='done'?'active':''}" onclick="setFilter('done')">Done<span class="count">${done}</span></button>`;
   for (const [key,cnt] of Object.entries(cats)) {
     html += `<button class="filter-chip ${filter===key?'active':''}" onclick="setFilter('${key}')">${CATEGORIES[key]?.label||key}<span class="count">${cnt}</span></button>`;
@@ -545,25 +568,31 @@ function renderList() {
   $('emptyState').style.display = filtered.length ? 'none' : '';
 
   const doneCount = todos.filter(t=>t.done).length;
-  const clearBtn = $('clearDone');
-  clearBtn.classList.toggle('show', doneCount > 0);
+  $('clearDone').classList.toggle('show', doneCount > 0);
 
-  // Stats
   $('statTotal').textContent = todos.length;
   $('statActive').textContent = todos.filter(t=>!t.done).length;
   $('statDone').textContent = doneCount;
 
   filtered.forEach((t, fi) => {
     const li = document.createElement('li');
-    li.className = 'todo-card' + (t.done ? ' done' : '');
+    const dueInfo = dueLabel(t.due);
+    let dueClass = '';
+    if (dueInfo && !t.done) {
+      if (dueInfo.cls === 'overdue') dueClass = ' due-overdue';
+      else if (dueInfo.cls === 'today') dueClass = ' due-today';
+      else if (dueInfo.cls === 'tomorrow') dueClass = ' due-tomorrow';
+    }
+    li.className = 'todo-card' + (t.done ? ' done' : '') + dueClass;
     li.style.animationDelay = `${fi * 0.03}s`;
     li.dataset.index = t.idx;
 
     const priClass = t.priority && t.priority !== 'none' ? t.priority : 'none';
     const catInfo = CATEGORIES[t.category];
     const catHtml = catInfo ? `<span class="todo-cat" style="color:${catInfo.color};background:color-mix(in srgb, ${catInfo.color} 15%, transparent)">${catInfo.label}</span>` : '';
+    const dueHtml = dueInfo ? `<span class="todo-due ${dueInfo.cls}">${dueInfo.text}</span>` : '';
     const timeAgo = getTimeAgo(t.created);
-    const metaHtml = (catHtml || timeAgo) ? `<div class="todo-meta">${catHtml}<span class="todo-time">${timeAgo}</span></div>` : '';
+    const metaHtml = (catHtml || dueHtml || timeAgo) ? `<div class="todo-meta">${catHtml}${dueHtml}<span class="todo-time">${timeAgo}</span></div>` : '';
 
     li.innerHTML = `
       <div class="swipe-bg">Delete</div>
@@ -608,39 +637,32 @@ function getTimeAgo(ts) {
 function addTodo() {
   const v = input.value.trim();
   if (!v) return;
-  todos.unshift({ text: v, done: false, priority: currentPriority, category: currentCategory, created: Date.now() });
+  const dueVal = $('dueInput').value || '';
+  todos.unshift({ text: v, done: false, priority: currentPriority, category: currentCategory, due: dueVal, created: Date.now() });
   input.value = '';
+  $('dueInput').value = '';
   save(); render();
-  // Reset selectors
   currentPriority = 'none'; currentCategory = '';
   document.querySelectorAll('.pri-btn,.cat-btn').forEach(b => b.classList.remove('active'));
-  $('priSelector').classList.remove('show'); $('catSelector').classList.remove('show');
-  $('priToggle').classList.remove('active'); $('catToggle').classList.remove('active');
+  $('priSelector').classList.remove('show'); $('catSelector').classList.remove('show'); $('dueSelector').classList.remove('show');
+  $('priToggle').classList.remove('active'); $('catToggle').classList.remove('active'); $('dueToggle').classList.remove('active');
 }
 
 function toggle(i) {
   todos[i].done = !todos[i].done;
   save();
-  // Animate
   const card = document.querySelector(`[data-index="${i}"]`);
-  if (card) {
-    card.classList.add('checking');
-    setTimeout(() => render(), 350);
-  } else render();
+  if (card) { card.classList.add('checking'); setTimeout(() => render(), 350); }
+  else render();
 }
 
 function remove(i) {
   const card = document.querySelector(`[data-index="${i}"]`);
-  if (card) {
-    card.classList.add('removing');
-    setTimeout(() => { todos.splice(i,1); save(); render(); }, 300);
-  } else { todos.splice(i,1); save(); render(); }
+  if (card) { card.classList.add('removing'); setTimeout(() => { todos.splice(i,1); save(); render(); }, 300); }
+  else { todos.splice(i,1); save(); render(); }
 }
 
-function clearDone() {
-  todos = todos.filter(t => !t.done);
-  save(); render();
-}
+function clearDone() { todos = todos.filter(t => !t.done); save(); render(); }
 
 function setupSwipe(el, idx) {
   let startX=0, currentX=0, swiping=false;
@@ -664,17 +686,13 @@ function setupSwipe(el, idx) {
     const inner = el.querySelector('.todo-inner');
     inner.style.transition = '';
     if (diff > 80) {
-      el.classList.remove('swiping');
-      el.classList.add('removing');
+      el.classList.remove('swiping'); el.classList.add('removing');
       setTimeout(() => { todos.splice(idx,1); save(); render(); }, 300);
-    } else {
-      inner.style.transform = '';
-      el.classList.remove('swiping');
-    }
+    } else { inner.style.transform = ''; el.classList.remove('swiping'); }
   }, {passive:true});
 }
 
-// --- Focus Mode ---
+// Focus Mode
 let focusMode = false;
 function toggleFocusMode() {
   focusMode = !focusMode;
@@ -686,28 +704,21 @@ function isCreatedToday(ts) {
   const d = new Date(ts), n = new Date();
   return d.getFullYear()===n.getFullYear() && d.getMonth()===n.getMonth() && d.getDate()===n.getDate();
 }
-// Wrap getFiltered
 const _baseGetFiltered = getFiltered;
 getFiltered = function() {
   let items = _baseGetFiltered();
-  if (focusMode) {
-    items = items.filter(t => !t.done || isCreatedToday(t.created));
-  }
+  if (focusMode) items = items.filter(t => !t.done || isCreatedToday(t.created));
   return items;
 };
 
-// --- Drag and Drop ---
+// Drag and Drop
 function setupDrag() {
   const list = $('list');
   list.querySelectorAll('.todo-card').forEach(card => {
     const handle = card.querySelector('.drag-handle');
     if (!handle) return;
     let srcIdx, startY, dragging;
-
-    function startDrag(y) {
-      srcIdx = parseInt(card.dataset.index);
-      startY = y; dragging = false;
-    }
+    function startDrag(y) { srcIdx = parseInt(card.dataset.index); startY = y; dragging = false; }
     function moveDrag(x, y) {
       if (!dragging && Math.abs(y - startY) > 8) {
         dragging = true; card.classList.add('dragging');
@@ -741,25 +752,20 @@ function setupDrag() {
       }
       dragging = false;
     }
-
     handle.addEventListener('touchstart', e => { e.preventDefault(); startDrag(e.touches[0].clientY); });
     handle.addEventListener('touchmove', e => { e.preventDefault(); moveDrag(e.touches[0].clientX, e.touches[0].clientY); });
     handle.addEventListener('touchend', endDrag);
-
     handle.addEventListener('mousedown', e => {
       e.preventDefault(); startDrag(e.clientY);
       const mm = ev => moveDrag(ev.clientX, ev.clientY);
       const mu = () => { endDrag(); document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); };
-      document.addEventListener('mousemove', mm);
-      document.addEventListener('mouseup', mu);
+      document.addEventListener('mousemove', mm); document.addEventListener('mouseup', mu);
     });
   });
 }
 
-// Hook renderList to attach drag handlers
 const _baseRenderList = renderList;
 renderList = function() { _baseRenderList(); setupDrag(); };
-
 
 render();
 </script>
