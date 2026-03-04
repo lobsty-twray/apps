@@ -246,6 +246,66 @@
             align-items: center; justify-content: center; box-shadow: 0 2px 8px var(--glow);
         }
         body.show-kb .app-card .kb-badge { display: flex; }
+
+        /* === Command Palette === */
+        .cmd-palette-overlay {
+            display: none; position: fixed; inset: 0; z-index: 500;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            align-items: flex-start; justify-content: center; padding-top: min(20vh, 160px);
+            opacity: 0; transition: opacity 0.15s;
+        }
+        .cmd-palette-overlay.open { display: flex; opacity: 1; }
+        .cmd-palette {
+            width: 95%; max-width: 560px; max-height: 70vh;
+            background: rgba(14,14,22,0.97); border: 1px solid var(--glass-border);
+            border-radius: 16px; overflow: hidden; display: flex; flex-direction: column;
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            box-shadow: 0 24px 64px rgba(0,0,0,0.7), 0 0 40px var(--glow);
+            transform: scale(0.96); transition: transform 0.15s cubic-bezier(0.4,0,0.2,1);
+        }
+        .cmd-palette-overlay.open .cmd-palette { transform: scale(1); }
+        .cmd-palette-input-wrap {
+            display: flex; align-items: center; gap: 10px;
+            padding: 14px 18px; border-bottom: 1px solid var(--glass-border);
+        }
+        .cmd-palette-input-wrap svg { width: 20px; height: 20px; color: var(--text-dim); flex-shrink: 0; }
+        .cmd-palette-input {
+            flex: 1; background: none; border: none; outline: none;
+            color: var(--text); font-size: 1rem; font-family: inherit;
+        }
+        .cmd-palette-input::placeholder { color: var(--text-dim); }
+        .cmd-palette-esc { font-size: 0.7rem; color: var(--text-dim); background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border); border-radius: 6px; padding: 2px 8px; flex-shrink: 0; }
+        .cmd-palette-list { overflow-y: auto; flex: 1; padding: 6px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent; }
+        .cmd-palette-section { padding: 6px 10px 4px; font-size: 0.68rem; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; }
+        .cmd-palette-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 12px; border-radius: 10px; cursor: pointer;
+            transition: background 0.1s; text-decoration: none; color: var(--text);
+            min-height: 44px;
+        }
+        .cmd-palette-item:hover, .cmd-palette-item.selected { background: rgba(124,58,237,0.18); }
+        .cmd-palette-item.selected { box-shadow: inset 2px 0 0 var(--accent); }
+        .cmd-palette-item-emoji { font-size: 1.3rem; width: 32px; text-align: center; flex-shrink: 0; }
+        .cmd-palette-item-info { flex: 1; min-width: 0; }
+        .cmd-palette-item-name { font-size: 0.88rem; font-weight: 500; }
+        .cmd-palette-item-cat { font-size: 0.7rem; color: var(--text-dim); }
+        .cmd-palette-item-desc { font-size: 0.72rem; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cmd-palette-empty { padding: 2rem; text-align: center; color: var(--text-dim); font-size: 0.88rem; }
+        .cmd-palette-divider { height: 1px; background: var(--glass-border); margin: 4px 6px; }
+        .cmd-palette-footer { padding: 8px 16px; border-top: 1px solid var(--glass-border); display: flex; gap: 16px; font-size: 0.68rem; color: var(--text-dim); }
+        .cmd-palette-footer kbd { background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border); border-radius: 4px; padding: 1px 5px; font-family: inherit; font-size: 0.66rem; }
+
+        /* Floating trigger for mobile */
+        .cmd-fab {
+            display: none; position: fixed; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); right: 20px;
+            z-index: 400; width: 52px; height: 52px; border-radius: 50%;
+            background: var(--gradient); border: none; color: #fff; font-size: 1.2rem; font-weight: 700;
+            cursor: pointer; box-shadow: 0 4px 20px var(--glow);
+            display: flex; align-items: center; justify-content: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+        @media (min-width: 768px) { .cmd-fab { display: none; } }
+        @media (max-width: 767px) { .cmd-fab { display: flex; } }
     </style>
 </head>
 <body>
@@ -643,6 +703,162 @@
                 document.body.classList.remove('show-kb');
             }
         });
+    </script>
+
+    <!-- Command Palette -->
+    <div class="cmd-palette-overlay" id="cmd-palette-overlay">
+        <div class="cmd-palette">
+            <div class="cmd-palette-input-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <input class="cmd-palette-input" id="cmd-palette-input" placeholder="Search apps & content..." autocomplete="off">
+                <span class="cmd-palette-esc">ESC</span>
+            </div>
+            <div class="cmd-palette-list" id="cmd-palette-list"></div>
+            <div class="cmd-palette-footer">
+                <span><kbd>↑↓</kbd> navigate</span>
+                <span><kbd>↵</kbd> open</span>
+                <span><kbd>esc</kbd> close</span>
+            </div>
+        </div>
+    </div>
+    <button class="cmd-fab" id="cmd-fab" title="Command Palette">⌘</button>
+
+    <script>
+    (function() {
+        const overlay = document.getElementById('cmd-palette-overlay');
+        const input = document.getElementById('cmd-palette-input');
+        const listEl = document.getElementById('cmd-palette-list');
+        const fab = document.getElementById('cmd-fab');
+        let selectedIdx = 0;
+        let items = [];
+        let searchDebounce = null;
+
+        function openPalette() {
+            overlay.classList.add('open');
+            input.value = '';
+            selectedIdx = 0;
+            renderPaletteApps('');
+            requestAnimationFrame(() => input.focus());
+        }
+        function closePalette() {
+            overlay.classList.remove('open');
+            input.blur();
+        }
+
+        fab.addEventListener('click', openPalette);
+        overlay.addEventListener('click', e => { if (e.target === overlay) closePalette(); });
+
+        // Fuzzy match
+        function fuzzy(text, query) {
+            const t = text.toLowerCase();
+            const q = query.toLowerCase();
+            let ti = 0;
+            for (let qi = 0; qi < q.length; qi++) {
+                const idx = t.indexOf(q[qi], ti);
+                if (idx === -1) return false;
+                ti = idx + 1;
+            }
+            return true;
+        }
+
+        function renderPaletteApps(q) {
+            const filtered = q ? APPS.filter(a => fuzzy(a.name, q) || fuzzy(a.desc, q)) : APPS;
+            items = filtered.map(a => ({ type: 'app', ...a }));
+
+            if (!items.length && !q) {
+                listEl.innerHTML = '<div class="cmd-palette-empty">No apps available</div>';
+                return;
+            }
+
+            let html = '<div class="cmd-palette-section">Apps</div>';
+            if (items.length === 0) {
+                html += '<div class="cmd-palette-empty">No matching apps</div>';
+            } else {
+                items.forEach((a, i) => {
+                    html += '<a class="cmd-palette-item' + (i === selectedIdx ? ' selected' : '') + '" href="' + escHtml(a.url) + '" target="_blank" rel="noopener" data-idx="' + i + '">'
+                        + '<span class="cmd-palette-item-emoji">' + a.emoji + '</span>'
+                        + '<div class="cmd-palette-item-info"><div class="cmd-palette-item-name">' + escHtml(a.name) + '</div>'
+                        + '<div class="cmd-palette-item-cat">' + escHtml(CAT_LABELS[a.cat] || a.cat) + '</div></div></a>';
+                });
+            }
+            listEl.innerHTML = html;
+            if (selectedIdx >= items.length) selectedIdx = Math.max(0, items.length - 1);
+        }
+
+        function appendCrossAppResults(data) {
+            if (!data.results || !data.results.length) return;
+            let html = '<div class="cmd-palette-divider"></div><div class="cmd-palette-section">Content</div>';
+            data.results.forEach(group => {
+                group.items.forEach(item => {
+                    const idx = items.length;
+                    items.push({ type: 'result', url: item.url, title: item.title, emoji: group.emoji, app: group.app, desc: item.desc });
+                    html += '<a class="cmd-palette-item' + (idx === selectedIdx ? ' selected' : '') + '" href="' + escHtml(item.url) + '" target="_blank" rel="noopener" data-idx="' + idx + '">'
+                        + '<span class="cmd-palette-item-emoji">' + group.emoji + '</span>'
+                        + '<div class="cmd-palette-item-info"><div class="cmd-palette-item-name">' + escHtml(item.title) + '</div>'
+                        + (item.desc ? '<div class="cmd-palette-item-desc">' + escHtml(item.desc) + '</div>' : '')
+                        + '<div class="cmd-palette-item-cat">' + escHtml(group.app) + '</div></div></a>';
+                });
+            });
+            listEl.insertAdjacentHTML('beforeend', html);
+        }
+
+        function updateSelected() {
+            listEl.querySelectorAll('.cmd-palette-item').forEach((el, i) => {
+                el.classList.toggle('selected', i === selectedIdx);
+                if (i === selectedIdx) el.scrollIntoView({ block: 'nearest' });
+            });
+        }
+
+        input.addEventListener('input', () => {
+            const q = input.value.trim();
+            selectedIdx = 0;
+            renderPaletteApps(q);
+            clearTimeout(searchDebounce);
+            if (q.length >= 2) {
+                searchDebounce = setTimeout(async () => {
+                    try {
+                        const res = await fetch('/api/search?q=' + encodeURIComponent(q));
+                        const data = await res.json();
+                        if (input.value.trim() === q) appendCrossAppResults(data);
+                    } catch {}
+                }, 350);
+            }
+        });
+
+        listEl.addEventListener('click', e => {
+            const item = e.target.closest('.cmd-palette-item');
+            if (item) {
+                const app = APPS.find(a => a.url === item.getAttribute('href'));
+                if (app) { saveRecent(app); renderRecent(); }
+                closePalette();
+            }
+        });
+
+        // Override the global Cmd+K handler for palette
+        document.addEventListener('keydown', e => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                e.stopPropagation();
+                if (overlay.classList.contains('open')) closePalette(); else openPalette();
+                return;
+            }
+            if (!overlay.classList.contains('open')) return;
+            if (e.key === 'Escape') { e.preventDefault(); closePalette(); return; }
+            if (e.key === 'ArrowDown') { e.preventDefault(); selectedIdx = Math.min(selectedIdx + 1, items.length - 1); updateSelected(); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); selectedIdx = Math.max(selectedIdx - 1, 0); updateSelected(); }
+            else if (e.key === 'Enter') {
+                e.preventDefault();
+                const el = listEl.querySelectorAll('.cmd-palette-item')[selectedIdx];
+                if (el) {
+                    const url = el.getAttribute('href');
+                    const app = APPS.find(a => a.url === url);
+                    if (app) { saveRecent(app); renderRecent(); }
+                    window.open(url, '_blank');
+                    closePalette();
+                }
+            }
+        }, true);  // capture phase to override existing handler
+    })();
     </script>
 </body>
 </html>
