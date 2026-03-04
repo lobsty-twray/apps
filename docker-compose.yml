@@ -390,6 +390,8 @@ services:
     - CALLBACK_URL=https://admin.twray.dev/auth/google/callback
     volumes:
     - /var/run/docker.sock:/var/run/docker.sock
+    - /home/lobsty/backups:/backups:ro
+    - /home/lobsty/apps:/host-apps:ro
     healthcheck:
       test:
       - CMD
@@ -450,6 +452,8 @@ services:
     env_file: ./komodo/compose.env
     volumes:
     - /var/run/docker.sock:/var/run/docker.sock
+    - /home/lobsty/backups:/backups:ro
+    - /home/lobsty/apps:/host-apps:ro
     - /proc:/proc
     - /etc/komodo:/etc/komodo
   netdata:
@@ -475,6 +479,8 @@ services:
     - /etc/os-release:/host/etc/os-release:ro
     - /var/log:/host/var/log:ro
     - /var/run/docker.sock:/var/run/docker.sock:ro
+    - /home/lobsty/backups:/backups:ro
+    - /home/lobsty/apps:/host-apps:ro
   pihole:
     image: pihole/pihole:latest
     container_name: pihole
