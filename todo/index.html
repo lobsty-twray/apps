@@ -366,6 +366,53 @@ body {
   box-shadow: 0 8px 32px rgba(0,0,0,0.4); z-index: 100;
 }
 .todo-card.drag-over { border-top: 2px solid rgba(124,58,237,0.6); }
+
+/* Search bar */
+.search-bar {
+  position: relative; margin-bottom: 16px;
+}
+.search-bar input {
+  width: 100%; padding: 12px 80px 12px 40px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  color: var(--text-primary); font-size: 0.92rem; font-family: inherit;
+  outline: none; transition: var(--transition); -webkit-appearance: none;
+  min-height: 44px; box-sizing: border-box;
+}
+.search-bar input::placeholder { color: var(--text-muted); }
+.search-bar input:focus { border-color: rgba(124,58,237,0.4); box-shadow: 0 0 20px var(--accent-glow); }
+.search-bar .search-icon {
+  position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+  color: var(--text-muted); pointer-events: none; font-size: 0.9rem;
+}
+.search-bar .search-meta {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  display: flex; align-items: center; gap: 6px;
+}
+.search-bar .search-count {
+  font-size: 0.72rem; color: var(--text-muted); white-space: nowrap;
+}
+.search-bar .search-clear {
+  width: 28px; height: 28px; border: none; border-radius: 50%;
+  background: rgba(255,255,255,0.06); color: var(--text-muted);
+  cursor: pointer; display: none; align-items: center; justify-content: center;
+  font-size: 0.85rem; transition: var(--transition); touch-action: manipulation;
+}
+.search-bar .search-clear:hover { background: var(--danger-soft); color: var(--danger); }
+.search-bar .search-clear.show { display: flex; }
+.search-bar .search-kbd {
+  font-size: 0.65rem; color: var(--text-muted); border: 1px solid var(--glass-border);
+  border-radius: 4px; padding: 1px 5px; font-family: inherit; pointer-events: none;
+}
+.search-bar input:focus ~ .search-meta .search-kbd,
+.search-bar input:not(:placeholder-shown) ~ .search-meta .search-kbd { display: none; }
+.no-results {
+  text-align: center; padding: 40px 20px;
+  color: var(--text-muted); font-size: 0.9rem;
+}
+.no-results .no-results-icon { font-size: 2rem; margin-bottom: 8px; opacity: 0.5; }
 </style>
 </head>
 <body>
@@ -417,6 +464,16 @@ body {
   </div>
 
   <div class="filter-bar" id="filterBar"></div>
+  
+  <div class="search-bar">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="Search todos..." autocomplete="off">
+    <div class="search-meta">
+      <span class="search-count" id="searchCount"></span>
+      <button class="search-clear" id="searchClear" onclick="clearSearch()">✕</button>
+      <span class="search-kbd" id="searchKbd">/</span>
+    </div>
+  </div>
   <ul class="todo-list" id="list"></ul>
   <div class="empty-state" id="emptyState" style="display:none">
     <div class="empty-icon">✨</div>
@@ -766,6 +823,54 @@ function setupDrag() {
 
 const _baseRenderList = renderList;
 renderList = function() { _baseRenderList(); setupDrag(); };
+
+
+// Search
+let searchQuery = '';
+const searchInput = $('searchInput');
+searchInput.addEventListener('input', () => {
+  searchQuery = searchInput.value.trim().toLowerCase();
+  $('searchClear').classList.toggle('show', searchQuery.length > 0);
+  render();
+});
+function clearSearch() {
+  searchInput.value = ''; searchQuery = '';
+  $('searchClear').classList.remove('show');
+  render(); searchInput.focus();
+}
+document.addEventListener('keydown', e => {
+  if (e.key === '/' && document.activeElement !== input && document.activeElement !== searchInput && document.activeElement.tagName !== 'INPUT') {
+    e.preventDefault(); searchInput.focus();
+  }
+  if (e.key === 'Escape' && document.activeElement === searchInput) {
+    clearSearch(); searchInput.blur();
+  }
+});
+
+// Patch getFiltered to include search
+const _searchGetFiltered = getFiltered;
+getFiltered = function() {
+  let items = _searchGetFiltered();
+  if (searchQuery) items = items.filter(t => t.text.toLowerCase().includes(searchQuery));
+  return items;
+};
+
+// Patch renderList to show search count and no-results
+const _searchRenderList = renderList;
+renderList = function() {
+  _searchRenderList();
+  const filtered = getFiltered();
+  if (searchQuery) {
+    $('searchCount').textContent = filtered.length + ' result' + (filtered.length !== 1 ? 's' : '');
+    if (filtered.length === 0) {
+      $('emptyState').style.display = 'none';
+      const list = $('list');
+      list.innerHTML = '<div class="no-results"><div class="no-results-icon">🔎</div>No matching todos for &ldquo;' + esc(searchQuery) + '&rdquo;</div>';
+    }
+  } else {
+    $('searchCount').textContent = '';
+  }
+};
 
 render();
 </script>
