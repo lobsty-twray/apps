@@ -1058,6 +1058,28 @@
       .detail-actions { width: 100%; }
       .detail-actions .btn { flex: 1; }
 
+    /* ─── Preset Template Cards ─────────── */
+    .preset-templates { margin-top: 4px; }
+    .preset-templates-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .preset-cards { display: grid; grid-template-columns: 1fr; gap: 8px; }
+    @media(min-width:480px) { .preset-cards { grid-template-columns: 1fr 1fr; } }
+    .preset-card { background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: var(--radius-xs); padding: 12px 14px; cursor: pointer; transition: all var(--transition-fast); min-height: 44px; display: flex; flex-direction: column; gap: 2px; }
+    .preset-card:hover { background: var(--bg-glass-hover); border-color: var(--border-glass-hover); transform: translateY(-1px); }
+    .preset-card:active { background: var(--bg-glass-active); transform: scale(0.98); }
+    .preset-card-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+    .preset-card-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.4; }
+
+    /* ─── Preset Template Cards ─────────── */
+    .preset-templates { margin-top: 4px; }
+    .preset-templates-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .preset-cards { display: grid; grid-template-columns: 1fr; gap: 8px; }
+    @media(min-width:480px) { .preset-cards { grid-template-columns: 1fr 1fr; } }
+    .preset-card { background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: var(--radius-xs); padding: 12px 14px; cursor: pointer; transition: all var(--transition-fast); min-height: 44px; display: flex; flex-direction: column; gap: 2px; }
+    .preset-card:hover { background: var(--bg-glass-hover); border-color: var(--border-glass-hover); transform: translateY(-1px); }
+    .preset-card:active { background: var(--bg-glass-active); transform: scale(0.98); }
+    .preset-card-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+    .preset-card-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.4; }
+
       .modal { margin: 10px; border-radius: var(--radius-sm); }
       .modal-overlay { padding: 20px 10px; }
 
@@ -1462,7 +1484,7 @@
       <div style="display:flex;gap:10px">
         <div class="form-group" style="flex:1">
           <label>Type *</label>
-          <select id="draftTypeInput">
+          <select id="draftTypeInput" onchange="showPresetTemplates()">
             <option value="email">&#9993; Email</option>
             <option value="todo">&#9744; Todo</option>
             <option value="idea">&#128161; Idea</option>
@@ -1479,6 +1501,14 @@
             <option value="urgent">&#128293; Urgent</option>
           </select>
         </div>
+      </div>
+      <div class="form-group" id="presetTemplatesGroup" style="display:none">
+        <label>Quick Templates</label>
+        <div class="preset-templates" id="presetCardsContainer"></div>
+      </div>
+      <div class="form-group" id="presetTemplatesGroup" style="display:none">
+        <label>Quick Templates</label>
+        <div class="preset-templates" id="presetCardsContainer"></div>
       </div>
       <div class="form-group">
         <label>Category</label>
@@ -1513,6 +1543,10 @@
       <div class="form-group">
         <label>Template Name *</label>
         <input type="text" id="templateTitleInput" placeholder="e.g. Video Description, Sponsor Email">
+      </div>
+      <div class="form-group" id="presetTemplatesGroup" style="display:none">
+        <label>Quick Templates</label>
+        <div class="preset-templates" id="presetCardsContainer"></div>
       </div>
       <div class="form-group">
         <label>Category</label>
@@ -2010,6 +2044,55 @@ async function addComment() {
 }
 
 // ─── Create/Edit Modal ───────────────────────────────────────────────────────
+/* ─── Preset Draft Templates ─────────── */
+const PRESET_DRAFT_TEMPLATES = {
+  email: [
+    { name: "Sponsor Outreach", desc: "Professional sponsor pitch email", title: "Sponsor Outreach: [Brand Name]", content: "Hi [Name],\n\nI'm reaching out because I've been a longtime fan of [Brand/Product] and I think there's a great opportunity for us to collaborate.\n\n## About My Channel\n- Audience: [size and demographics]\n- Niche: [your niche]\n- Average views: [number]\n\n## Proposal\nI'd love to create a [type of content] featuring [product/service]. Here's what I have in mind:\n\n1. [Content idea 1]\n2. [Content idea 2]\n\n## Deliverables\n- [What you'll provide]\n- [Timeline]\n\nI'd be happy to share my media kit and discuss rates. Looking forward to hearing from you!\n\nBest regards,\n[Your Name]" },
+    { name: "Product Review Follow-up", desc: "Follow-up after receiving a review unit", title: "Follow-up: [Product] Review", content: "Hi [Name],\n\nThank you for sending over the [Product]! I wanted to give you a quick update on the review timeline.\n\n## Status\n- Received: [date]\n- Testing period: [dates]\n- Expected publish date: [date]\n\n## Initial Impressions\n- [First impression 1]\n- [First impression 2]\n\n## Questions\n- [Any questions about the product]\n- [Anything you need clarified]\n\nI'll share the draft/preview before publishing. Let me know if you have any preferences!\n\nBest,\n[Your Name]" },
+    { name: "Collaboration Proposal", desc: "Proposing a collab with another creator", title: "Collab Proposal: [Creator Name] x [Your Name]", content: "Hey [Creator Name]!\n\nI've been watching your content on [topic] and I think we'd make a great collab. Here's my idea:\n\n## Concept\n[Describe the collab idea]\n\n## Format\n- Type: [video/livestream/podcast]\n- Length: [estimated duration]\n- Platform: [where it'll go live]\n\n## Why This Works\n- Our audiences overlap in [area]\n- Combined reach: [numbers]\n- Fresh angle: [what makes it unique]\n\n## Logistics\n- Timeline: [when you'd like to do it]\n- Remote or in-person: [preference]\n- Editing: [who handles what]\n\nLet me know if you're interested!\n[Your Name]" }
+  ],
+  script: [
+    { name: "Tech Review Script", desc: "Intro/specs/hands-on/verdict structure", title: "Review: [Product Name]", content: "## INTRO (0:00-0:30)\n- Hook: [One compelling statement about the product]\n- \"Today we're looking at [product] and answering [key question]\"\n\n## SPECS & OVERVIEW (0:30-2:00)\n- What it is: [brief description]\n- Price: $[price]\n- Key specs:\n  - [Spec 1]\n  - [Spec 2]\n  - [Spec 3]\n- What's in the box: [contents]\n\n## HANDS-ON / TESTING (2:00-6:00)\n- Build quality & design: [notes]\n- Feature 1: [test and results]\n- Feature 2: [test and results]\n- Feature 3: [test and results]\n- Real-world usage: [daily driver experience]\n\n## PROS & CONS (6:00-7:00)\n### Pros\n- [Pro 1]\n- [Pro 2]\n- [Pro 3]\n\n### Cons\n- [Con 1]\n- [Con 2]\n\n## VERDICT (7:00-8:00)\n- Who is this for: [target audience]\n- Compared to alternatives: [brief comparison]\n- Rating: [X/10]\n- \"If you [scenario], this is [recommendation]\"\n\n## OUTRO\n- CTA: Like, subscribe, links in description\n- Next video tease: [upcoming content]" },
+    { name: "Comparison Video", desc: "Side-by-side product comparison outline", title: "[Product A] vs [Product B]", content: "## INTRO (0:00-0:30)\n- Hook: \"[Product A] or [Product B]? Let's settle this.\"\n- Quick context on why this comparison matters\n\n## OVERVIEW (0:30-1:30)\n| | Product A | Product B |\n|---|---|---|\n| Price | $ | $ |\n| Key Feature | | |\n| Target User | | |\n\n## ROUND 1: DESIGN & BUILD (1:30-3:00)\n- Product A: [notes]\n- Product B: [notes]\n- Winner: [which and why]\n\n## ROUND 2: PERFORMANCE (3:00-5:00)\n- Product A: [benchmarks/tests]\n- Product B: [benchmarks/tests]\n- Winner: [which and why]\n\n## ROUND 3: FEATURES (5:00-7:00)\n- Product A unique features: [list]\n- Product B unique features: [list]\n- Winner: [which and why]\n\n## ROUND 4: VALUE (7:00-8:00)\n- Price-to-performance analysis\n- Long-term value consideration\n- Winner: [which and why]\n\n## FINAL VERDICT (8:00-9:00)\n- Overall winner: [choice]\n- Buy Product A if: [scenario]\n- Buy Product B if: [scenario]\n\n## OUTRO\n- Links and deals in description\n- \"What would YOU pick? Comment below\"" },
+    { name: "Unboxing Script", desc: "First impressions and unboxing flow", title: "Unboxing: [Product Name]", content: "## INTRO (0:00-0:20)\n- Hook: \"[Product] just arrived and I can't wait to crack this open\"\n- Brief context: what it is, why you're excited\n\n## THE BOX (0:20-1:00)\n- Packaging impressions: [premium/minimal/eco-friendly]\n- Box art and branding: [notes]\n- Size comparison: [reference object]\n\n## UNBOXING (1:00-3:00)\n- First layer: [what you see]\n- Accessories included:\n  - [Item 1]\n  - [Item 2]\n  - [Item 3]\n- Documentation: [quick start guide, warranty, etc.]\n\n## FIRST IMPRESSIONS (3:00-5:00)\n- In-hand feel: [weight, texture, build]\n- Design standouts: [what catches your eye]\n- Initial setup: [how easy/complex]\n- First power-on: [boot experience]\n\n## QUICK THOUGHTS (5:00-6:00)\n- Most excited about: [feature]\n- Concerned about: [potential issue]\n- First thing I'm testing: [plan]\n\n## OUTRO\n- Full review coming in [timeframe]\n- \"What do you want me to test first?\"\n- Subscribe for the full review" }
+  ],
+  idea: [
+    { name: "Video Concept", desc: "Title, hook, target audience, key points", title: "[Video Idea Title]", content: "## Video Concept\n\n**Working Title:** [Your catchy title]\n\n**Hook (first 5 seconds):**\n[What grabs attention immediately]\n\n**Target Audience:**\n- Primary: [who]\n- Why they'd click: [reason]\n- Search intent: [what they're looking for]\n\n**Key Points to Cover:**\n1. [Main point 1]\n2. [Main point 2]\n3. [Main point 3]\n4. [Main point 4]\n\n**Unique Angle:**\n[What makes YOUR take different]\n\n**Thumbnail Concept:**\n- Visual: [describe the image]\n- Text: [2-4 words max]\n- Emotion: [what feeling to convey]\n\n**Estimated Length:** [minutes]\n**Effort Level:** [low/medium/high]\n**Timeliness:** [evergreen / trending / time-sensitive]" },
+    { name: "Series Concept", desc: "Multi-part series outline", title: "[Series Name] — Series Outline", content: "## Series Concept\n\n**Series Title:** [Name]\n**Tagline:** [One-line description]\n**Number of Episodes:** [planned count]\n**Release Cadence:** [weekly/biweekly]\n\n**Series Goal:**\n[What viewers will learn/experience by the end]\n\n**Target Audience:**\n[Who this series is for]\n\n## Episode Outline\n\n### Episode 1: [Title]\n- Focus: [main topic]\n- Key takeaway: [what viewer learns]\n\n### Episode 2: [Title]\n- Focus: [main topic]\n- Key takeaway: [what viewer learns]\n\n### Episode 3: [Title]\n- Focus: [main topic]\n- Key takeaway: [what viewer learns]\n\n### Episode 4: [Title]\n- Focus: [main topic]\n- Key takeaway: [what viewer learns]\n\n## Production Notes\n- Recurring elements: [intro style, segments, catchphrases]\n- Set/location needs: [where to film]\n- Props/gear needed: [list]\n- Collaboration opportunities: [potential guests]" }
+  ],
+  note: [
+    { name: "Meeting Notes", desc: "Date, attendees, action items", title: "Meeting Notes: [Topic] — [Date]", content: "## Meeting Notes\n\n**Date:** [YYYY-MM-DD]\n**Time:** [start] - [end]\n**Location/Call:** [where]\n\n## Attendees\n- [Name 1] — [Role]\n- [Name 2] — [Role]\n- [Name 3] — [Role]\n\n## Agenda\n1. [Topic 1]\n2. [Topic 2]\n3. [Topic 3]\n\n## Discussion Notes\n\n### [Topic 1]\n- [Key point]\n- [Key point]\n- Decision: [what was decided]\n\n### [Topic 2]\n- [Key point]\n- [Key point]\n- Decision: [what was decided]\n\n## Action Items\n- [ ] [Task 1] — Owner: [Name] — Due: [Date]\n- [ ] [Task 2] — Owner: [Name] — Due: [Date]\n- [ ] [Task 3] — Owner: [Name] — Due: [Date]\n\n## Next Meeting\n- Date: [when]\n- Topics to follow up: [list]" },
+    { name: "Research Notes", desc: "Topic, sources, key findings", title: "Research: [Topic]", content: "## Research Notes\n\n**Topic:** [What you're researching]\n**Date:** [YYYY-MM-DD]\n**Purpose:** [Why — for a video, article, decision, etc.]\n\n## Key Questions\n1. [Question 1]\n2. [Question 2]\n3. [Question 3]\n\n## Sources\n1. [Source name] — [URL/reference]\n   - Key finding: [summary]\n2. [Source name] — [URL/reference]\n   - Key finding: [summary]\n3. [Source name] — [URL/reference]\n   - Key finding: [summary]\n\n## Key Findings\n- [Finding 1]\n- [Finding 2]\n- [Finding 3]\n\n## Data & Stats\n- [Stat 1]: [number/fact]\n- [Stat 2]: [number/fact]\n\n## Conclusions\n[Summary of what you learned and how it applies]\n\n## Next Steps\n- [ ] [Follow-up action 1]\n- [ ] [Follow-up action 2]" }
+  ],
+  todo: [
+    { name: "Video Production Checklist", desc: "Filming, editing, thumbnail, upload steps", title: "Production: [Video Title]", content: "## Video Production Checklist\n\n**Video:** [Title]\n**Target Publish Date:** [Date]\n\n### Pre-Production\n- [ ] Script/outline complete\n- [ ] Thumbnail concept designed\n- [ ] B-roll list prepared\n- [ ] Equipment charged & ready\n- [ ] Location/set prepared\n- [ ] Props gathered\n\n### Filming\n- [ ] A-roll (talking head) recorded\n- [ ] B-roll footage captured\n- [ ] Screen recordings done\n- [ ] Audio levels checked\n- [ ] Backup footage verified\n\n### Editing\n- [ ] Rough cut assembled\n- [ ] B-roll inserted\n- [ ] Color grading applied\n- [ ] Audio cleaned & balanced\n- [ ] Music & sound effects added\n- [ ] Transitions & effects\n- [ ] Captions/subtitles added\n- [ ] Final review & export\n\n### Thumbnail & Metadata\n- [ ] Thumbnail created (1280x720)\n- [ ] Title finalized (under 60 chars)\n- [ ] Description written with links\n- [ ] Tags added\n- [ ] End screen & cards configured\n\n### Publishing\n- [ ] Upload to platform\n- [ ] Schedule publish time\n- [ ] Community post / teaser\n- [ ] Share on social media\n- [ ] Pin comment with links\n- [ ] Monitor initial engagement" }
+  ]
+};
+
+function showPresetTemplates() {
+  const type = document.getElementById('draftTypeInput').value;
+  const container = document.getElementById('presetCardsContainer');
+  const group = document.getElementById('presetTemplatesGroup');
+  const templates = PRESET_DRAFT_TEMPLATES[type];
+  if (!templates || templates.length === 0 || editingDraftId) { group.style.display = 'none'; return; }
+  group.style.display = '';
+  container.innerHTML = '<div class="preset-cards">' + templates.map((t, i) =>
+    '<div class="preset-card" onclick="applyPresetTemplate(\'' + type + '\',' + i + ')">' +
+      '<div class="preset-card-name">' + t.name + '</div>' +
+      '<div class="preset-card-desc">' + t.desc + '</div>' +
+    '</div>'
+  ).join('') + '</div>';
+}
+
+function applyPresetTemplate(type, index) {
+  const t = PRESET_DRAFT_TEMPLATES[type][index];
+  if (!t) return;
+  document.getElementById('draftTitleInput').value = t.title;
+  document.getElementById('draftContentInput').value = t.content;
+  document.getElementById('presetTemplatesGroup').style.display = 'none';
+  showToast('Template applied \u2014 customize the placeholders');
+}
+
 function openCreateModal() {
   editingDraftId = null;
   document.getElementById('modalTitle').textContent = 'New Draft';
@@ -2024,6 +2107,7 @@ function openCreateModal() {
   document.getElementById('templatePicker').value = '';
   loadTemplatePicker();
   document.getElementById('draftModal').classList.add('open');
+  showPresetTemplates();
 }
 
 async function openEditModal(id) {
