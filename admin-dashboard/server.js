@@ -7,6 +7,7 @@ const os = require('os');
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const { Pool } = require('pg');
 
 const app = express();
 app.use(express.static("public"));
@@ -123,6 +124,53 @@ app.get('/api/recent-deploys', requireAuth, (req, res) => {
     });
     res.json(commits);
   } catch (e) { res.json([]); }
+});
+
+
+// PostgreSQL health endpoint
+const pgPool = new Pool({
+  connectionString: 'postgresql://lobsty:lobsty2026@172.17.0.1:5432/lobsty_main',
+  max: 3,
+  connectionTimeoutMillis: 5000,
+  idleTimeoutMillis: 10000,
+});
+
+app.get('/api/db-health', requireAuth, async (req, res) => {
+  let client;
+  try {
+    client = await pgPool.connect();
+    const [dbRes, connRes, maxRes, verRes, uptimeRes] = await Promise.all([
+      client.query("SELECT datname as name, pg_database_size(datname) as size_bytes FROM pg_database WHERE datistemplate = false ORDER BY size_bytes DESC"),
+      client.query("SELECT state, count(*)::int as count FROM pg_stat_activity GROUP BY state"),
+      client.query("SELECT setting::int as max FROM pg_settings WHERE name = 'max_connections'"),
+      client.query("SELECT version()"),
+      client.query("SELECT pg_postmaster_start_time() as start_time"),
+    ]);
+    const databases = dbRes.rows.map(r => ({
+      name: r.name,
+      sizeMB: Math.round(parseInt(r.size_bytes) / 1048576 * 10) / 10,
+    }));
+    const connMap = {};
+    connRes.rows.forEach(r => { connMap[r.state || 'null'] = r.count; });
+    const active = connMap.active || 0;
+    const idle = connMap.idle || 0;
+    const total = connRes.rows.reduce((s, r) => s + r.count, 0);
+    const maxConnections = maxRes.rows[0].max;
+    const verFull = verRes.rows[0].version;
+    const verMatch = verFull.match(/PostgreSQL ([\d.]+)/);
+    const version = verMatch ? 'PostgreSQL ' + verMatch[1] : verFull.split(',')[0];
+    const startTime = new Date(uptimeRes.rows[0].start_time);
+    const uptimeMs = Date.now() - startTime.getTime();
+    const days = Math.floor(uptimeMs / 86400000);
+    const hours = Math.floor((uptimeMs % 86400000) / 3600000);
+    const mins = Math.floor((uptimeMs % 3600000) / 60000);
+    const uptime = days > 0 ? days + 'd ' + hours + 'h ' + mins + 'm' : hours + 'h ' + mins + 'm';
+    res.json({ databases, connections: { active, idle, total, maxConnections }, version, uptime });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  } finally {
+    if (client) client.release();
+  }
 });
 
 const APPS = [
@@ -369,6 +417,10 @@ main{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:1rem;pad
         <h3><span class="icon">🚀</span> Recent Deploys</h3>
         <div id="deploy-health"><div class="health-loading">Loading…</div></div>
       </div>
+      <div class="health-card" style="animation-delay:.25s">
+        <h3><span class="icon">🗄️</span> Database Health</h3>
+        <div id="db-health"><div class="health-loading">Loading…</div></div>
+      </div>
     </div>
   </div>
 
@@ -478,6 +530,24 @@ function loadDeploys() {
   }).catch(()=>{ document.getElementById('deploy-health').innerHTML='<div class="health-loading">Failed to load</div>'; });
 }
 
+
+function loadDbHealth() {
+  fetch('/api/db-health').then(r=>r.json()).then(d=>{
+    if(d.error){ document.getElementById('db-health').innerHTML='<div class="health-loading">'+d.error+'</div>'; return; }
+    let html = '';
+    html += '<div class="health-row"><span class="health-label">Version</span><span class="health-value">'+d.version+'</span></div>';
+    html += '<div class="health-row"><span class="health-label">Uptime</span><span class="health-value">'+d.uptime+'</span></div>';
+    const connPct = Math.round((d.connections.active + d.connections.idle) / d.connections.maxConnections * 100);
+    html += '<div class="progress-wrap"><div class="progress-label"><span>Connections '+d.connections.active+' active / '+d.connections.idle+' idle / '+d.connections.total+' total</span><span>'+connPct+'%</span></div><div class="progress-bar"><div class="progress-fill '+colorClass(connPct)+'" style="width:'+connPct+'%"></div></div></div>';
+    html += '<div style="margin-top:.5rem;font-size:.75rem;color:var(--dim);font-weight:600;margin-bottom:.4rem">Databases</div>';
+    d.databases.forEach(function(db){
+      const size = db.sizeMB >= 1024 ? (db.sizeMB/1024).toFixed(1)+' GB' : db.sizeMB.toFixed(1)+' MB';
+      html += '<div class="health-row"><span class="health-label">'+db.name+'</span><span class="health-value">'+size+'</span></div>';
+    });
+    document.getElementById('db-health').innerHTML = html;
+  }).catch(()=>{ document.getElementById('db-health').innerHTML='<div class="health-loading">Failed to load</div>'; });
+}
+
 // Container list (existing)
 fetch('/api/containers').then(r=>r.json()).then(data=>{
   document.getElementById('containers-loading').style.display='none';
@@ -501,7 +571,7 @@ fetch('/api/containers').then(r=>r.json()).then(data=>{
 }).catch(()=>{document.getElementById('containers-loading').textContent='Could not connect to Docker';});
 
 // Load health panels
-loadSystem(); loadContainerHealth(); loadBackup(); loadDeploys();
+loadSystem(); loadContainerHealth(); loadBackup(); loadDeploys(); loadDbHealth();
 setInterval(()=>{ loadSystem(); loadContainerHealth(); }, 30000);
 
 // Logs modal
