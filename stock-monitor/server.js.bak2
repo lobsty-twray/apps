@@ -541,15 +541,12 @@ async function scrapeSamsung(product) {
       const body = document.body.innerText;
       const buttons = [...document.querySelectorAll('button, a')];
       const texts = buttons.map(b => b.textContent.trim().toLowerCase());
-      const hasAdd = texts.some(t => t.includes('add to cart') || t.includes('buy now'));
+      const hasAdd = texts.some(t => t.includes('add to cart') || t.includes('buy now') || t.includes('pre-order'));
       const hasSold = texts.some(t => t.includes('sold out') || t.includes('out of stock'));
       const hasNotify = texts.some(t => t.includes('notify me'));
       
       let status = 'out_of_stock';
-      const hasSignUp = texts.some(t => t.includes('sign up'));
-      const hasInStore = body.toLowerCase().includes('experience store') || body.toLowerCase().includes('pre-order') && body.toLowerCase().includes('in person');
       if (hasAdd && !hasSold) status = 'in_stock';
-      else if (hasSignUp || hasInStore) status = 'not_available_online';
       else if (hasNotify) status = 'notify_me';
       else if (hasSold) status = 'sold_out';
 
@@ -639,36 +636,24 @@ async function scrapeGeneric(product) {
 
 // --- Alert Logic ---
 async function checkAlerts(product, result) {
-  const changed = product.last_status && product.last_status !== result.status && result.status !== 'error';
-
-  // IN STOCK alert (status changed to in_stock)
   if (result.inStock && product.last_status !== 'in_stock') {
     sendProductAlert(product,
       `🚨 ${product.name} IN STOCK!`,
       `Price: ${result.priceText}\nBuy now before it sells out!`
     );
   }
-
-  // Price drop alert - only on status change to avoid spam
-  if (changed && result.price > 0 && product.last_price > 0 && result.price < product.last_price) {
+  if (result.price > 0 && product.target_price > 0 && result.price <= product.target_price) {
     sendProductAlert(product,
       `💰 ${product.name} PRICE DROP!`,
-      `Price: ${result.priceText} (was $${product.last_price.toLocaleString()})`
+      `Price: ${result.priceText} (Target: $${product.target_price.toLocaleString()})`
     );
   }
-
-  // Status change alert (e.g. not_available_online -> in_stock, or any meaningful change)
-  if (changed && !result.inStock) {
-    console.log(`[Status Change] ${product.name}: ${product.last_status} -> ${result.status}`);
-    sendProductAlert(product,
-      `📢 ${product.name} Status Changed!`,
-      `${product.last_status} → ${result.status}\nCheck it out: ${product.url}`
-    );
-  }
-
+  if (product.last_status && product.last_status !== result.status && result.status !== 'error' && result.status !== 'in_stock') {
   // Trigger auto-buy if in stock
   if (result.inStock) {
     checkAndTriggerAutoBuy(pool, product).catch(e => console.error("[autobuy] trigger error:", e.message));
+  }
+    console.log(`[Status Change] ${product.name}: ${product.last_status} -> ${result.status}`);
   }
 }
 

@@ -80,6 +80,9 @@ class LobstyBoard {
             this.switchView('archive');
         });
         document.getElementById('archive-back-btn').addEventListener('click', () => this.switchView('board'));
+        document.getElementById('show-stats-btn').addEventListener('click', () => { this.closeSidebar(); this.showStats(); });
+        document.getElementById('stats-modal-close').addEventListener('click', () => this.closeStatsModal());
+        document.getElementById('stats-modal').querySelector('.modal-backdrop').addEventListener('click', () => this.closeStatsModal());
 
         // Calendar nav
         document.getElementById('cal-prev').addEventListener('click', () => this.calNav(-1));
@@ -886,7 +889,87 @@ class LobstyBoard {
         return div.innerHTML;
     }
 
+    // ── Stats ──
+    async showStats() {
+        const modal = document.getElementById('stats-modal');
+        const body = document.getElementById('stats-body');
+        modal.style.display = 'flex';
+        requestAnimationFrame(() => modal.classList.add('active'));
+        body.innerHTML = '<div class="stats-loading">Loading stats...</div>';
+
+        try {
+            const res = await fetch('/api/stats');
+            const data = await res.json();
+            this.renderStats(data, body);
+        } catch (e) {
+            body.innerHTML = '<div class="stats-loading">Failed to load stats.</div>';
+        }
+    }
+
+    renderStats(data, container) {
+        const { overview, projects } = data;
+        const diff = overview.completedThisWeek - overview.completedLastWeek;
+        const diffClass = diff > 0 ? 'positive' : diff < 0 ? 'negative' : 'neutral';
+        const diffText = diff > 0 ? `+${diff} vs last week` : diff < 0 ? `${diff} vs last week` : 'same as last week';
+
+        const statusColors = { backlog: '#94a3b8', todo: '#60a5fa', 'in-progress': '#fbbf24', review: '#a78bfa', done: '#34d399' };
+        const statusLabels = { backlog: 'Backlog', todo: 'To Do', 'in-progress': 'In Progress', review: 'Review', done: 'Done' };
+        const totalByStatus = Object.values(overview.byStatus).reduce((a, b) => a + b, 0) || 1;
+
+        let statusBarHtml = '';
+        let legendHtml = '';
+        for (const [s, c] of Object.entries(overview.byStatus)) {
+            if (c === 0) continue;
+            const pct = (c / totalByStatus * 100).toFixed(1);
+            statusBarHtml += `<div class="status-bar-segment" style="width:${pct}%;background:${statusColors[s]||'#666'}" title="${statusLabels[s]||s}: ${c}">${c}</div>`;
+            legendHtml += `<span style="--dot-color:${statusColors[s]||'#666'}"><span style="background:${statusColors[s]||'#666'};width:10px;height:10px;border-radius:50%;display:inline-block"></span> ${statusLabels[s]||s} (${c})</span>`;
+        }
+
+        let projectsHtml = '';
+        projects.forEach(p => {
+            const pct = p.total > 0 ? (p.done / p.total * 100).toFixed(0) : 0;
+            const overdueTag = p.overdue > 0 ? ` · <span style="color:var(--red,#f87171)">${p.overdue} overdue</span>` : '';
+            projectsHtml += `
+                <div class="project-stat">
+                    <div class="project-stat-header">
+                        <div class="project-stat-name"><span class="dot" style="background:${p.color}"></span>${p.name}</div>
+                        <div class="project-stat-counts">${p.done}/${p.total} done · ${p.inProgress} active${overdueTag}</div>
+                    </div>
+                    <div class="project-stat-bar"><div class="project-stat-bar-fill" style="width:${pct}%;background:${p.color}"></div></div>
+                </div>`;
+        });
+
+        let priorityHtml = '';
+        for (const [p, c] of Object.entries(overview.byPriority)) {
+            priorityHtml += `<span class="priority-pill ${p}">${p}: ${c}</span>`;
+        }
+
+        container.innerHTML = `
+            <div class="stats-cards">
+                <div class="stat-card"><div class="stat-value">${overview.totalTasks}</div><div class="stat-label">Active Tasks</div></div>
+                <div class="stat-card"><div class="stat-value">${overview.completedThisWeek}</div><div class="stat-label">Done This Week</div><div class="stat-sub ${diffClass}">${diffText}</div></div>
+                <div class="stat-card ${overview.overdueTasks > 0 ? 'danger' : ''}"><div class="stat-value">${overview.overdueTasks}</div><div class="stat-label">Overdue</div></div>
+                <div class="stat-card"><div class="stat-value">${overview.averageCompletionDays}d</div><div class="stat-label">Avg Completion</div></div>
+            </div>
+            <div class="stats-section">
+                <h4>Status Distribution</h4>
+                <div class="status-bar">${statusBarHtml}</div>
+                <div class="status-bar-legend">${legendHtml}</div>
+            </div>
+            ${projects.length ? `<div class="stats-section"><h4>Project Progress</h4>${projectsHtml}</div>` : ''}
+            ${priorityHtml ? `<div class="stats-section"><h4>Priority Breakdown</h4><div class="priority-pills">${priorityHtml}</div></div>` : ''}
+        `;
+    }
+
+    closeStatsModal() {
+        const modal = document.getElementById('stats-modal');
+        modal.classList.remove('active');
+        setTimeout(() => { modal.style.display = 'none'; }, 200);
+    }
+
     showError(message) { this.showToast(message, true); }
 }
+
+
 
 document.addEventListener('DOMContentLoaded', () => { new LobstyBoard(); });

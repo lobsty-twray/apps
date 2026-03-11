@@ -393,6 +393,7 @@ main{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:1rem;pad
   <div class="user-area">
     \${user.photo ? \`<img src="\${user.photo}" alt="">\` : ''}
     <span class="name">\${user.name}</span>
+    <a href="/status" class="logout">Status</a>
     <a href="/logout" class="logout">Logout</a>
   </div>
 </header>
@@ -617,4 +618,133 @@ function restartContainer(name, btn) {
 </html>`);
 });
 
-app.listen(3000, () => console.log('Admin dashboard running on :3000'));
+
+// ============ APP STATUS PAGE ============
+const axios = require("axios");
+
+const STATUS_APPS = [
+  { name: "Todo", port: 8090 },
+  { name: "Board", port: 8091 },
+  { name: "Budget", port: 8092 },
+  { name: "Docs", port: 8093 },
+  { name: "Drafts", port: 8094 },
+  { name: "Shop", port: 8096 },
+  { name: "Video Pipeline", port: 8097 },
+  { name: "Monitor", port: 8098 },
+  { name: "YouTube Studio", port: 8099 },
+  { name: "Hardware Monitor", port: 8100 },
+  { name: "Gear Inventory", port: 8101 },
+  { name: "Benchmark Tracker", port: 8103 },
+  { name: "Script Writer", port: 8104 },
+  { name: "Sponsor Manager", port: 8105 },
+  { name: "Content Ideas", port: 8106 },
+  { name: "Gaming Logger", port: 8107 },
+  { name: "Thumbnail Analyzer", port: 8108 },
+  { name: "Stream Planner", port: 8109 },
+  { name: "App Hub", port: 8110 },
+  { name: "Landing Page", port: 8111 },
+  { name: "Admin", port: 8112 },
+  { name: "AI", port: 8113 },
+];
+
+app.get("/api/app-status", requireAuth, async (req, res) => {
+  const results = await Promise.all(STATUS_APPS.map(async (app) => {
+    const start = Date.now();
+    try {
+      const r = await axios.get(`http://host.docker.internal:${app.port}/`, { timeout: 3000, validateStatus: () => true });
+      return { name: app.name, port: app.port, up: true, status: r.status, ms: Date.now() - start };
+    } catch {
+      return { name: app.name, port: app.port, up: false, status: 0, ms: Date.now() - start };
+    }
+  }));
+  res.json({ apps: results, checked: new Date().toISOString() });
+});
+
+app.get("/status", requireAuth, (req, res) => {
+  const user = req.user;
+  res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="stylesheet" href="http://shared-assets:3000/design-tokens.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>System Status - Admin</title>
+<link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Inter",-apple-system,sans-serif;background:var(--bg,#0a0a0f);color:var(--text,#e8e8f0);min-height:100vh}
+.bg-orbs{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.12;animation:drift 25s ease-in-out infinite}
+.orb:nth-child(1){width:350px;height:350px;background:#7c3aed;top:-80px;right:-80px}
+.orb:nth-child(2){width:300px;height:300px;background:#2563eb;bottom:-60px;left:-60px;animation-delay:-10s}
+@keyframes drift{0%,100%{transform:translate(0,0)}50%{transform:translate(30px,-20px)}}
+header{position:sticky;top:0;z-index:10;background:rgba(10,10,15,0.8);backdrop-filter:blur(20px);border-bottom:1px solid var(--glass-border,rgba(255,255,255,0.08));padding:.75rem 1rem;display:flex;justify-content:space-between;align-items:center}
+header h1{font-size:1.1rem;font-weight:700;background:linear-gradient(135deg,#7c3aed,#2563eb);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-links{display:flex;gap:.5rem;align-items:center}
+.nav-links a{color:var(--dim,#888899);text-decoration:none;padding:8px 14px;border:1px solid var(--glass-border,rgba(255,255,255,0.08));border-radius:10px;font-size:.8rem;font-weight:500;min-height:44px;display:flex;align-items:center;transition:all .3s;backdrop-filter:blur(10px)}
+.nav-links a:hover,.nav-links a.active{color:#fff;border-color:#7c3aed;background:rgba(124,58,237,0.15)}
+main{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:1rem;padding-bottom:calc(1rem + env(safe-area-inset-bottom,0px))}
+.summary{background:var(--glass,rgba(255,255,255,0.05));border:1px solid var(--glass-border,rgba(255,255,255,0.08));border-radius:16px;padding:1.25rem;backdrop-filter:blur(20px);margin-bottom:1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem}
+.summary-count{font-size:1.8rem;font-weight:800;background:linear-gradient(135deg,#7c3aed,#2563eb);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.summary-label{font-size:.85rem;color:var(--dim,#888899)}
+.summary-time{font-size:.75rem;color:var(--dim,#888899)}
+.status-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem}
+.scard{background:var(--glass,rgba(255,255,255,0.05));border:1px solid var(--glass-border,rgba(255,255,255,0.08));border-radius:14px;padding:1rem;backdrop-filter:blur(20px);transition:all .3s;animation:fadeUp .5s ease both}
+.scard:hover{border-color:rgba(124,58,237,0.3);box-shadow:0 4px 20px rgba(124,58,237,0.1);transform:translateY(-2px)}
+.scard-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem}
+.scard-name{font-weight:700;font-size:.85rem}
+.scard-port{color:var(--dim,#888899);font-size:.7rem;font-family:monospace}
+.dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.dot.up{background:#34d399;box-shadow:0 0 8px rgba(52,211,153,0.5)}
+.dot.down{background:#f87171;box-shadow:0 0 8px rgba(248,113,113,0.5)}
+.scard-meta{display:flex;justify-content:space-between;font-size:.7rem;color:var(--dim,#888899)}
+.scard-ms{font-variant-numeric:tabular-nums}
+.scard-http{font-family:monospace}
+@keyframes fadeUp{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+@media(min-width:480px){.status-grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:768px){.status-grid{grid-template-columns:repeat(4,1fr);gap:1rem}main{padding:1.5rem}header h1{font-size:1.3rem}}
+@media(min-width:1024px){.status-grid{grid-template-columns:repeat(5,1fr)}main{padding:2rem}}
+@media(min-width:1280px){.status-grid{grid-template-columns:repeat(6,1fr)}}
+#loading{text-align:center;color:var(--dim,#888);padding:3rem;font-size:.9rem}
+</style>
+</head>
+<body>
+<div class="bg-orbs"><div class="orb"></div><div class="orb"></div></div>
+<header>
+  <h1>📡 System Status</h1>
+  <div class="nav-links">
+    <a href="/">Dashboard</a>
+    <a href="/status" class="active">Status</a>
+    <a href="/logout">Logout</a>
+  </div>
+</header>
+<main>
+  <div class="summary">
+    <div><div class="summary-count" id="count">—</div><div class="summary-label">services online</div></div>
+    <div class="summary-time" id="checked">Checking...</div>
+  </div>
+  <div id="loading">Loading status...</div>
+  <div class="status-grid" id="grid" style="display:none"></div>
+</main>
+<script>
+function load(){
+  fetch("/api/app-status").then(r=>r.json()).then(d=>{
+    const up=d.apps.filter(a=>a.up).length;
+    document.getElementById("count").textContent=up+"/"+d.apps.length;
+    document.getElementById("checked").textContent="Last checked: "+new Date(d.checked).toLocaleTimeString();
+    document.getElementById("loading").style.display="none";
+    const g=document.getElementById("grid");g.style.display="grid";
+    g.innerHTML=d.apps.map((a,i)=>{
+      return '<div class="scard" style="animation-delay:'+(i*0.03).toFixed(2)+'s"><div class="scard-top"><div><div class="scard-name">'+a.name+'</div><div class="scard-port">:'+a.port+'</div></div><div class="dot '+(a.up?"up":"down")+'"></div></div><div class="scard-meta"><span class="scard-ms">'+a.ms+'ms</span><span class="scard-http">'+(a.up?"HTTP "+a.status:"DOWN")+'</span></div></div>';
+    }).join("");
+  }).catch(()=>{document.getElementById("loading").textContent="Failed to load status";});
+}
+load();
+setInterval(load,30000);
+</script>
+</body>
+</html>`);
+});
+
+app.listen(3000, () => console.log("Admin dashboard running on :3000"));

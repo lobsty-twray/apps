@@ -50,6 +50,9 @@ class BudgetApp {
 
         document.getElementById('categoryFilter').addEventListener('change', () => this.loadTransactions());
 
+        // Export CSV
+        document.getElementById('exportCsv').addEventListener('click', () => this.exportCsv());
+
         // Type toggle in transaction modal
         document.querySelectorAll('.type-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -228,6 +231,7 @@ class BudgetApp {
         this.transactions = await res.json();
         this.renderTransactions();
         this.updateCategoryFilter();
+        this.loadSummary();
     }
 
     renderTransactions() {
@@ -540,6 +544,33 @@ class BudgetApp {
         if (!confirm('Delete this budget?')) return;
         const res = await fetch(`/api/budgets/${id}`, { method: 'DELETE' });
         if (res.ok) this.loadBudgets();
+    }
+
+    exportCsv() {
+        const m = this.currentMonth.toString().padStart(2, '0');
+        const month = `${this.currentYear}-${m}`;
+        window.location.href = `/api/transactions/export?month=${month}`;
+    }
+
+    async loadSummary() {
+        try {
+            const res = await fetch(`/api/summary?month=${this.currentMonth}&year=${this.currentYear}`);
+            const data = await res.json();
+            document.getElementById('summary-income').textContent = this.formatCurrency(data.income);
+            document.getElementById('summary-expenses').textContent = this.formatCurrency(data.expenses);
+            const netEl = document.getElementById('summary-net');
+            netEl.textContent = this.formatCurrency(data.netSavings);
+            netEl.className = 'stat-value ' + (data.netSavings >= 0 ? 'positive' : 'negative');
+            document.getElementById('summary-top-cat').textContent = data.topCategory !== 'N/A' ? `${data.topCategory} (${this.formatCurrency(data.topCategoryAmount)})` : '—';
+            const comp = document.getElementById('summary-comparison');
+            if (data.prevExpenses > 0) {
+                const arrow = data.pctChange > 0 ? '↑' : data.pctChange < 0 ? '↓' : '→';
+                const cls = data.pctChange > 0 ? 'up' : data.pctChange < 0 ? 'down' : 'neutral';
+                comp.innerHTML = `<span class="${cls}">${arrow} ${Math.abs(data.pctChange)}%</span> vs last month spending`;
+            } else {
+                comp.innerHTML = '<span class="neutral">No data from last month</span>';
+            }
+        } catch (err) { console.error('Summary error:', err); }
     }
 
     formatCurrency(amount) {

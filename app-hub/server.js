@@ -135,5 +135,54 @@ app.get('/api/logs/:container', (req, res) => {
 });
 
 app.listen(PORT, '0.0.0.0', () => {
+// Quick Capture endpoint patch - to be inserted before app.listen
+
+const QUICK_CAPTURE_TARGETS = {
+  'content-idea': (text, priority) => ({
+    url: 'http://lobsty-content-ideas:3000/api/ideas',
+    body: { title: text, priority: priority || 'medium', status: 'brainstorm', category: 'Quick Capture' }
+  }),
+  'board-task': (text, priority) => ({
+    url: 'http://lobsty-board:3000/api/projects/1/tasks',
+    body: { title: text, priority: priority || 'medium', status: 'backlog' }
+  })
+};
+
+app.post('/api/quick-capture', async (req, res) => {
+  const { text, target, priority } = req.body;
+  if (!text || !target) return res.status(400).json({ error: 'text and target are required' });
+  const targetDef = QUICK_CAPTURE_TARGETS[target];
+  if (!targetDef) return res.status(400).json({ error: 'Invalid target. Use: content-idea, board-task' });
+
+  const { url, body } = targetDef(text, priority);
+  const postData = JSON.stringify(body);
+
+  try {
+    const result = await new Promise((resolve, reject) => {
+      const req2 = http.request(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(postData) },
+        timeout: 5000
+      }, resp => {
+        let data = '';
+        resp.on('data', c => data += c);
+        resp.on('end', () => {
+          if (resp.statusCode >= 200 && resp.statusCode < 300) {
+            try { resolve(JSON.parse(data)); } catch { resolve({ ok: true }); }
+          } else {
+            reject(new Error(`${resp.statusCode}: ${data}`));
+          }
+        });
+      });
+      req2.on('error', reject);
+      req2.on('timeout', () => { req2.destroy(); reject(new Error('Timeout')); });
+      req2.write(postData);
+      req2.end();
+    });
+    res.json({ ok: true, target, result });
+  } catch (err) {
+    res.status(502).json({ error: `Failed to forward to ${target}: ${err.message}` });
+  }
+});
   console.log(`App Hub running on port ${PORT}`);
 });

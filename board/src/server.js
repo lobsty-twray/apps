@@ -299,6 +299,72 @@ if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
 
 // Global search endpoint (internal, no auth)
+// ── Stats API ──
+app.get('/api/stats', (req, res) => {
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    // Monday of this week
+    const now = new Date();
+    const dayOfWeek = now.getDay(); // 0=Sun
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    const thisMonday = new Date(now);
+    thisMonday.setDate(now.getDate() + mondayOffset);
+    thisMonday.setHours(0, 0, 0, 0);
+    const nextMonday = new Date(thisMonday);
+    nextMonday.setDate(thisMonday.getDate() + 7);
+    const lastMonday = new Date(thisMonday);
+    lastMonday.setDate(thisMonday.getDate() - 7);
+
+    const fmt = d => d.toISOString().slice(0, 10);
+    const thisMon = fmt(thisMonday);
+    const nextMon = fmt(nextMonday);
+    const lastMon = fmt(lastMonday);
+
+    // Total active (non-archived, non-done)
+    const totalTasks = db.prepare("SELECT COUNT(*) as c FROM tasks WHERE archived = 0 AND status != 'done'").get().c;
+
+    // By status
+    const statusRows = db.prepare("SELECT status, COUNT(*) as c FROM tasks WHERE archived = 0 GROUP BY status").all();
+    const byStatus = {};
+    statusRows.forEach(r => { byStatus[r.status] = r.c; });
+
+    // By priority
+    const prioRows = db.prepare("SELECT priority, COUNT(*) as c FROM tasks WHERE archived = 0 AND status != 'done' GROUP BY priority").all();
+    const byPriority = {};
+    prioRows.forEach(r => { byPriority[r.priority] = r.c; });
+
+    // Overdue
+    const overdueTasks = db.prepare("SELECT COUNT(*) as c FROM tasks WHERE due_date < ? AND status != 'done' AND archived = 0").get(today).c;
+
+    // Completed this week (done_at in [thisMonday, nextMonday))
+    const completedThisWeek = db.prepare("SELECT COUNT(*) as c FROM tasks WHERE done_at >= ? AND done_at < ? AND status = 'done'").get(thisMon, nextMon).c;
+
+    // Completed last week
+    const completedLastWeek = db.prepare("SELECT COUNT(*) as c FROM tasks WHERE done_at >= ? AND done_at < ? AND status = 'done'").get(lastMon, thisMon).c;
+
+    // Average completion days
+    const avgRow = db.prepare("SELECT AVG(julianday(done_at) - julianday(created_at)) as avg_days FROM tasks WHERE done_at IS NOT NULL AND status = 'done'").get();
+    const averageCompletionDays = avgRow.avg_days ? Math.round(avgRow.avg_days * 10) / 10 : 0;
+
+    // Projects
+    const projects = db.prepare(`
+      SELECT p.id, p.name, p.color,
+        COUNT(t.id) as total,
+        SUM(CASE WHEN t.status = 'done' THEN 1 ELSE 0 END) as done,
+        SUM(CASE WHEN t.status = 'in-progress' THEN 1 ELSE 0 END) as inProgress,
+        SUM(CASE WHEN t.due_date < ? AND t.status != 'done' AND t.archived = 0 THEN 1 ELSE 0 END) as overdue
+      FROM projects p
+      LEFT JOIN tasks t ON t.project_id = p.id AND t.archived = 0
+      GROUP BY p.id
+      ORDER BY p.name
+    `).all(today);
+
+    res.json({
+      overview: { totalTasks, byStatus, byPriority, overdueTasks, completedThisWeek, completedLastWeek, averageCompletionDays },
+      projects
+    });
+  } catch (error) { res.status(500).json({ error: error.message }); }
+});
 app.get("/api/search", (req, res) => {
   try {
     const q = (req.query.q || "").trim();

@@ -861,4 +861,189 @@
     })();
     </script>
 </body>
+
+    <!-- Quick Capture FAB -->
+    <style>
+        .qc-fab {
+            position: fixed; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); right: 80px;
+            z-index: 390; width: 56px; height: 56px; border-radius: 50%;
+            background: var(--gradient); border: none; color: #fff; font-size: 1.8rem;
+            font-weight: 300; cursor: pointer; box-shadow: 0 4px 24px var(--glow);
+            display: flex; align-items: center; justify-content: center;
+            -webkit-tap-highlight-color: transparent; transition: transform 0.2s, box-shadow 0.2s;
+            line-height: 1;
+        }
+        .qc-fab:hover { transform: scale(1.08); box-shadow: 0 6px 32px var(--glow); }
+        .qc-fab:active { transform: scale(0.95); }
+        .qc-fab.open { transform: rotate(45deg); }
+
+        .qc-overlay {
+            display: none; position: fixed; inset: 0; z-index: 600;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+        }
+        .qc-overlay.open { display: block; }
+
+        .qc-sheet {
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 601;
+            background: rgba(14,14,22,0.97); border-top: 1px solid var(--glass-border);
+            border-radius: 20px 20px 0 0; padding: 24px 20px calc(24px + env(safe-area-inset-bottom, 0px));
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            box-shadow: 0 -8px 40px rgba(0,0,0,0.5);
+            transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            max-width: 500px; margin: 0 auto;
+        }
+        .qc-sheet.open { transform: translateY(0); }
+
+        .qc-handle { width: 36px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.15); margin: 0 auto 16px; }
+        .qc-title { font-size: 1rem; font-weight: 600; margin-bottom: 16px; text-align: center; }
+        .qc-input {
+            width: 100%; padding: 14px 16px; background: var(--glass); border: 1px solid var(--glass-border);
+            border-radius: 12px; color: var(--text); font-size: 1rem; font-family: inherit;
+            outline: none; transition: border-color 0.2s; min-height: 48px;
+        }
+        .qc-input:focus { border-color: var(--accent); box-shadow: 0 0 16px var(--glow); }
+        .qc-input::placeholder { color: var(--text-dim); }
+
+        .qc-targets { display: flex; gap: 8px; margin-top: 14px; }
+        .qc-target {
+            flex: 1; padding: 12px 8px; border-radius: 12px; border: 1px solid var(--glass-border);
+            background: var(--glass); color: var(--text); font-size: 0.82rem; font-weight: 500;
+            cursor: pointer; text-align: center; transition: all 0.2s; min-height: 48px;
+            display: flex; align-items: center; justify-content: center; gap: 4px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .qc-target:hover { border-color: rgba(124,58,237,0.4); }
+        .qc-target.selected { background: var(--gradient); border-color: transparent; color: #fff; box-shadow: 0 4px 16px var(--glow); }
+
+        .qc-priority-row { display: flex; gap: 6px; margin-top: 12px; align-items: center; }
+        .qc-priority-label { font-size: 0.75rem; color: var(--text-dim); margin-right: 4px; }
+        .qc-pri {
+            padding: 6px 14px; border-radius: 8px; border: 1px solid var(--glass-border);
+            background: transparent; color: var(--text-dim); font-size: 0.75rem; font-weight: 500;
+            cursor: pointer; transition: all 0.2s; min-height: 32px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .qc-pri:hover { border-color: rgba(124,58,237,0.3); }
+        .qc-pri.selected { border-color: transparent; color: #fff; }
+        .qc-pri.selected[data-pri="low"] { background: var(--green); }
+        .qc-pri.selected[data-pri="medium"] { background: var(--yellow); color: #000; }
+        .qc-pri.selected[data-pri="high"] { background: var(--red); }
+
+        .qc-submit {
+            width: 100%; margin-top: 16px; padding: 14px; border-radius: 12px;
+            background: var(--gradient); border: none; color: #fff; font-size: 0.95rem;
+            font-weight: 600; cursor: pointer; min-height: 48px; transition: opacity 0.2s;
+            font-family: inherit;
+        }
+        .qc-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+        .qc-submit:hover:not(:disabled) { box-shadow: 0 4px 20px var(--glow); }
+    </style>
+
+    <button class="qc-fab" id="qc-fab" title="Quick Capture (N)">+</button>
+    <div class="qc-overlay" id="qc-overlay"></div>
+    <div class="qc-sheet" id="qc-sheet">
+        <div class="qc-handle"></div>
+        <div class="qc-title">⚡ Quick Capture</div>
+        <input class="qc-input" id="qc-input" placeholder="Quick thought..." autocomplete="off">
+        <div class="qc-targets">
+            <button class="qc-target selected" data-target="content-idea">💡 Idea</button>
+            <button class="qc-target" data-target="board-task">📋 Board</button>
+        </div>
+        <div class="qc-priority-row">
+            <span class="qc-priority-label">Priority:</span>
+            <button class="qc-pri" data-pri="low">Low</button>
+            <button class="qc-pri selected" data-pri="medium">Med</button>
+            <button class="qc-pri" data-pri="high">High</button>
+        </div>
+        <button class="qc-submit" id="qc-submit">Capture ⚡</button>
+    </div>
+
+    <script>
+    (function() {
+        const fab = document.getElementById('qc-fab');
+        const overlay = document.getElementById('qc-overlay');
+        const sheet = document.getElementById('qc-sheet');
+        const input = document.getElementById('qc-input');
+        const submitBtn = document.getElementById('qc-submit');
+        let selectedTarget = 'content-idea';
+        let selectedPriority = 'medium';
+
+        function openQC() {
+            overlay.classList.add('open');
+            fab.classList.add('open');
+            requestAnimationFrame(() => {
+                sheet.classList.add('open');
+                setTimeout(() => input.focus(), 350);
+            });
+        }
+        function closeQC() {
+            sheet.classList.remove('open');
+            fab.classList.remove('open');
+            setTimeout(() => overlay.classList.remove('open'), 350);
+            input.value = '';
+        }
+
+        fab.addEventListener('click', () => sheet.classList.contains('open') ? closeQC() : openQC());
+        overlay.addEventListener('click', closeQC);
+
+        // Target selection
+        sheet.querySelectorAll('.qc-target').forEach(btn => {
+            btn.addEventListener('click', () => {
+                sheet.querySelectorAll('.qc-target').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedTarget = btn.dataset.target;
+            });
+        });
+
+        // Priority selection
+        sheet.querySelectorAll('.qc-pri').forEach(btn => {
+            btn.addEventListener('click', () => {
+                sheet.querySelectorAll('.qc-pri').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedPriority = btn.dataset.pri;
+            });
+        });
+
+        // Submit
+        async function submitCapture() {
+            const text = input.value.trim();
+            if (!text) return;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending...';
+            try {
+                const res = await fetch('/api/quick-capture', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text, target: selectedTarget, priority: selectedPriority })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast('✅ Captured to ' + (selectedTarget === 'content-idea' ? 'Ideas' : 'Board'), 'success');
+                    closeQC();
+                } else {
+                    showToast('❌ ' + (data.error || 'Failed'), 'error');
+                }
+            } catch {
+                showToast('❌ Network error', 'error');
+            }
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Capture ⚡';
+        }
+
+        submitBtn.addEventListener('click', submitCapture);
+        input.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitCapture(); }
+            if (e.key === 'Escape') closeQC();
+        });
+
+        // "N" keyboard shortcut
+        document.addEventListener('keydown', e => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            if (e.key === 'n' && !e.metaKey && !e.ctrlKey && !e.altKey) {
+                e.preventDefault();
+                openQC();
+            }
+        });
+    })();
+    </script>
 </html>

@@ -26,6 +26,7 @@
             <div class="date-display" id="dateDisplay">Feb 2026</div>
             <button class="date-nav-btn" id="nextMonth" aria-label="Next month">›</button>
         </div>
+            <button class="export-btn" id="exportCsv" aria-label="Export CSV" title="Export CSV">📥</button>
     </nav>
 
     <main class="main-content">
@@ -87,6 +88,29 @@
 
         <!-- Transactions View -->
         <div id="transactions-view" class="view">
+            <!-- Monthly Summary Card -->
+            <div class="glass-card monthly-summary-card" id="monthly-summary">
+                <h3 class="section-title">Monthly Summary</h3>
+                <div class="summary-grid">
+                    <div class="summary-stat">
+                        <span class="stat-label">Income</span>
+                        <span class="stat-value income" id="summary-income">$0.00</span>
+                    </div>
+                    <div class="summary-stat">
+                        <span class="stat-label">Expenses</span>
+                        <span class="stat-value expense" id="summary-expenses">$0.00</span>
+                    </div>
+                    <div class="summary-stat">
+                        <span class="stat-label">Net Savings</span>
+                        <span class="stat-value" id="summary-net">$0.00</span>
+                    </div>
+                    <div class="summary-stat">
+                        <span class="stat-label">Top Category</span>
+                        <span class="stat-value dim" id="summary-top-cat">—</span>
+                    </div>
+                </div>
+                <div class="summary-comparison" id="summary-comparison"></div>
+            </div>
             <div class="view-top-bar">
                 <div class="filter-chips">
                     <button class="chip active" data-type="">All</button>

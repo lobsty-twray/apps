@@ -273,6 +273,51 @@ app.get("/api/trends", (req, res) => {
   res.json(trends);
 });
 
+// CSV Export
+app.get("/api/transactions/export", (req, res) => {
+  let query = `
+    SELECT t.date, t.description, t.amount, c.name as category, t.type, t.recurring
+    FROM transactions t
+    JOIN categories c ON t.category_id = c.id
+    WHERE 1=1
+  `;
+  const params = [];
+  if (req.query.month) {
+    const [year, month] = req.query.month.split("-");
+    query += ` AND strftime('%Y', t.date) = ? AND strftime('%m', t.date) = ?`;
+    params.push(year, month);
+  }
+  query += ` ORDER BY t.date DESC`;
+  const rows = db.prepare(query).all(...params);
+  let csv = "date,description,amount,category,type,recurring\n";
+  for (const r of rows) {
+    const desc = (r.description || "").replace(/"/g, '""');
+    csv += `${r.date},"${desc}",${r.amount},${r.category},${r.type},${r.recurring ? "yes" : "no"}\n`;
+  }
+  res.setHeader("Content-Type", "text/csv");
+  res.setHeader("Content-Disposition", `attachment; filename="budget-export.csv"`);
+  res.send(csv);
+});
+
+// Monthly Summary
+app.get("/api/summary", (req, res) => {
+  const { month = new Date().getMonth() + 1, year = new Date().getFullYear() } = req.query;
+  const m = month.toString().padStart(2, "0");
+  const y = year.toString();
+  const income = db.prepare(`SELECT COALESCE(SUM(amount),0) as total FROM transactions WHERE type='income' AND strftime('%m',date)=? AND strftime('%Y',date)=?`).get(m, y).total;
+  const expenses = db.prepare(`SELECT COALESCE(SUM(amount),0) as total FROM transactions WHERE type='expense' AND strftime('%m',date)=? AND strftime('%Y',date)=?`).get(m, y).total;
+  const topCat = db.prepare(`SELECT c.name, SUM(t.amount) as total FROM transactions t JOIN categories c ON t.category_id=c.id WHERE t.type='expense' AND strftime('%m',t.date)=? AND strftime('%Y',t.date)=? GROUP BY c.id ORDER BY total DESC LIMIT 1`).get(m, y);
+  let prevM = parseInt(month) - 1;
+  let prevY = parseInt(year);
+  if (prevM < 1) { prevM = 12; prevY--; }
+  const pm = prevM.toString().padStart(2, "0");
+  const py = prevY.toString();
+  const prevExpenses = db.prepare(`SELECT COALESCE(SUM(amount),0) as total FROM transactions WHERE type='expense' AND strftime('%m',date)=? AND strftime('%Y',date)=?`).get(pm, py).total;
+  let pctChange = 0;
+  if (prevExpenses > 0) pctChange = ((expenses - prevExpenses) / prevExpenses * 100);
+  res.json({ income, expenses, netSavings: income - expenses, topCategory: topCat ? topCat.name : "N/A", topCategoryAmount: topCat ? topCat.total : 0, prevExpenses, pctChange: Math.round(pctChange * 10) / 10 });
+});
+
 // Serve frontend
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));

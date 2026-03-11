@@ -790,3 +790,67 @@ input[type="number"] { -moz-appearance: textfield; }
     from { opacity: 0; transform: translateY(12px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+/* ─── Export Button ─── */
+.export-btn {
+    width: 40px; height: 40px;
+    min-width: 44px; min-height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background var(--transition);
+    margin-left: 8px;
+}
+.export-btn:active { background: var(--bg-elevated); }
+
+/* ─── Monthly Summary Card ─── */
+.monthly-summary-card { margin-bottom: 16px; }
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.summary-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.stat-label {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+.stat-value {
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+.stat-value.income { color: var(--income); }
+.stat-value.expense { color: var(--expense); }
+.stat-value.positive { color: var(--income); }
+.stat-value.negative { color: var(--expense); }
+.stat-value.dim { color: var(--text-secondary); font-size: 0.95rem; }
+
+.summary-comparison {
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.summary-comparison .up { color: var(--expense); }
+.summary-comparison .down { color: var(--income); }
+.summary-comparison .neutral { color: var(--text-muted); }
