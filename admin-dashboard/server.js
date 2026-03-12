@@ -393,6 +393,7 @@ main{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:1rem;pad
   <div class="user-area">
     \${user.photo ? \`<img src="\${user.photo}" alt="">\` : ''}
     <span class="name">\${user.name}</span>
+    <a href="/containers" class="logout">🐳 Containers</a>
     <a href="/status" class="logout">Status</a>
     <a href="/logout" class="logout">Logout</a>
   </div>
@@ -619,6 +620,304 @@ function restartContainer(name, btn) {
 });
 
 
+
+// Docker Stats API endpoint
+app.get('/api/docker-stats', requireAuth, async (req, res) => {
+  try {
+    const containers = await docker.listContainers({ all: true });
+    const statsPromises = containers.map(async (c) => {
+      const container = docker.getContainer(c.Id);
+      const name = c.Names[0]?.replace(/^\//, '').replace(/^lobsty-/, '');
+      const info = { name, fullName: c.Names[0]?.replace(/^\//, ''), image: c.Image, state: c.State, status: c.Status, id: c.Id.substring(0, 12) };
+      
+      if (c.State === 'running') {
+        try {
+          const stats = await container.stats({ stream: false });
+          const cpuDelta = stats.cpu_stats.cpu_usage.total_usage - (stats.precpu_stats.cpu_usage.total_usage || 0);
+          const systemDelta = stats.cpu_stats.system_cpu_usage - (stats.precpu_stats.system_cpu_usage || 0);
+          const numCpus = stats.cpu_stats.online_cpus || stats.cpu_stats.cpu_usage.percpu_usage?.length || 1;
+          info.cpuPercent = systemDelta > 0 ? Math.round((cpuDelta / systemDelta) * numCpus * 10000) / 100 : 0;
+          
+          const memUsage = stats.memory_stats.usage - (stats.memory_stats.stats?.cache || stats.memory_stats.stats?.inactive_file || 0);
+          info.memUsage = memUsage;
+          info.memLimit = stats.memory_stats.limit;
+          info.memPercent = info.memLimit > 0 ? Math.round((memUsage / info.memLimit) * 10000) / 100 : 0;
+          
+          let netRx = 0, netTx = 0;
+          if (stats.networks) {
+            Object.values(stats.networks).forEach(n => { netRx += n.rx_bytes; netTx += n.tx_bytes; });
+          }
+          info.netRx = netRx;
+          info.netTx = netTx;
+          
+          let blockRead = 0, blockWrite = 0;
+          if (stats.blkio_stats?.io_service_bytes_recursive) {
+            stats.blkio_stats.io_service_bytes_recursive.forEach(s => {
+              if (s.op === 'read' || s.op === 'Read') blockRead += s.value;
+              if (s.op === 'write' || s.op === 'Write') blockWrite += s.value;
+            });
+          }
+          info.blockRead = blockRead;
+          info.blockWrite = blockWrite;
+          info.pids = stats.pids_stats?.current || 0;
+        } catch (e) {}
+      }
+      
+      try {
+        const inspect = await container.inspect();
+        info.restartCount = inspect.RestartCount || 0;
+        info.startedAt = inspect.State.StartedAt;
+        info.finishedAt = inspect.State.FinishedAt;
+      } catch (e) {}
+      
+      return info;
+    });
+    
+    const results = await Promise.all(statsPromises);
+    res.json(results);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+
+
+// ============ CONTAINERS STATS PAGE ============
+app.get('/containers', requireAuth, (req, res) => {
+  const user = req.user;
+  res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="stylesheet" href="http://shared-assets:3000/design-tokens.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Container Stats - Admin</title>
+<link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Inter",-apple-system,sans-serif;background:var(--bg,#0a0a0f);color:var(--text,#e8e8f0);min-height:100vh}
+.bg-orbs{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.12;animation:drift 25s ease-in-out infinite}
+.orb:nth-child(1){width:350px;height:350px;background:#7c3aed;top:-80px;right:-80px}
+.orb:nth-child(2){width:300px;height:300px;background:#2563eb;bottom:-60px;left:-60px;animation-delay:-10s}
+@keyframes drift{0%,100%{transform:translate(0,0)}50%{transform:translate(30px,-20px)}}
+
+header{position:sticky;top:0;z-index:10;background:rgba(10,10,15,0.8);backdrop-filter:blur(20px);border-bottom:1px solid var(--glass-border,rgba(255,255,255,0.08));padding:.75rem 1rem;display:flex;justify-content:space-between;align-items:center}
+header h1{font-size:1.1rem;font-weight:700;background:linear-gradient(135deg,#7c3aed,#2563eb);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-links{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+.nav-links a{color:var(--dim,#888899);text-decoration:none;padding:8px 14px;border:1px solid var(--glass-border,rgba(255,255,255,0.08));border-radius:10px;font-size:.8rem;font-weight:500;min-height:44px;display:flex;align-items:center;transition:all .3s;backdrop-filter:blur(10px);-webkit-tap-highlight-color:transparent}
+.nav-links a:hover,.nav-links a.active{color:#fff;border-color:#7c3aed;background:rgba(124,58,237,0.15)}
+
+main{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:1rem;padding-bottom:calc(1rem + env(safe-area-inset-bottom,0px))}
+
+.summary-bar{background:var(--glass,rgba(255,255,255,0.05));border:1px solid var(--glass-border,rgba(255,255,255,0.08));border-radius:16px;padding:1rem 1.25rem;backdrop-filter:blur(20px);margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem}
+.summary-text{font-size:.9rem;font-weight:600}
+.summary-text span{font-variant-numeric:tabular-nums}
+.summary-right{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+
+.sort-btn{background:var(--glass,rgba(255,255,255,0.05));border:1px solid var(--glass-border,rgba(255,255,255,0.08));color:var(--dim,#888);border-radius:10px;padding:8px 14px;font-size:.75rem;font-weight:600;min-height:44px;min-width:44px;cursor:pointer;transition:all .2s;font-family:inherit;-webkit-tap-highlight-color:transparent}
+.sort-btn:hover,.sort-btn.active{color:#fff;border-color:#7c3aed;background:rgba(124,58,237,0.15)}
+
+.refresh-indicator{font-size:.7rem;color:var(--dim,#888);font-variant-numeric:tabular-nums}
+
+.container-stats-grid{display:grid;grid-template-columns:1fr;gap:.75rem}
+
+.cs-card{background:var(--glass,rgba(255,255,255,0.05));border:1px solid var(--glass-border,rgba(255,255,255,0.08));border-radius:16px;padding:1.25rem;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);transition:all .3s;animation:fadeUp .5s ease both}
+.cs-card:hover{border-color:rgba(124,58,237,0.3);box-shadow:0 4px 20px rgba(124,58,237,0.1)}
+
+.cs-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem;gap:.5rem}
+.cs-name{font-weight:700;font-size:.95rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.cs-status{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.cs-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.cs-dot.running{background:#34d399;box-shadow:0 0 8px rgba(52,211,153,0.5)}
+.cs-dot.stopped{background:#f87171;box-shadow:0 0 8px rgba(248,113,113,0.5)}
+.cs-state{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+.cs-state.running{color:#34d399}
+.cs-state.stopped{color:#f87171}
+
+.cs-metrics{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+
+.cs-metric{margin-bottom:0}
+.cs-metric-label{font-size:.7rem;color:var(--dim,#888);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;display:flex;justify-content:space-between;align-items:baseline}
+.cs-metric-value{font-size:.8rem;font-weight:700;font-variant-numeric:tabular-nums}
+.cs-progress{height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;margin-top:4px}
+.cs-progress-fill{height:100%;border-radius:3px;transition:width .8s cubic-bezier(.4,0,.2,1);min-width:1px}
+.cs-progress-fill.green{background:#34d399}
+.cs-progress-fill.yellow{background:#fbbf24}
+.cs-progress-fill.red{background:#f87171}
+.cs-progress-fill.accent{background:linear-gradient(90deg,#7c3aed,#2563eb)}
+
+.cs-details{display:grid;grid-template-columns:1fr 1fr;gap:.25rem .75rem;margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--glass-border,rgba(255,255,255,0.08))}
+.cs-detail{display:flex;justify-content:space-between;font-size:.7rem}
+.cs-detail-label{color:var(--dim,#888)}
+.cs-detail-value{font-weight:600;font-variant-numeric:tabular-nums;text-align:right}
+
+#loading{text-align:center;color:var(--dim,#888);padding:3rem;font-size:.9rem}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+
+@media(min-width:480px){
+  .container-stats-grid{grid-template-columns:repeat(2,1fr)}
+  header h1{font-size:1.2rem}
+}
+@media(min-width:768px){
+  main{padding:1.5rem}
+  header h1{font-size:1.3rem}
+}
+@media(min-width:1024px){
+  .container-stats-grid{grid-template-columns:repeat(3,1fr)}
+  main{padding:2rem}
+}
+</style>
+</head>
+<body>
+<div class="bg-orbs"><div class="orb"></div><div class="orb"></div></div>
+<header>
+  <h1>🐳 Container Stats</h1>
+  <div class="nav-links">
+    <a href="/">Dashboard</a>
+    <a href="/containers" class="active">Containers</a>
+    <a href="/status">Status</a>
+    <a href="/logout">Logout</a>
+  </div>
+</header>
+<main>
+  <div class="summary-bar">
+    <div class="summary-text" id="summary">Loading...</div>
+    <div class="summary-right">
+      <button class="sort-btn active" onclick="setSort('name')" id="sort-name">Name</button>
+      <button class="sort-btn" onclick="setSort('cpu')" id="sort-cpu">CPU</button>
+      <button class="sort-btn" onclick="setSort('mem')" id="sort-mem">Memory</button>
+      <div class="refresh-indicator" id="refresh-timer">⟳ 15s</div>
+    </div>
+  </div>
+  <div id="loading">Loading container stats...</div>
+  <div class="container-stats-grid" id="grid" style="display:none"></div>
+</main>
+<script>
+let currentSort = 'name';
+let containersData = [];
+let countdown = 15;
+let timer;
+
+function fmtBytes(b) {
+  if (!b || b === 0) return '0 B';
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+  if (b < 1073741824) return (b/1048576).toFixed(1) + ' MB';
+  return (b/1073741824).toFixed(2) + ' GB';
+}
+
+function colorClass(pct) { return pct < 50 ? 'green' : pct < 80 ? 'yellow' : 'red'; }
+
+function timeAgo(dateStr) {
+  if (!dateStr || dateStr === '0001-01-01T00:00:00Z') return '—';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  if (diff < 0) return '—';
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return mins + 'm';
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + 'h ' + (mins % 60) + 'm';
+  const days = Math.floor(hrs / 24);
+  return days + 'd ' + (hrs % 24) + 'h';
+}
+
+function setSort(s) {
+  currentSort = s;
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('sort-' + s).classList.add('active');
+  renderCards();
+}
+
+function sortData(data) {
+  const sorted = [...data];
+  sorted.sort((a, b) => {
+    // Running first
+    const aRun = a.state === 'running' ? 0 : 1;
+    const bRun = b.state === 'running' ? 0 : 1;
+    if (aRun !== bRun) return aRun - bRun;
+    
+    if (currentSort === 'cpu') return (b.cpuPercent || 0) - (a.cpuPercent || 0);
+    if (currentSort === 'mem') return (b.memUsage || 0) - (a.memUsage || 0);
+    return a.name.localeCompare(b.name);
+  });
+  return sorted;
+}
+
+function renderCards() {
+  const data = sortData(containersData);
+  const running = data.filter(c => c.state === 'running');
+  const totalCpu = running.reduce((s, c) => s + (c.cpuPercent || 0), 0);
+  const totalMem = running.reduce((s, c) => s + (c.memUsage || 0), 0);
+  
+  document.getElementById('summary').innerHTML = 
+    '<span style="color:#34d399">' + running.length + '</span> running, ' +
+    '<span style="color:#fbbf24">' + (data.length - running.length) + '</span> stopped · ' +
+    'CPU: <span>' + totalCpu.toFixed(1) + '%</span> · ' +
+    'Memory: <span>' + fmtBytes(totalMem) + '</span>';
+  
+  document.getElementById('loading').style.display = 'none';
+  const g = document.getElementById('grid');
+  g.style.display = 'grid';
+  
+  g.innerHTML = data.map((c, i) => {
+    const isRunning = c.state === 'running';
+    const dotClass = isRunning ? 'running' : 'stopped';
+    const cpuPct = c.cpuPercent || 0;
+    const memPct = c.memPercent || 0;
+    
+    let metricsHtml = '';
+    if (isRunning) {
+      metricsHtml = '<div class="cs-metrics">' +
+        '<div class="cs-metric"><div class="cs-metric-label"><span>CPU</span><span class="cs-metric-value">' + cpuPct.toFixed(1) + '%</span></div>' +
+        '<div class="cs-progress"><div class="cs-progress-fill ' + colorClass(cpuPct) + '" style="width:' + Math.min(cpuPct, 100) + '%"></div></div></div>' +
+        '<div class="cs-metric"><div class="cs-metric-label"><span>Memory</span><span class="cs-metric-value">' + memPct.toFixed(1) + '%</span></div>' +
+        '<div class="cs-progress"><div class="cs-progress-fill ' + colorClass(memPct) + '" style="width:' + Math.min(memPct, 100) + '%"></div></div>' +
+        '<div style="font-size:.65rem;color:var(--dim);margin-top:2px">' + fmtBytes(c.memUsage) + ' / ' + fmtBytes(c.memLimit) + '</div></div>' +
+        '</div>';
+    }
+    
+    let detailsHtml = '<div class="cs-details">';
+    if (isRunning) {
+      detailsHtml += '<div class="cs-detail"><span class="cs-detail-label">Net I/O</span><span class="cs-detail-value">' + fmtBytes(c.netRx) + ' / ' + fmtBytes(c.netTx) + '</span></div>';
+      detailsHtml += '<div class="cs-detail"><span class="cs-detail-label">Block I/O</span><span class="cs-detail-value">' + fmtBytes(c.blockRead) + ' / ' + fmtBytes(c.blockWrite) + '</span></div>';
+    }
+    detailsHtml += '<div class="cs-detail"><span class="cs-detail-label">Restarts</span><span class="cs-detail-value">' + (c.restartCount || 0) + '</span></div>';
+    detailsHtml += '<div class="cs-detail"><span class="cs-detail-label">Uptime</span><span class="cs-detail-value">' + (isRunning ? timeAgo(c.startedAt) : '—') + '</span></div>';
+    detailsHtml += '</div>';
+    
+    return '<div class="cs-card" style="animation-delay:' + (i * 0.03).toFixed(2) + 's">' +
+      '<div class="cs-header"><span class="cs-name">' + c.name + '</span>' +
+      '<div class="cs-status"><div class="cs-dot ' + dotClass + '"></div><span class="cs-state ' + dotClass + '">' + c.state + '</span></div></div>' +
+      metricsHtml + detailsHtml + '</div>';
+  }).join('');
+}
+
+function loadStats() {
+  fetch('/api/docker-stats').then(r => r.json()).then(data => {
+    containersData = data;
+    renderCards();
+    countdown = 15;
+  }).catch(() => {
+    document.getElementById('loading').textContent = 'Failed to load container stats';
+  });
+}
+
+loadStats();
+timer = setInterval(() => {
+  countdown--;
+  if (countdown <= 0) {
+    loadStats();
+  }
+  document.getElementById('refresh-timer').textContent = '⟳ ' + countdown + 's';
+}, 1000);
+</script>
+</body>
+</html>`);
+});
+
+
 // ============ APP STATUS PAGE ============
 const axios = require("axios");
 
@@ -715,6 +1014,7 @@ main{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:1rem;pad
   <h1>📡 System Status</h1>
   <div class="nav-links">
     <a href="/">Dashboard</a>
+    <a href="/containers">Containers</a>
     <a href="/status" class="active">Status</a>
     <a href="/logout">Logout</a>
   </div>
