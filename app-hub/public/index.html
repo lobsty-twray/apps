@@ -87,7 +87,7 @@
         .app-status {
             width: 8px; height: 8px; border-radius: 50%;
             background: var(--text-dim); box-shadow: none;
-            position: absolute; top: 10px; right: 10px;
+            position: absolute; top: 14px; right: 50px;
             transition: all 0.3s;
         }
         .app-status.up { background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 2s ease-in-out infinite; }
@@ -193,6 +193,47 @@
         }
         @media (min-width: 1024px) { .apps-grid { grid-template-columns: repeat(5, 1fr); } }
         @media (min-width: 1280px) { .apps-grid { grid-template-columns: repeat(6, 1fr); } }
+
+
+        /* Favorites */
+        .fav-btn {
+            position: absolute; top: 6px; right: 6px; z-index: 10;
+            width: 44px; height: 44px; border: none; background: transparent;
+            cursor: pointer; font-size: 1.1rem; display: flex; align-items: center;
+            justify-content: center; border-radius: 8px; transition: all 0.2s;
+            -webkit-tap-highlight-color: transparent; color: var(--text-dim); opacity: 0.5;
+            line-height: 1;
+        }
+        .fav-btn:hover { opacity: 1; background: rgba(255,255,255,0.08); }
+        .fav-btn.active { opacity: 1; color: #facc15; filter: drop-shadow(0 0 6px rgba(250,204,21,0.5)); }
+        .fav-section { margin-bottom: 2rem; }
+        .fav-title { font-size: 0.85rem; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.75rem; padding-left: 4px; display: flex; align-items: center; gap: 0.5rem; }
+        .fav-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--glass-border), transparent); }
+        .fav-row { display: flex; gap: 0.6rem; overflow-x: auto; padding-bottom: 0.5rem; scrollbar-width: none; }
+        .fav-row::-webkit-scrollbar { display: none; }
+        .fav-card {
+            flex-shrink: 0; width: 100px; background: var(--glass); border: 1px solid var(--glass-border);
+            border-radius: 14px; padding: 0.9rem 0.6rem; text-decoration: none; color: var(--text);
+            display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.3rem;
+            transition: all 0.3s cubic-bezier(0.4,0,0.2,1); -webkit-tap-highlight-color: transparent;
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); position: relative;
+            animation: favIn 0.3s ease both;
+        }
+        .fav-card:hover { border-color: rgba(124,58,237,0.4); box-shadow: 0 6px 24px var(--glow); transform: translateY(-2px); }
+        .fav-card:active { transform: scale(0.96); }
+        .fav-card .fav-emoji { font-size: 1.6rem; line-height: 1; }
+        .fav-card .fav-name { font-size: 0.7rem; font-weight: 600; line-height: 1.2; }
+        .fav-card .fav-remove {
+            position: absolute; top: 4px; right: 4px; width: 20px; height: 20px;
+            border: none; background: rgba(0,0,0,0.4); color: var(--text-dim); font-size: 0.6rem;
+            border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.2s; min-width: 28px; min-height: 28px;
+        }
+        .fav-card:hover .fav-remove { opacity: 1; }
+        .fav-card .fav-remove:hover { background: rgba(248,113,113,0.3); color: var(--red); }
+        .fav-hint { color: var(--text-dim); font-size: 0.82rem; padding: 1rem; text-align: center; opacity: 0.7; }
+        @keyframes favIn { from { opacity: 0; transform: scale(0.85) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        @media (min-width: 768px) { .fav-card { width: 120px; padding: 1rem 0.8rem; } .fav-card .fav-emoji { font-size: 1.8rem; } .fav-card .fav-name { font-size: 0.78rem; } }
 
         .app-card { animation: fadeUp 0.5s ease both; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -345,11 +386,12 @@
                 <div class="stat-label">Online</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value" id="offline-count">—</div>
-                <div class="stat-label">Offline</div>
+                <div class="stat-value" id="fav-count">0</div>
+                <div class="stat-label">⭐ Pinned</div>
             </div>
         </div>
 
+        <div id="fav-section"></div>
         <div id="recent-section"></div>
         <div id="app-categories"></div>
         <div class="no-results" id="no-results">No apps match your search 🔍</div>
@@ -432,6 +474,7 @@
                             const hasContainer = !!a.container;
                             return `<a href="${a.url}" class="app-card" target="_blank" rel="noopener" style="animation-delay:${i * 0.05}s" data-url="${a.url}">
                                 <div class="app-status ${statusClass}"></div>
+                                <button class="fav-btn ${isFav(a.url) ? 'active' : ''}" onclick="toggleFav(event, '${a.url}')" title="Toggle favorite">${isFav(a.url) ? '★' : '☆'}</button>
                                 ${hasContainer ? `<button class="gear-btn" onclick="toggleGear(event, this)" title="Actions">⚙</button>
                                 <div class="gear-dropdown" data-container="${a.container}">
                                     <button onclick="restartApp(event, '${a.container}', '${a.name}')">🔄 Restart</button>
@@ -535,7 +578,69 @@
 
         // search input handled by global search below
 
+
+        // === Favorites ===
+        function getFavs() {
+            try { return JSON.parse(localStorage.getItem('app-hub-favorites') || '[]'); } catch { return []; }
+        }
+        function saveFavs(favs) { localStorage.setItem('app-hub-favorites', JSON.stringify(favs)); }
+        function isFav(url) { return getFavs().includes(url); }
+
+        function toggleFav(e, url) {
+            e.preventDefault(); e.stopPropagation();
+            let favs = getFavs();
+            if (favs.includes(url)) { favs = favs.filter(u => u !== url); }
+            else { favs.push(url); }
+            saveFavs(favs);
+            // Update button in-place
+            const card = e.target.closest('.app-card');
+            if (card) {
+                const btn = card.querySelector('.fav-btn');
+                btn.classList.toggle('active', favs.includes(url));
+                btn.textContent = favs.includes(url) ? '★' : '☆';
+            }
+            renderFavs();
+            updateFavCount();
+        }
+
+        function updateFavCount() {
+            const el = document.getElementById('fav-count');
+            if (el) el.textContent = getFavs().length;
+        }
+
+        function renderFavs() {
+            const favs = getFavs();
+            const el = document.getElementById('fav-section');
+            updateFavCount();
+            if (!favs.length) {
+                el.innerHTML = '<div class="fav-section"><div class="fav-title">⭐ Favorites</div><div class="fav-hint">Tap ⭐ on any app to pin it here</div></div>';
+                return;
+            }
+            const cards = favs.map(url => {
+                const app = APPS.find(a => a.url === url);
+                if (!app) return '';
+                return '<a href="' + escHtml(app.url) + '" class="fav-card" target="_blank" rel="noopener">'
+                    + '<button class="fav-remove" onclick="removeFav(event, \'' + escHtml(app.url) + '\')">✕</button>'
+                    + '<div class="fav-emoji">' + app.emoji + '</div>'
+                    + '<div class="fav-name">' + escHtml(app.name) + '</div></a>';
+            }).join('');
+            el.innerHTML = '<div class="fav-section"><div class="fav-title">⭐ Favorites</div><div class="fav-row">' + cards + '</div></div>';
+        }
+
+        function removeFav(e, url) {
+            e.preventDefault(); e.stopPropagation();
+            let favs = getFavs().filter(u => u !== url);
+            saveFavs(favs);
+            renderFavs();
+            // Update star button in grid
+            document.querySelectorAll('.app-card[data-url="' + url + '"] .fav-btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.textContent = '☆';
+            });
+        }
+
         renderApps();
+        renderFavs();
         fetchHealth();
         setInterval(fetchHealth, 60000);
 
