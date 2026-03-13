@@ -22,6 +22,7 @@ class LobstyBoard {
         this.initQuill();
         await this.loadProjects();
         await this.loadLabels();
+        this.initFilters();
         if (this.projects.length > 0) {
             this.selectProject(this.projects[0].id);
         } else {
@@ -176,14 +177,17 @@ class LobstyBoard {
                 header.style.display = 'flex';
                 board.style.display = 'flex';
                 dots.style.display = '';
+                this.showFilterBar();
             } else {
                 welcome.style.display = 'flex';
             }
         } else if (view === 'calendar') {
+            this.hideFilterBar();
             header.style.display = 'flex';
             calendar.style.display = 'flex';
             this.loadCalendar();
         } else if (view === 'archive') {
+            this.hideFilterBar();
             header.style.display = 'none';
             archive.style.display = 'flex';
             this.loadArchive();
@@ -365,6 +369,7 @@ class LobstyBoard {
 
     async loadLabels() {
         this.labels = await this.apiCall('/api/labels');
+        if (this.filterState) this.renderFilterLabels();
     }
 
     async createProject(data) {
@@ -444,6 +449,7 @@ class LobstyBoard {
             this.setupDropZone(container, status);
         });
         this.updateTaskCounts();
+        if (this.filterState) this.applyFilters();
     }
 
     createTaskCard(task) {
@@ -597,6 +603,8 @@ class LobstyBoard {
         document.getElementById('view-board-btn').classList.add('active');
         document.getElementById('view-calendar-btn').classList.remove('active');
         document.getElementById('project-title').textContent = this.currentProject.name;
+        this.showFilterBar();
+        this.renderFilterLabels();
         document.getElementById('project-description').textContent = this.currentProject.description || '';
         this.renderProjects();
         this.closeSidebar();
@@ -609,6 +617,7 @@ class LobstyBoard {
         document.getElementById('column-dots').style.display = 'none';
         document.getElementById('calendar-view').style.display = 'none';
         document.getElementById('archive-view').style.display = 'none';
+        this.hideFilterBar();
     }
 
     showModal(modalId) {
@@ -965,6 +974,155 @@ class LobstyBoard {
         const modal = document.getElementById('stats-modal');
         modal.classList.remove('active');
         setTimeout(() => { modal.style.display = 'none'; }, 200);
+    }
+
+
+    // ── Filter state ──
+    initFilters() {
+        this.filterState = { search: '', priority: null, label: null };
+
+        const searchInput = document.getElementById('filter-search');
+        const toggleBtn = document.getElementById('filter-toggle-btn');
+        const clearBtn = document.getElementById('filter-clear-btn');
+        const options = document.getElementById('filter-options');
+
+        searchInput.addEventListener('input', () => {
+            this.filterState.search = searchInput.value.toLowerCase();
+            this.applyFilters();
+        });
+
+        toggleBtn.addEventListener('click', () => {
+            const isOpen = options.classList.toggle('open');
+            toggleBtn.classList.toggle('active', isOpen);
+        });
+
+        // Priority pills
+        document.querySelectorAll('#filter-priority .filter-pill').forEach(pill => {
+            pill.addEventListener('click', () => {
+                const val = pill.dataset.priority;
+                if (this.filterState.priority === val) {
+                    this.filterState.priority = null;
+                    pill.classList.remove('active');
+                } else {
+                    document.querySelectorAll('#filter-priority .filter-pill').forEach(p => p.classList.remove('active'));
+                    this.filterState.priority = val;
+                    pill.classList.add('active');
+                }
+                this.applyFilters();
+            });
+        });
+
+        clearBtn.addEventListener('click', () => {
+            this.clearFilters();
+        });
+
+        // Cmd/Ctrl+K shortcut
+        document.addEventListener('keydown', (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                searchInput.focus();
+                searchInput.select();
+            }
+        });
+    }
+
+    clearFilters() {
+        this.filterState = { search: '', priority: null, label: null };
+        document.getElementById('filter-search').value = '';
+        document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+        this.applyFilters();
+    }
+
+    renderFilterLabels() {
+        const container = document.getElementById('filter-labels');
+        container.innerHTML = '';
+        this.labels.forEach(label => {
+            const pill = document.createElement('button');
+            pill.className = 'filter-pill';
+            pill.dataset.label = label.name;
+            pill.innerHTML = `<span style="width:8px;height:8px;border-radius:50%;background:${label.color};display:inline-block"></span> ${this.escapeHtml(label.name)}`;
+            if (this.filterState && this.filterState.label === label.name) pill.classList.add('active');
+            pill.addEventListener('click', () => {
+                if (this.filterState.label === label.name) {
+                    this.filterState.label = null;
+                    pill.classList.remove('active');
+                } else {
+                    container.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+                    this.filterState.label = label.name;
+                    pill.classList.add('active');
+                }
+                this.applyFilters();
+            });
+            container.appendChild(pill);
+        });
+    }
+
+    showFilterBar() {
+        const bar = document.getElementById('filter-bar');
+        if (bar) bar.style.display = '';
+    }
+
+    hideFilterBar() {
+        const bar = document.getElementById('filter-bar');
+        if (bar) bar.style.display = 'none';
+    }
+
+    applyFilters() {
+        const { search, priority, label } = this.filterState;
+        const hasFilter = search || priority || label;
+        let total = 0, matching = 0;
+
+        document.querySelectorAll('.task-card').forEach(card => {
+            const taskId = parseInt(card.dataset.taskId);
+            const task = this.tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            total++;
+            let visible = true;
+
+            if (search) {
+                const title = (task.title || '').toLowerCase();
+                const desc = (task.description || '').toLowerCase();
+                if (!title.includes(search) && !desc.includes(search)) visible = false;
+            }
+
+            if (priority && task.priority !== priority) visible = false;
+
+            if (label) {
+                const taskLabels = task.labels || [];
+                if (!taskLabels.includes(label)) visible = false;
+            }
+
+            card.classList.toggle('filter-hidden', !visible);
+            if (visible) matching++;
+        });
+
+        // Update count
+        const countEl = document.getElementById('filter-count');
+        if (hasFilter) {
+            countEl.textContent = `${matching}/${total}`;
+            countEl.classList.add('has-filter');
+        } else {
+            countEl.textContent = '';
+            countEl.classList.remove('has-filter');
+        }
+
+        // Update clear button
+        document.getElementById('filter-clear-btn').style.display = hasFilter ? '' : 'none';
+
+        // Update column counts to reflect visible
+        this.updateFilteredCounts();
+    }
+
+    updateFilteredCounts() {
+        const columns = ['backlog', 'todo', 'in-progress', 'review', 'done'];
+        columns.forEach(status => {
+            const container = document.getElementById(`${status}-tasks`);
+            if (!container) return;
+            const visible = container.querySelectorAll('.task-card:not(.filter-hidden)').length;
+            const el = document.getElementById(`${status}-count`);
+            if (el) el.textContent = visible;
+        });
     }
 
     showError(message) { this.showToast(message, true); }

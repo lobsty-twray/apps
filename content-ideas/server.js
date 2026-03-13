@@ -12,7 +12,7 @@ const pool = process.env.DATABASE_URL ? new Pool({ connectionString: process.env
   port: process.env.DB_PORT || 5432,
   database: process.env.DB_NAME || 'content_ideas',
   user: process.env.DB_USER || 'lobsty',
-  password: process.env.DB_PASSWORD || '***REMOVED***'
+  password: process.env.DB_PASSWORD || 'lobsty2026'
 });
 
 async function initDB() {
@@ -29,10 +29,14 @@ async function initDB() {
         notes TEXT,
         source VARCHAR(255),
         research_links TEXT,
+        score INTEGER DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    
+    // Add score column if missing (existing tables)
+    await pool.query(`ALTER TABLE ideas ADD COLUMN IF NOT EXISTS score INTEGER DEFAULT 0`);
     
     await pool.query(`
       CREATE TABLE IF NOT EXISTS comments (
@@ -63,18 +67,9 @@ app.get('/api/ideas', async (req, res) => {
     const params = [];
     const conditions = [];
     
-    if (category) {
-      conditions.push(`category = $${params.length + 1}`);
-      params.push(category);
-    }
-    if (priority) {
-      conditions.push(`priority = $${params.length + 1}`);
-      params.push(priority);
-    }
-    if (status) {
-      conditions.push(`status = $${params.length + 1}`);
-      params.push(status);
-    }
+    if (category) { conditions.push(`category = $${params.length + 1}`); params.push(category); }
+    if (priority) { conditions.push(`priority = $${params.length + 1}`); params.push(priority); }
+    if (status) { conditions.push(`status = $${params.length + 1}`); params.push(status); }
     
     if (conditions.length > 0) query += ' WHERE ' + conditions.join(' AND ');
     query += ' ORDER BY updated_at DESC';
@@ -101,9 +96,7 @@ app.get('/api/ideas/:id', async (req, res) => {
   try {
     const idea = await pool.query('SELECT * FROM ideas WHERE id = $1', [req.params.id]);
     if (idea.rows.length === 0) return res.status(404).json({ error: 'Not found' });
-    
     const comments = await pool.query('SELECT * FROM comments WHERE idea_id = $1 ORDER BY created_at DESC', [req.params.id]);
-    
     res.json({ ...idea.rows[0], comments: comments.rows });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch idea' });
@@ -150,6 +143,28 @@ app.delete('/api/ideas/:id', async (req, res) => {
   }
 });
 
+// Upvote
+app.post('/api/ideas/:id/upvote', async (req, res) => {
+  try {
+    const result = await pool.query('UPDATE ideas SET score = score + 1 WHERE id = $1 RETURNING *', [req.params.id]);
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Not found' });
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to upvote' });
+  }
+});
+
+// Downvote
+app.post('/api/ideas/:id/downvote', async (req, res) => {
+  try {
+    const result = await pool.query('UPDATE ideas SET score = score - 1 WHERE id = $1 RETURNING *', [req.params.id]);
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Not found' });
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to downvote' });
+  }
+});
+
 // Add comment
 app.post('/api/ideas/:id/comments', async (req, res) => {
   try {
@@ -171,7 +186,6 @@ app.get('/api/stats', async (req, res) => {
     const byStatus = await pool.query('SELECT status, COUNT(*) as count FROM ideas GROUP BY status');
     const highPriority = await pool.query("SELECT COUNT(*) FROM ideas WHERE priority = 'high'");
     const categories = await pool.query('SELECT DISTINCT category FROM ideas WHERE category IS NOT NULL');
-    
     res.json({
       total: parseInt(total.rows[0].count),
       by_status: byStatus.rows,
@@ -183,8 +197,7 @@ app.get('/api/stats', async (req, res) => {
   }
 });
 
-
-// Global search endpoint (internal, no auth)
+// Global search endpoint
 app.get("/api/search", async (req, res) => {
   try {
     const q = (req.query.q || "").trim();

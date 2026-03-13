@@ -12,27 +12,24 @@
       --border:rgba(255,255,255,0.08);--border-hover:rgba(255,255,255,0.15);
       --success:#10b981;--warning:#f59e0b;--danger:#ef4444;
       --radius:16px;--radius-sm:10px;
-}
+    }
     body{font-family:'Inter',-apple-system,system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
     ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#333;border-radius:3px}
 
     .app{max-width:1400px;margin:0 auto;padding:16px;padding-bottom:100px}
 
-    /* Header */
     .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
     .header-left{display:flex;align-items:center;gap:12px}
     .header-icon{width:44px;height:44px;background:linear-gradient(135deg,var(--accent),#a855f7);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px}
     .header h1{font-size:1.5rem;font-weight:700;letter-spacing:-0.5px}
     .header-sub{font-size:0.8rem;color:var(--text-muted)}
 
-    /* Search */
     .search-bar{position:relative;margin-bottom:16px}
     .search-bar input{width:100%;padding:12px 14px 12px 42px;background:var(--bg-card);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:0.9rem;outline:none;transition:border-color 0.2s;font-family:inherit}
     .search-bar input:focus{border-color:var(--accent)}
     .search-bar input::placeholder{color:var(--text-muted)}
     .search-bar svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--text-muted);pointer-events:none}
 
-    /* Stats */
     .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px}
     .stat{background:var(--bg-card);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:var(--radius);padding:16px;transition:all 0.2s;position:relative;overflow:hidden}
     .stat::before{content:'';position:absolute;inset:0;opacity:0.12;border-radius:var(--radius);z-index:0}
@@ -48,7 +45,6 @@
     .stat.stat-brain .stat-val{background:linear-gradient(135deg,#a855f7,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
     .stat-label{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-top:4px;position:relative;z-index:1}
 
-    /* Category Chips */
     .cat-chips{display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px;margin-bottom:12px;scrollbar-width:none}
     .cat-chips::-webkit-scrollbar{display:none}
     .cat-chip{padding:8px 16px;border-radius:20px;font-size:0.8rem;font-weight:600;white-space:nowrap;cursor:pointer;transition:all 0.2s;border:1px solid var(--border);background:var(--bg-card);color:var(--text-sec);flex-shrink:0;min-height:36px;display:flex;align-items:center;gap:6px;-webkit-tap-highlight-color:transparent}
@@ -57,7 +53,6 @@
     .chip-badge{background:rgba(255,255,255,0.2);padding:1px 6px;border-radius:10px;font-size:0.7rem;font-weight:700}
     .cat-chip.active .chip-badge{background:rgba(255,255,255,0.25)}
 
-    /* Sort & Filter Row */
     .filter-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
     .filter-tabs{display:flex;gap:4px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:3px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex:1;min-width:0}
     .filter-tab{padding:8px 14px;border-radius:8px;font-size:0.8rem;font-weight:600;color:var(--text-sec);cursor:pointer;white-space:nowrap;transition:all 0.2s;border:none;background:none;min-height:36px;display:flex;align-items:center;gap:5px;-webkit-tap-highlight-color:transparent}
@@ -65,18 +60,14 @@
     .filter-tab:hover:not(.active){background:rgba(255,255,255,0.05)}
     .tab-badge{background:rgba(255,255,255,0.15);padding:1px 6px;border-radius:10px;font-size:0.65rem;font-weight:700}
     .filter-tab.active .tab-badge{background:rgba(255,255,255,0.25)}
-    .sort-select{padding:8px 30px 8px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:0.8rem;min-height:36px;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.4)' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;flex-shrink:0}
-    .sort-select option{background:#1a1a2e}
-    .filter-select{padding:8px 30px 8px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:0.8rem;min-height:36px;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.4)' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;flex-shrink:0}
-    .filter-select option{background:#1a1a2e}
+    .sort-select,.filter-select{padding:8px 30px 8px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:0.8rem;min-height:36px;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.4)' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;flex-shrink:0}
+    .sort-select option,.filter-select option{background:#1a1a2e}
 
-    /* Masonry Grid */
     .masonry{columns:1;column-gap:12px}
     @media(min-width:480px){.masonry{columns:2}}
     @media(min-width:768px){.masonry{columns:3}}
     @media(min-width:1024px){.masonry{columns:4}}
 
-    /* Idea Card */
     .idea-card{break-inside:avoid;background:var(--bg-card);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;cursor:pointer;transition:all 0.3s cubic-bezier(.4,0,.2,1);opacity:0;transform:translateY(16px);position:relative;overflow:hidden}
     .idea-card.visible{opacity:1;transform:translateY(0)}
     .idea-card:hover{border-color:var(--border-hover);transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,0.3)}
@@ -86,7 +77,6 @@
     .idea-card.priority-high:hover{box-shadow:0 12px 40px rgba(239,68,68,0.15),inset 0 0 30px rgba(239,68,68,0.05)}
     .idea-card.priority-medium{border-left:3px solid var(--warning)}
     .idea-card.priority-low{border-left:3px solid rgba(255,255,255,0.1)}
-    /* Hover actions */
     .card-actions{position:absolute;top:8px;right:8px;display:flex;gap:4px;opacity:0;transform:translateY(-4px);transition:all 0.2s;z-index:2}
     .idea-card:hover .card-actions{opacity:1;transform:translateY(0)}
     .card-action-btn{width:30px;height:30px;border-radius:8px;border:none;background:rgba(255,255,255,0.1);backdrop-filter:blur(10px);color:var(--text-sec);cursor:pointer;font-size:0.75rem;display:flex;align-items:center;justify-content:center;transition:all 0.15s}
@@ -115,18 +105,25 @@
     .status-dot.ready{background:var(--success)}
     .status-dot.published{background:#6366f1}
 
-    /* Status quick-change popup */
+    /* Vote buttons */
+    .vote-row{display:flex;align-items:center;gap:2px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+    .vote-btn{width:28px;height:28px;border-radius:6px;border:none;background:rgba(255,255,255,0.05);color:var(--text-muted);cursor:pointer;font-size:0.8rem;display:flex;align-items:center;justify-content:center;transition:all 0.15s;-webkit-tap-highlight-color:transparent}
+    .vote-btn:hover{background:rgba(255,255,255,0.12)}
+    .vote-btn.up:hover{color:var(--accent);background:rgba(124,58,237,0.15)}
+    .vote-btn.down:hover{color:var(--danger);background:rgba(239,68,68,0.15)}
+    .vote-score{font-size:0.78rem;font-weight:700;min-width:24px;text-align:center;font-variant-numeric:tabular-nums}
+    .vote-score.positive{color:var(--accent)}
+    .vote-score.negative{color:var(--danger)}
+    .vote-score.zero{color:var(--text-muted)}
+
     .status-popup{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:#1a1a2e;border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px;display:flex;gap:4px;box-shadow:0 8px 24px rgba(0,0,0,0.5);z-index:10;white-space:nowrap}
     .status-popup-btn{padding:6px 10px;border:none;border-radius:6px;background:none;color:var(--text-sec);font-size:0.75rem;cursor:pointer;transition:all 0.15s;white-space:nowrap}
     .status-popup-btn:hover{background:var(--accent);color:#fff}
 
-    /* FAB */
     .fab{position:fixed;bottom:24px;right:24px;width:56px;height:56px;background:linear-gradient(135deg,var(--accent),#a855f7);border:none;border-radius:50%;color:#fff;font-size:28px;cursor:pointer;box-shadow:0 8px 24px var(--accent-glow);transition:all 0.3s cubic-bezier(.4,0,.2,1);z-index:100;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
     .fab:hover{transform:scale(1.1);box-shadow:0 12px 32px var(--accent-glow)}
     .fab:active{transform:scale(0.95)}
-    .fab.expanded{border-radius:var(--radius);width:auto;height:auto;padding:0;bottom:24px;right:24px}
 
-    /* Quick-add form */
     .quick-add{position:fixed;bottom:90px;right:24px;background:#12121a;border:1px solid var(--border);border-radius:var(--radius);padding:16px;width:min(320px,calc(100vw - 48px));box-shadow:0 16px 48px rgba(0,0,0,0.5);z-index:101;display:none;animation:slideUp 0.25s ease}
     .quick-add.active{display:block}
     .quick-add h3{font-size:0.9rem;font-weight:700;margin-bottom:12px;color:var(--text)}
@@ -136,7 +133,6 @@
     .quick-add-actions{display:flex;gap:8px;margin-top:10px}
     .quick-add-actions .btn{flex:1;padding:10px;font-size:0.82rem}
 
-    /* Modal */
     .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:200;align-items:flex-end;justify-content:center}
     .modal-overlay.active{display:flex}
     @media(min-width:768px){.modal-overlay.active{align-items:center}}
@@ -170,7 +166,6 @@
     .btn-danger{background:rgba(239,68,68,0.1);color:var(--danger)}
     .btn-danger:hover{background:rgba(239,68,68,0.2)}
 
-    /* Comments */
     .comments-section{margin-top:8px}
     .comments-list{margin-top:12px;display:flex;flex-direction:column;gap:8px}
     .comment-item{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.04);border-radius:var(--radius-sm);padding:12px 14px;position:relative}
@@ -180,26 +175,23 @@
     .comment-input-row{display:flex;gap:8px;margin-top:8px}
     .comment-input-row input{flex:1}
 
-    /* Empty State */
     .empty{text-align:center;padding:60px 20px;color:var(--text-muted)}
     .empty-icon{font-size:48px;margin-bottom:12px}
     .empty-text{font-size:1rem;font-weight:600;color:var(--text-sec)}
     .empty-sub{font-size:0.85rem;margin-top:4px}
 
-    /* Toast */
     .toast-container{position:fixed;bottom:90px;right:24px;z-index:300;display:flex;flex-direction:column;gap:8px}
     .toast{background:#1a1a2e;border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;font-size:0.85rem;box-shadow:0 8px 32px rgba(0,0,0,0.4);animation:fadeUp 0.2s ease}
     .toast.success{border-left:3px solid var(--success)}
     .toast.error{border-left:3px solid var(--danger)}
     @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 
-    /* Mobile swipe hint */
     @media(max-width:767px){
       .card-actions{display:none !important}
       .idea-card{-webkit-user-select:none;user-select:none}
+      .vote-btn{width:32px;height:32px}
     }
 
-    /* Random Idea Button */
     .random-btn{padding:10px 18px;border-radius:var(--radius-sm);background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;border:none;font-size:0.85rem;font-weight:700;cursor:pointer;transition:all 0.3s;min-height:44px;display:flex;align-items:center;gap:6px;-webkit-tap-highlight-color:transparent;white-space:nowrap}
     .random-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(245,158,11,0.3)}
     .random-btn:active{transform:scale(0.95)}
@@ -231,21 +223,17 @@
       <div class="header-icon">💡</div>
       <div><h1>Content Ideas</h1><div class="header-sub">Tech with Ray</div></div>
     </div>
-    <button class="random-btn" onclick="openRandomIdea()" title="Random Idea">ð² Random Idea</button>
+    <button class="random-btn" onclick="openRandomIdea()" title="Random Idea">🎲 Random Idea</button>
   </div>
 
-  <!-- Search -->
   <div class="search-bar">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
     <input type="text" id="searchInput" placeholder="Search ideas...">
   </div>
 
   <div class="stats" id="stats"></div>
-
-  <!-- Category chips -->
   <div class="cat-chips" id="catChips"></div>
 
-  <!-- Status filter + sort -->
   <div class="filter-row">
     <div class="filter-tabs" id="statusTabs">
       <button class="filter-tab active" data-status="">All</button>
@@ -259,6 +247,7 @@
       <option value="oldest">Oldest</option>
       <option value="priority">Priority</option>
       <option value="updated">Updated</option>
+      <option value="top-rated">⭐ Top Rated</option>
     </select>
     <select class="filter-select" id="priFilter">
       <option value="">All Priority</option>
@@ -273,7 +262,6 @@
 
 <button class="fab" id="fabBtn" title="New Idea">+</button>
 
-<!-- Quick-add -->
 <div class="quick-add" id="quickAdd">
   <h3>⚡ Quick Add</h3>
   <input class="form-input" id="qaTitle" placeholder="Idea title...">
@@ -300,7 +288,6 @@
   </div>
 </div>
 
-<!-- Full Modal -->
 <div class="modal-overlay" id="ideaModal">
   <div class="modal">
     <div class="modal-header">
@@ -311,69 +298,24 @@
       <input type="hidden" id="ideaId">
       <div class="form-section">
         <div class="form-section-title">Basic Info</div>
-        <div class="form-group">
-          <label>Title</label>
-          <input class="form-input" id="fTitle" placeholder="What's the idea?" required>
-        </div>
-        <div class="form-group">
-          <label>Description</label>
-          <textarea class="form-textarea" id="fDesc" placeholder="Describe the concept..."></textarea>
-        </div>
+        <div class="form-group"><label>Title</label><input class="form-input" id="fTitle" placeholder="What's the idea?" required></div>
+        <div class="form-group"><label>Description</label><textarea class="form-textarea" id="fDesc" placeholder="Describe the concept..."></textarea></div>
       </div>
       <div class="form-section">
         <div class="form-section-title">Classification</div>
         <div class="form-row-3">
-          <div class="form-group">
-            <label>Category</label>
-            <select class="form-select" id="fCat">
-              <option value="">None</option>
-              <option value="review">Review</option>
-              <option value="tutorial">Tutorial</option>
-              <option value="benchmark">Benchmark</option>
-              <option value="collab">Collab</option>
-              <option value="shorts">Shorts</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Priority</label>
-            <select class="form-select" id="fPri">
-              <option value="low">Low</option>
-              <option value="medium" selected>Medium</option>
-              <option value="high">High</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Status</label>
-            <select class="form-select" id="fStatus">
-              <option value="brainstorm">Brainstorm</option>
-              <option value="research">Research</option>
-              <option value="ready">Ready</option>
-              <option value="published">Published</option>
-            </select>
-          </div>
+          <div class="form-group"><label>Category</label><select class="form-select" id="fCat"><option value="">None</option><option value="review">Review</option><option value="tutorial">Tutorial</option><option value="benchmark">Benchmark</option><option value="collab">Collab</option><option value="shorts">Shorts</option><option value="other">Other</option></select></div>
+          <div class="form-group"><label>Priority</label><select class="form-select" id="fPri"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option></select></div>
+          <div class="form-group"><label>Status</label><select class="form-select" id="fStatus"><option value="brainstorm">Brainstorm</option><option value="research">Research</option><option value="ready">Ready</option><option value="published">Published</option></select></div>
         </div>
-        <div class="form-group">
-          <label>Tags (comma-sep)</label>
-          <input class="form-input" id="fTags" placeholder="gpu, nvidia, review">
-        </div>
+        <div class="form-group"><label>Tags (comma-sep)</label><input class="form-input" id="fTags" placeholder="gpu, nvidia, review"></div>
       </div>
       <div class="form-section">
         <div class="form-section-title">Details</div>
-        <div class="form-group">
-          <label>Source</label>
-          <input class="form-input" id="fSource" placeholder="Where did the idea come from?">
-        </div>
-        <div class="form-group">
-          <label>Research Links</label>
-          <textarea class="form-textarea" id="fLinks" placeholder="Related URLs..." style="min-height:50px"></textarea>
-        </div>
-        <div class="form-group">
-          <label>Notes</label>
-          <textarea class="form-textarea" id="fNotes" placeholder="Additional notes..."></textarea>
-        </div>
+        <div class="form-group"><label>Source</label><input class="form-input" id="fSource" placeholder="Where did the idea come from?"></div>
+        <div class="form-group"><label>Research Links</label><textarea class="form-textarea" id="fLinks" placeholder="Related URLs..." style="min-height:50px"></textarea></div>
+        <div class="form-group"><label>Notes</label><textarea class="form-textarea" id="fNotes" placeholder="Additional notes..."></textarea></div>
       </div>
-      <!-- Comments section -->
       <div id="commentsSection" class="comments-section" style="display:none">
         <div class="form-section-title">Comments</div>
         <div class="comment-input-row">
@@ -391,25 +333,22 @@
   </div>
 </div>
 
-
-<!-- Random Idea Spotlight -->
 <div class="spotlight-overlay" id="spotlightOverlay" onclick="if(event.target===this)closeSpotlight()">
   <div class="spotlight-card">
-    <button class="spotlight-close" onclick="closeSpotlight()">â</button>
+    <button class="spotlight-close" onclick="closeSpotlight()">✕</button>
     <div class="spotlight-inner">
-      <span class="spotlight-emoji" id="spotlightEmoji">ð²</span>
+      <span class="spotlight-emoji" id="spotlightEmoji">🎲</span>
       <div class="spotlight-title" id="spotlightTitle"></div>
       <div class="spotlight-desc" id="spotlightDesc"></div>
       <div class="spotlight-meta" id="spotlightMeta"></div>
       <div class="spotlight-actions">
-        <button class="btn btn-secondary" onclick="openRandomIdea()">ð Another One</button>
-        <button class="btn btn-primary" id="spotlightOpenBtn" onclick="openSpotlightDetail()">Open â</button>
+        <button class="btn btn-secondary" onclick="openRandomIdea()">🎲 Another One</button>
+        <button class="btn btn-primary" id="spotlightOpenBtn" onclick="openSpotlightDetail()">Open →</button>
       </div>
     </div>
   </div>
 </div>
 <div class="confetti-container" id="confettiContainer"></div>
-
 <div class="toast-container" id="toasts"></div>
 
 <script>
@@ -435,8 +374,7 @@ async function loadStats(){
 }
 
 function buildCatChips(){
-  const counts={};
-  CATEGORIES.forEach(c=>counts[c.v]=0);
+  const counts={};CATEGORIES.forEach(c=>counts[c.v]=0);
   allIdeas.forEach(i=>{const c=i.category||'';if(c in counts)counts[c]++;counts['']++});
   document.getElementById('catChips').innerHTML=CATEGORIES.map(c=>
     `<button class="cat-chip${currentFilter.category===c.v?' active':''}" data-cat="${c.v}">${CAT_ICONS[c.v]||''} ${c.l} <span class="chip-badge">${counts[c.v]||0}</span></button>`
@@ -464,13 +402,13 @@ function applyFilters(){
   if(currentFilter.category)ideas=ideas.filter(i=>i.category===currentFilter.category);
   if(currentFilter.priority)ideas=ideas.filter(i=>i.priority===currentFilter.priority);
   if(searchQuery){const q=searchQuery.toLowerCase();ideas=ideas.filter(i=>(i.title||'').toLowerCase().includes(q)||(i.description||'').toLowerCase().includes(q)||(i.tags||'').toLowerCase().includes(q)||(i.category||'').toLowerCase().includes(q))}
-  // Sort
   const priOrder={high:0,medium:1,low:2};
   switch(currentSort){
     case 'newest':ideas.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));break;
     case 'oldest':ideas.sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));break;
     case 'priority':ideas.sort((a,b)=>(priOrder[a.priority]||2)-(priOrder[b.priority]||2));break;
     case 'updated':ideas.sort((a,b)=>new Date(b.updated_at||b.created_at)-new Date(a.updated_at||a.created_at));break;
+    case 'top-rated':ideas.sort((a,b)=>(b.score||0)-(a.score||0));break;
   }
   filteredIdeas=ideas;renderIdeas();
 }
@@ -480,6 +418,8 @@ function renderIdeas(){
   if(!filteredIdeas.length){grid.innerHTML='<div class="empty"><div class="empty-icon">💡</div><div class="empty-text">No ideas found</div><div class="empty-sub">Tap + to brainstorm something</div></div>';return}
   grid.innerHTML=filteredIdeas.map((idea,i)=>{
     const tags=(idea.tags||'').split(',').filter(t=>t.trim());
+    const score=idea.score||0;
+    const scoreCls=score>0?'positive':score<0?'negative':'zero';
     return `<div class="idea-card priority-${idea.priority||'low'}" data-id="${idea.id}" onclick="openDetail(${idea.id})" style="transition-delay:${i*0.04}s">
       <div class="card-actions">
         <button class="card-action-btn" onclick="event.stopPropagation();cycleStatus(${idea.id},'${idea.status}')" title="Change status">⟳</button>
@@ -497,8 +437,12 @@ function renderIdeas(){
         <div class="card-status"><div class="status-dot ${idea.status}"></div>${idea.status}</div>
         <span>${timeAgo(idea.created_at)}</span>
       </div>
+      <div class="vote-row" onclick="event.stopPropagation()">
+        <button class="vote-btn up" onclick="vote(${idea.id},'up')" title="Upvote">▲</button>
+        <span class="vote-score ${scoreCls}">${score}</span>
+        <button class="vote-btn down" onclick="vote(${idea.id},'down')" title="Downvote">▼</button>
+      </div>
     </div>`}).join('');
-  // Stagger entrance
   requestAnimationFrame(()=>{
     document.querySelectorAll('.idea-card:not(.visible)').forEach((card,i)=>{
       setTimeout(()=>card.classList.add('visible'),i*40);
@@ -506,14 +450,22 @@ function renderIdeas(){
   });
 }
 
-// Search
+async function vote(id,dir){
+  try{
+    await fetch('/api/ideas/'+id+'/'+(dir==='up'?'upvote':'downvote'),{method:'POST'});
+    // Update locally for instant feedback
+    const idea=allIdeas.find(i=>i.id===id);
+    if(idea) idea.score=(idea.score||0)+(dir==='up'?1:-1);
+    applyFilters();
+  }catch(e){toast('Vote failed','error')}
+}
+
 let searchDebounce;
 document.getElementById('searchInput').addEventListener('input',e=>{
   clearTimeout(searchDebounce);
   searchDebounce=setTimeout(()=>{searchQuery=e.target.value.trim();applyFilters()},200);
 });
 
-// Status tabs
 document.getElementById('statusTabs').addEventListener('click',e=>{
   if(!e.target.classList.contains('filter-tab'))return;
   document.querySelectorAll('.filter-tab').forEach(t=>t.classList.remove('active'));
@@ -521,7 +473,6 @@ document.getElementById('statusTabs').addEventListener('click',e=>{
   currentFilter.status=e.target.dataset.status;applyFilters()
 });
 
-// Category chips
 document.getElementById('catChips').addEventListener('click',e=>{
   const chip=e.target.closest('.cat-chip');if(!chip)return;
   currentFilter.category=chip.dataset.cat;
@@ -529,20 +480,18 @@ document.getElementById('catChips').addEventListener('click',e=>{
   chip.classList.add('active');applyFilters()
 });
 
-// Priority & Sort
 document.getElementById('priFilter').addEventListener('change',e=>{currentFilter.priority=e.target.value;applyFilters()});
 document.getElementById('sortSelect').addEventListener('change',e=>{currentSort=e.target.value;applyFilters()});
 
-// Quick status cycle (hover button or double-tap)
 async function cycleStatus(id,current){
   const next=STATUSES[(STATUSES.indexOf(current)+1)%STATUSES.length];
   try{await fetch('/api/ideas/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:next})});toast(`→ ${next}`);loadIdeas()}catch(e){toast('Failed','error')}
 }
 
-// Double-tap / long-press for mobile status change
 let lastTap=0,longPressTimer=null;
 document.getElementById('ideasGrid').addEventListener('touchstart',e=>{
   const card=e.target.closest('.idea-card');if(!card)return;
+  if(e.target.closest('.vote-row'))return;
   const id=parseInt(card.dataset.id);
   longPressTimer=setTimeout(()=>{
     e.preventDefault();
@@ -553,6 +502,7 @@ document.getElementById('ideasGrid').addEventListener('touchstart',e=>{
 },{passive:false});
 document.getElementById('ideasGrid').addEventListener('touchend',e=>{
   if(longPressTimer){clearTimeout(longPressTimer);longPressTimer=null}
+  if(e.target.closest('.vote-row'))return;
   const card=e.target.closest('.idea-card');if(!card)return;
   const now=Date.now();
   if(now-lastTap<300){
@@ -564,7 +514,6 @@ document.getElementById('ideasGrid').addEventListener('touchend',e=>{
   }else{lastTap=now}
 });
 
-// FAB & Quick-add
 let quickAddOpen=false;
 document.getElementById('fabBtn').addEventListener('click',()=>toggleQuickAdd(!quickAddOpen));
 function toggleQuickAdd(show){
@@ -572,68 +521,20 @@ function toggleQuickAdd(show){
   document.getElementById('quickAdd').classList.toggle('active',show);
   if(show)document.getElementById('qaTitle').focus();
 }
+
 async function quickSave(){
   const title=document.getElementById('qaTitle').value.trim();
   if(!title){toast('Title required','error');return}
   const data={title,category:document.getElementById('qaCat').value,priority:document.getElementById('qaPri').value,status:'brainstorm'};
-  try{await fetch('/api/ideas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-  document.getElementById('qaTitle').value='';toggleQuickAdd(false);
-// Random Idea Spotlight
-let spotlightIdeaId = null;
-const STATUS_EMOJI = {brainstorm:'\u{1F4AD}',research:'\u{1F50D}',ready:'\u{1F680}',published:'\u2705'};
-const PRI_COLORS = {high:'var(--danger)',medium:'var(--warning)',low:'rgba(255,255,255,0.3)'};
-
-async function openRandomIdea(){
   try{
-    const r = await fetch('/api/ideas/random');
-    const idea = await r.json();
-    if(!idea){toast('No unpublished ideas found','error');return}
-    spotlightIdeaId = idea.id;
-    document.getElementById('spotlightEmoji').textContent = STATUS_EMOJI[idea.status]||'\u{1F4A1}';
-    document.getElementById('spotlightTitle').textContent = idea.title;
-    document.getElementById('spotlightDesc').textContent = idea.description||'No description yet';
-    const meta = [];
-    if(idea.category) meta.push('<span class="spotlight-tag cat-'+idea.category+'">'+idea.category+'</span>');
-    if(idea.priority) meta.push('<span class="spotlight-tag" style="background:rgba(255,255,255,0.08);border:1px solid '+(PRI_COLORS[idea.priority]||'#fff')+'">'+idea.priority+' priority</span>');
-    if(idea.status) meta.push('<span class="spotlight-tag" style="background:rgba(255,255,255,0.08)">'+idea.status+'</span>');
-    document.getElementById('spotlightMeta').innerHTML = meta.join('');
-    document.getElementById('spotlightOverlay').classList.add('active');
-    spawnConfetti();
-  }catch(e){toast('Failed to get random idea','error')}
+    await fetch('/api/ideas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    document.getElementById('qaTitle').value='';
+    toggleQuickAdd(false);
+    loadIdeas();
+    toast('Idea added!');
+  }catch(e){toast('Failed','error')}
 }
 
-function closeSpotlight(){
-  document.getElementById('spotlightOverlay').classList.remove('active');
-  document.getElementById('confettiContainer').innerHTML='';
-}
-
-function openSpotlightDetail(){
-  closeSpotlight();
-  if(spotlightIdeaId) openDetail(spotlightIdeaId);
-}
-
-function spawnConfetti(){
-  const container=document.getElementById('confettiContainer');
-  container.innerHTML='';
-  const colors=['#6366f1','#a855f7','#f59e0b','#ef4444','#10b981','#3b82f6','#ec4899','#f97316'];
-  for(let i=0;i<40;i++){
-    const el=document.createElement('div');
-    el.className='confetti';
-    el.style.left=Math.random()*100+'%';
-    el.style.background=colors[Math.floor(Math.random()*colors.length)];
-    el.style.width=(4+Math.random()*6)+'px';
-    el.style.height=(4+Math.random()*6)+'px';
-    el.style.setProperty('--drift',(Math.random()*200-100)+'px');
-    el.style.animationDuration=(1.5+Math.random()*2)+'s';
-    el.style.animationDelay=(Math.random()*0.5)+'s';
-    el.style.borderRadius=Math.random()>0.5?'50%':'2px';
-    container.appendChild(el);
-  }
-  setTimeout(()=>container.innerHTML='',4000);
-}
-
-loadIdeas();toast('Idea added!')}catch(e){toast('Failed','error')}
-}
 function expandToFull(){
   const title=document.getElementById('qaTitle').value;
   const cat=document.getElementById('qaCat').value;
@@ -643,12 +544,11 @@ function expandToFull(){
   document.getElementById('fCat').value=cat;
   document.getElementById('fPri').value=pri;
 }
-// Close quick-add on outside click
+
 document.addEventListener('click',e=>{
   if(quickAddOpen&&!e.target.closest('.quick-add')&&!e.target.closest('.fab'))toggleQuickAdd(false);
 });
 
-// Modal
 function openModal(idea){
   editingId=idea?idea.id:null;
   document.getElementById('modalTitle').textContent=idea?'Edit Idea':'New Idea';
@@ -681,122 +581,14 @@ async function saveIdea(){
     if(editingId){await fetch('/api/ideas/'+editingId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})}
     else{await fetch('/api/ideas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})}
     closeModal();
-// Random Idea Spotlight
-let spotlightIdeaId = null;
-const STATUS_EMOJI = {brainstorm:'\u{1F4AD}',research:'\u{1F50D}',ready:'\u{1F680}',published:'\u2705'};
-const PRI_COLORS = {high:'var(--danger)',medium:'var(--warning)',low:'rgba(255,255,255,0.3)'};
-
-async function openRandomIdea(){
-  try{
-    const r = await fetch('/api/ideas/random');
-    const idea = await r.json();
-    if(!idea){toast('No unpublished ideas found','error');return}
-    spotlightIdeaId = idea.id;
-    document.getElementById('spotlightEmoji').textContent = STATUS_EMOJI[idea.status]||'\u{1F4A1}';
-    document.getElementById('spotlightTitle').textContent = idea.title;
-    document.getElementById('spotlightDesc').textContent = idea.description||'No description yet';
-    const meta = [];
-    if(idea.category) meta.push('<span class="spotlight-tag cat-'+idea.category+'">'+idea.category+'</span>');
-    if(idea.priority) meta.push('<span class="spotlight-tag" style="background:rgba(255,255,255,0.08);border:1px solid '+(PRI_COLORS[idea.priority]||'#fff')+'">'+idea.priority+' priority</span>');
-    if(idea.status) meta.push('<span class="spotlight-tag" style="background:rgba(255,255,255,0.08)">'+idea.status+'</span>');
-    document.getElementById('spotlightMeta').innerHTML = meta.join('');
-    document.getElementById('spotlightOverlay').classList.add('active');
-    spawnConfetti();
-  }catch(e){toast('Failed to get random idea','error')}
-}
-
-function closeSpotlight(){
-  document.getElementById('spotlightOverlay').classList.remove('active');
-  document.getElementById('confettiContainer').innerHTML='';
-}
-
-function openSpotlightDetail(){
-  closeSpotlight();
-  if(spotlightIdeaId) openDetail(spotlightIdeaId);
-}
-
-function spawnConfetti(){
-  const container=document.getElementById('confettiContainer');
-  container.innerHTML='';
-  const colors=['#6366f1','#a855f7','#f59e0b','#ef4444','#10b981','#3b82f6','#ec4899','#f97316'];
-  for(let i=0;i<40;i++){
-    const el=document.createElement('div');
-    el.className='confetti';
-    el.style.left=Math.random()*100+'%';
-    el.style.background=colors[Math.floor(Math.random()*colors.length)];
-    el.style.width=(4+Math.random()*6)+'px';
-    el.style.height=(4+Math.random()*6)+'px';
-    el.style.setProperty('--drift',(Math.random()*200-100)+'px');
-    el.style.animationDuration=(1.5+Math.random()*2)+'s';
-    el.style.animationDelay=(Math.random()*0.5)+'s';
-    el.style.borderRadius=Math.random()>0.5?'50%':'2px';
-    container.appendChild(el);
-  }
-  setTimeout(()=>container.innerHTML='',4000);
-}
-
-loadIdeas();toast(editingId?'Updated!':'Created!')
+    loadIdeas();
+    toast(editingId?'Updated!':'Created!');
   }catch(e){toast('Failed to save','error')}
 }
 
 async function deleteIdea(){
   if(!editingId||!confirm('Delete this idea?'))return;
-  try{await fetch('/api/ideas/'+editingId,{method:'DELETE'});closeModal();
-// Random Idea Spotlight
-let spotlightIdeaId = null;
-const STATUS_EMOJI = {brainstorm:'\u{1F4AD}',research:'\u{1F50D}',ready:'\u{1F680}',published:'\u2705'};
-const PRI_COLORS = {high:'var(--danger)',medium:'var(--warning)',low:'rgba(255,255,255,0.3)'};
-
-async function openRandomIdea(){
-  try{
-    const r = await fetch('/api/ideas/random');
-    const idea = await r.json();
-    if(!idea){toast('No unpublished ideas found','error');return}
-    spotlightIdeaId = idea.id;
-    document.getElementById('spotlightEmoji').textContent = STATUS_EMOJI[idea.status]||'\u{1F4A1}';
-    document.getElementById('spotlightTitle').textContent = idea.title;
-    document.getElementById('spotlightDesc').textContent = idea.description||'No description yet';
-    const meta = [];
-    if(idea.category) meta.push('<span class="spotlight-tag cat-'+idea.category+'">'+idea.category+'</span>');
-    if(idea.priority) meta.push('<span class="spotlight-tag" style="background:rgba(255,255,255,0.08);border:1px solid '+(PRI_COLORS[idea.priority]||'#fff')+'">'+idea.priority+' priority</span>');
-    if(idea.status) meta.push('<span class="spotlight-tag" style="background:rgba(255,255,255,0.08)">'+idea.status+'</span>');
-    document.getElementById('spotlightMeta').innerHTML = meta.join('');
-    document.getElementById('spotlightOverlay').classList.add('active');
-    spawnConfetti();
-  }catch(e){toast('Failed to get random idea','error')}
-}
-
-function closeSpotlight(){
-  document.getElementById('spotlightOverlay').classList.remove('active');
-  document.getElementById('confettiContainer').innerHTML='';
-}
-
-function openSpotlightDetail(){
-  closeSpotlight();
-  if(spotlightIdeaId) openDetail(spotlightIdeaId);
-}
-
-function spawnConfetti(){
-  const container=document.getElementById('confettiContainer');
-  container.innerHTML='';
-  const colors=['#6366f1','#a855f7','#f59e0b','#ef4444','#10b981','#3b82f6','#ec4899','#f97316'];
-  for(let i=0;i<40;i++){
-    const el=document.createElement('div');
-    el.className='confetti';
-    el.style.left=Math.random()*100+'%';
-    el.style.background=colors[Math.floor(Math.random()*colors.length)];
-    el.style.width=(4+Math.random()*6)+'px';
-    el.style.height=(4+Math.random()*6)+'px';
-    el.style.setProperty('--drift',(Math.random()*200-100)+'px');
-    el.style.animationDuration=(1.5+Math.random()*2)+'s';
-    el.style.animationDelay=(Math.random()*0.5)+'s';
-    el.style.borderRadius=Math.random()>0.5?'50%':'2px';
-    container.appendChild(el);
-  }
-  setTimeout(()=>container.innerHTML='',4000);
-}
-
-loadIdeas();toast('Deleted')}catch(e){toast('Failed','error')}
+  try{await fetch('/api/ideas/'+editingId,{method:'DELETE'});closeModal();loadIdeas();toast('Deleted')}catch(e){toast('Failed','error')}
 }
 
 async function loadComments(id){
@@ -815,28 +607,27 @@ async function addComment(){
 }
 
 document.getElementById('ideaModal').addEventListener('click',e=>{if(e.target===document.getElementById('ideaModal'))closeModal()});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();toggleQuickAdd(false)}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();toggleQuickAdd(false);closeSpotlight()}});
 
-
-// Random Idea Spotlight
-let spotlightIdeaId = null;
-const STATUS_EMOJI = {brainstorm:'\u{1F4AD}',research:'\u{1F50D}',ready:'\u{1F680}',published:'\u2705'};
-const PRI_COLORS = {high:'var(--danger)',medium:'var(--warning)',low:'rgba(255,255,255,0.3)'};
+// Random Idea Spotlight (single canonical definition)
+let spotlightIdeaId=null;
+const STATUS_EMOJI={brainstorm:'💭',research:'🔍',ready:'🚀',published:'✅'};
+const PRI_COLORS={high:'var(--danger)',medium:'var(--warning)',low:'rgba(255,255,255,0.3)'};
 
 async function openRandomIdea(){
   try{
-    const r = await fetch('/api/ideas/random');
-    const idea = await r.json();
+    const r=await fetch('/api/ideas/random');
+    const idea=await r.json();
     if(!idea){toast('No unpublished ideas found','error');return}
-    spotlightIdeaId = idea.id;
-    document.getElementById('spotlightEmoji').textContent = STATUS_EMOJI[idea.status]||'\u{1F4A1}';
-    document.getElementById('spotlightTitle').textContent = idea.title;
-    document.getElementById('spotlightDesc').textContent = idea.description||'No description yet';
-    const meta = [];
-    if(idea.category) meta.push('<span class="spotlight-tag cat-'+idea.category+'">'+idea.category+'</span>');
-    if(idea.priority) meta.push('<span class="spotlight-tag" style="background:rgba(255,255,255,0.08);border:1px solid '+(PRI_COLORS[idea.priority]||'#fff')+'">'+idea.priority+' priority</span>');
-    if(idea.status) meta.push('<span class="spotlight-tag" style="background:rgba(255,255,255,0.08)">'+idea.status+'</span>');
-    document.getElementById('spotlightMeta').innerHTML = meta.join('');
+    spotlightIdeaId=idea.id;
+    document.getElementById('spotlightEmoji').textContent=STATUS_EMOJI[idea.status]||'💡';
+    document.getElementById('spotlightTitle').textContent=idea.title;
+    document.getElementById('spotlightDesc').textContent=idea.description||'No description yet';
+    const meta=[];
+    if(idea.category)meta.push('<span class="spotlight-tag cat-'+idea.category+'">'+idea.category+'</span>');
+    if(idea.priority)meta.push('<span class="spotlight-tag" style="background:rgba(255,255,255,0.08);border:1px solid '+(PRI_COLORS[idea.priority]||'#fff')+'">'+idea.priority+' priority</span>');
+    if(idea.status)meta.push('<span class="spotlight-tag" style="background:rgba(255,255,255,0.08)">'+idea.status+'</span>');
+    document.getElementById('spotlightMeta').innerHTML=meta.join('');
     document.getElementById('spotlightOverlay').classList.add('active');
     spawnConfetti();
   }catch(e){toast('Failed to get random idea','error')}
@@ -849,7 +640,7 @@ function closeSpotlight(){
 
 function openSpotlightDetail(){
   closeSpotlight();
-  if(spotlightIdeaId) openDetail(spotlightIdeaId);
+  if(spotlightIdeaId)openDetail(spotlightIdeaId);
 }
 
 function spawnConfetti(){

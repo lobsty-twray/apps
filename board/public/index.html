@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Board — Lobsty</title>
     <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=6">
+    <link rel="stylesheet" href="style.css?v=7">
     <link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg">
     <link rel="icon" type="image/x-icon" href="/favicons/favicon.ico">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32x32.png">
@@ -138,7 +138,39 @@
                 </div>
             </div>
 
-            <!-- Column indicator dots for mobile -->
+            
+            <!-- Search & Filter Bar -->
+            <div id="filter-bar" class="filter-bar" style="display: none;">
+                <div class="filter-bar-main">
+                    <div class="filter-search-wrap">
+                        <svg class="filter-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" id="filter-search" class="filter-search" placeholder="Search tasks... (&#8984;K)">
+                        <span id="filter-count" class="filter-count"></span>
+                    </div>
+                    <button id="filter-toggle-btn" class="btn btn-glass filter-toggle-btn" title="Filters">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                        <span class="filter-toggle-label">Filters</span>
+                    </button>
+                </div>
+                <div id="filter-options" class="filter-options">
+                    <div class="filter-group">
+                        <label>Priority</label>
+                        <div class="filter-pills" id="filter-priority">
+                            <button class="filter-pill" data-priority="low">Low</button>
+                            <button class="filter-pill" data-priority="medium">Medium</button>
+                            <button class="filter-pill" data-priority="high">High</button>
+                            <button class="filter-pill" data-priority="urgent">Urgent</button>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <label>Label</label>
+                        <div class="filter-pills" id="filter-labels"></div>
+                    </div>
+                    <button id="filter-clear-btn" class="btn btn-glass btn-sm filter-clear-btn" style="display:none;">✕ Clear filters</button>
+                </div>
+            </div>
+
+<!-- Column indicator dots for mobile -->
             <div id="column-dots" class="column-dots" style="display:none;">
                 <span class="dot active" data-col="0"></span>
                 <span class="dot" data-col="1"></span>
@@ -393,6 +425,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
-    <script src="script.js?v=6"></script>
+    <script src="script.js?v=7"></script>
 </body>
 </html>
