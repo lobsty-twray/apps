@@ -395,6 +395,7 @@ main{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:1rem;pad
     <span class="name">\${user.name}</span>
     <a href="/containers" class="logout">🐳 Containers</a>
     <a href="/status" class="logout">Status</a>
+    <a href="/storage" class="logout">Storage</a>
     <a href="/logout" class="logout">Logout</a>
   </div>
 </header>
@@ -779,6 +780,7 @@ main{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:1rem;pad
     <a href="/">Dashboard</a>
     <a href="/containers" class="active">Containers</a>
     <a href="/status">Status</a>
+    <a href="/storage">Storage</a>
     <a href="/logout">Logout</a>
   </div>
 </header>
@@ -1016,6 +1018,7 @@ main{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:1rem;pad
     <a href="/">Dashboard</a>
     <a href="/containers">Containers</a>
     <a href="/status" class="active">Status</a>
+    <a href="/storage">Storage</a>
     <a href="/logout">Logout</a>
   </div>
 </header>
@@ -1045,6 +1048,218 @@ setInterval(load,30000);
 </script>
 </body>
 </html>`);
+});
+
+
+// ============ STORAGE API ============
+app.get('/api/storage', requireAuth, (req, res) => {
+  try {
+    const result = { disks: [], volumes: [], containers: [] };
+
+    // Disk usage
+    try {
+      const dfOut = execSync('df -h --output=source,fstype,size,used,avail,pcent,target 2>/dev/null || df -h 2>/dev/null', { encoding: 'utf8', timeout: 5000 });
+      const lines = dfOut.trim().split('\n').slice(1);
+      const seen = new Set();
+      for (const line of lines) {
+        const parts = line.trim().split(/\s+/);
+        if (parts.length >= 7 && !parts[0].startsWith('tmpfs') && !parts[0].startsWith('shm') && !parts[0].startsWith('overlay') && !seen.has(parts[0])) {
+          seen.add(parts[0]);
+          result.disks.push({ source: parts[0], fstype: parts[1], size: parts[2], used: parts[3], avail: parts[4], percent: parseInt(parts[5]) || 0, mount: parts[6] });
+        }
+      }
+    } catch (e) {}
+
+    // Docker volumes
+    try {
+      const volOut = execSync('docker system df -v 2>/dev/null', { encoding: 'utf8', timeout: 15000 });
+      const volSection = volOut.split('VOLUME NAME');
+      if (volSection.length > 1) {
+        const volLines = volSection[1].trim().split('\n');
+        for (const line of volLines) {
+          if (!line.trim() || line.startsWith('CONTAINER')) break;
+          const parts = line.trim().split(/\s{2,}/);
+          if (parts.length >= 3) {
+            result.volumes.push({ name: parts[0], links: parseInt(parts[1]) || 0, size: parts[2] });
+          }
+        }
+      }
+    } catch (e) {}
+
+    // Docker container sizes
+    try {
+      const csOut = execSync('docker ps -a --format "{{.Names}}\\t{{.Size}}" --no-trunc 2>/dev/null', { encoding: 'utf8', timeout: 10000 });
+      const csLines = csOut.trim().split('\n').filter(Boolean);
+      const containers = csLines.map(line => {
+        const [name, size] = line.split('\t');
+        return { name: name?.replace(/^lobsty-/, '') || '?', size: size || '0B' };
+      });
+      // Parse size for sorting
+      function parseSize(s) {
+        if (!s) return 0;
+        const m = s.match(/([\d.]+)\s*(B|KB|MB|GB|TB|kB)/i);
+        if (!m) return 0;
+        const val = parseFloat(m[1]);
+        const unit = m[2].toUpperCase();
+        if (unit === 'TB') return val * 1e12;
+        if (unit === 'GB') return val * 1e9;
+        if (unit === 'MB') return val * 1e6;
+        if (unit === 'KB' || unit === 'KB') return val * 1e3;
+        return val;
+      }
+      containers.sort((a, b) => parseSize(b.size) - parseSize(a.size));
+      result.containers = containers.slice(0, 10);
+    } catch (e) {}
+
+    // Docker system overview
+    try {
+      const sysOut = execSync('docker system df 2>/dev/null', { encoding: 'utf8', timeout: 10000 });
+      const sysLines = sysOut.trim().split('\n').slice(1);
+      result.dockerOverview = sysLines.map(line => {
+        const parts = line.trim().split(/\s{2,}/);
+        return { type: parts[0], total: parts[1], active: parts[2], size: parts[3], reclaimable: parts[4] };
+      });
+    } catch (e) {}
+
+    res.json(result);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ============ STORAGE PAGE ============
+app.get('/storage', requireAuth, (req, res) => {
+  const user = req.user;
+  res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="stylesheet" href="http://shared-assets:3000/design-tokens.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Storage - Admin</title>
+<link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Inter",-apple-system,sans-serif;background:var(--bg,#0a0a0f);color:var(--text,#e8e8f0);min-height:100vh}
+.bg-orbs{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.12;animation:drift 25s ease-in-out infinite}
+.orb:nth-child(1){width:350px;height:350px;background:#7c3aed;top:-80px;right:-80px}
+.orb:nth-child(2){width:300px;height:300px;background:#2563eb;bottom:-60px;left:-60px;animation-delay:-10s}
+@keyframes drift{0%,100%{transform:translate(0,0)}50%{transform:translate(30px,-20px)}}
+header{position:sticky;top:0;z-index:10;background:rgba(10,10,15,0.8);backdrop-filter:blur(20px);border-bottom:1px solid var(--glass-border,rgba(255,255,255,0.08));padding:.75rem 1rem;display:flex;justify-content:space-between;align-items:center}
+header h1{font-size:1.1rem;font-weight:700;background:linear-gradient(135deg,#7c3aed,#2563eb);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-links{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+.nav-links a{color:var(--dim,#888899);text-decoration:none;padding:8px 14px;border:1px solid var(--glass-border,rgba(255,255,255,0.08));border-radius:10px;font-size:.8rem;font-weight:500;min-height:44px;display:flex;align-items:center;transition:all .3s;backdrop-filter:blur(10px)}
+.nav-links a:hover,.nav-links a.active{color:#fff;border-color:#7c3aed;background:rgba(124,58,237,0.15)}
+main{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:1rem;padding-bottom:calc(1rem + env(safe-area-inset-bottom,0px))}
+.section{margin-bottom:2rem}
+.section-title{font-size:.85rem;font-weight:600;color:var(--dim,#888899);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem}
+.section-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--glass-border,rgba(255,255,255,0.08)),transparent)}
+.card{background:var(--glass,rgba(255,255,255,0.05));border:1px solid var(--glass-border,rgba(255,255,255,0.08));border-radius:16px;padding:1.25rem;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);animation:fadeUp .5s ease both;margin-bottom:.75rem}
+.progress-wrap{margin-bottom:.75rem}
+.progress-wrap:last-child{margin-bottom:0}
+.progress-label{display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:4px}
+.progress-label span:first-child{color:var(--dim,#888899)}
+.progress-label span:last-child{font-weight:700;font-variant-numeric:tabular-nums}
+.progress-bar{height:8px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;border-radius:4px;transition:width .8s cubic-bezier(.4,0,.2,1);min-width:2px}
+.progress-fill.green{background:var(--green,#34d399)}
+.progress-fill.yellow{background:var(--yellow,#fbbf24)}
+.progress-fill.red{background:var(--red,#f87171)}
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+th{text-align:left;color:var(--dim,#888899);font-weight:600;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;padding:.5rem .75rem;border-bottom:1px solid var(--glass-border,rgba(255,255,255,0.08))}
+td{padding:.6rem .75rem;border-bottom:1px solid rgba(255,255,255,0.03);font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,0.02)}
+.overview-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;margin-bottom:1rem}
+.overview-item{background:var(--glass,rgba(255,255,255,0.05));border:1px solid var(--glass-border,rgba(255,255,255,0.08));border-radius:12px;padding:1rem;text-align:center}
+.overview-item .val{font-size:1.2rem;font-weight:800;background:linear-gradient(135deg,#7c3aed,#2563eb);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.overview-item .lbl{font-size:.7rem;color:var(--dim,#888899);text-transform:uppercase;margin-top:2px}
+.refresh-info{font-size:.7rem;color:var(--dim,#888899);text-align:right;margin-bottom:1rem;font-variant-numeric:tabular-nums}
+#loading{text-align:center;color:var(--dim,#888);padding:3rem;font-size:.9rem}
+@keyframes fadeUp{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+@media(min-width:480px){.overview-grid{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:768px){main{padding:1.5rem}header h1{font-size:1.3rem}}
+@media(min-width:1024px){main{padding:2rem}}
+</style>
+</head>
+<body>
+<div class="bg-orbs"><div class="orb"></div><div class="orb"></div></div>
+<header>
+  <h1>💾 Storage</h1>
+  <div class="nav-links">
+    <a href="/">Dashboard</a>
+    <a href="/containers">Containers</a>
+    <a href="/status">Status</a>
+    <a href="/storage" class="active">Storage</a>
+    <a href="/logout">Logout</a>
+  </div>
+</header>
+<main>
+  <div class="refresh-info" id="refresh-info">Loading...</div>
+  <div id="loading">Loading storage data...</div>
+  <div id="content" style="display:none">
+    <div class="section">
+      <div class="section-title">📊 Docker Overview</div>
+      <div class="overview-grid" id="docker-overview"></div>
+    </div>
+    <div class="section">
+      <div class="section-title">💽 Disk Usage</div>
+      <div id="disk-usage"></div>
+    </div>
+    <div class="section">
+      <div class="section-title">📦 Docker Volumes</div>
+      <div class="card"><div class="table-wrap"><table id="volumes-table"><thead><tr><th>Volume</th><th>Links</th><th>Size</th></tr></thead><tbody></tbody></table></div></div>
+    </div>
+    <div class="section">
+      <div class="section-title">🐳 Top 10 Largest Containers</div>
+      <div class="card"><div class="table-wrap"><table id="containers-table"><thead><tr><th>Container</th><th>Size</th></tr></thead><tbody></tbody></table></div></div>
+    </div>
+  </div>
+</main>
+<script>
+function colorClass(pct){return pct<60?'green':pct<80?'yellow':'red';}
+let countdown=30;
+
+function load(){
+  fetch('/api/storage').then(r=>r.json()).then(d=>{
+    document.getElementById('loading').style.display='none';
+    document.getElementById('content').style.display='block';
+    countdown=30;
+
+    // Docker overview
+    if(d.dockerOverview){
+      document.getElementById('docker-overview').innerHTML=d.dockerOverview.map(o=>
+        '<div class="overview-item"><div class="val">'+o.size+'</div><div class="lbl">'+o.type+'</div><div style="font-size:.65rem;color:var(--dim);margin-top:4px">'+o.total+' total · '+o.active+' active</div>'+(o.reclaimable?'<div style="font-size:.65rem;color:var(--yellow,#fbbf24);margin-top:2px">♻️ '+o.reclaimable+'</div>':'')+'</div>'
+      ).join('');
+    }
+
+    // Disk usage with progress bars
+    if(d.disks&&d.disks.length){
+      document.getElementById('disk-usage').innerHTML=d.disks.map(dk=>
+        '<div class="card"><div class="progress-wrap"><div class="progress-label"><span>'+dk.mount+' ('+dk.source+')</span><span>'+dk.percent+'%</span></div><div class="progress-bar"><div class="progress-fill '+colorClass(dk.percent)+'" style="width:'+dk.percent+'%"></div></div></div><div style="display:flex;justify-content:space-between;font-size:.7rem;color:var(--dim)"><span>Used: '+dk.used+'</span><span>Available: '+dk.avail+'</span><span>Total: '+dk.size+'</span></div></div>'
+      ).join('');
+    }
+
+    // Volumes table
+    const vbody=document.querySelector('#volumes-table tbody');
+    vbody.innerHTML=d.volumes.map(v=>'<tr><td style="font-family:monospace;font-size:.75rem;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+v.name+'">'+v.name+'</td><td>'+v.links+'</td><td style="font-weight:600">'+v.size+'</td></tr>').join('')||'<tr><td colspan="3" style="text-align:center;color:var(--dim)">No volumes</td></tr>';
+
+    // Containers table
+    const cbody=document.querySelector('#containers-table tbody');
+    cbody.innerHTML=d.containers.map(c=>'<tr><td>'+c.name+'</td><td style="font-weight:600">'+c.size+'</td></tr>').join('')||'<tr><td colspan="2" style="text-align:center;color:var(--dim)">No containers</td></tr>';
+  }).catch(()=>{document.getElementById('loading').textContent='Failed to load storage data';});
+}
+
+load();
+setInterval(()=>{
+  countdown--;
+  if(countdown<=0)load();
+  document.getElementById('refresh-info').textContent='Auto-refresh in '+countdown+'s';
+},1000);
+</script>
+</body>
+</html>` );
 });
 
 app.listen(3000, () => console.log("Admin dashboard running on :3000"));
