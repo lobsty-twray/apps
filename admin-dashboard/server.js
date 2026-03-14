@@ -781,6 +781,7 @@ main{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:1rem;pad
     <a href="/containers" class="active">Containers</a>
     <a href="/status">Status</a>
     <a href="/storage">Storage</a>
+    <a href="/health">Health</a>
     <a href="/logout">Logout</a>
   </div>
 </header>
@@ -1019,6 +1020,7 @@ main{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:1rem;pad
     <a href="/containers">Containers</a>
     <a href="/status" class="active">Status</a>
     <a href="/storage">Storage</a>
+    <a href="/health">Health</a>
     <a href="/logout">Logout</a>
   </div>
 </header>
@@ -1192,6 +1194,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     <a href="/containers">Containers</a>
     <a href="/status">Status</a>
     <a href="/storage" class="active">Storage</a>
+    <a href="/health">Health</a>
     <a href="/logout">Logout</a>
   </div>
 </header>
@@ -1260,6 +1263,139 @@ setInterval(()=>{
 </script>
 </body>
 </html>` );
+});
+
+
+// ============ HEALTH MONITOR ============
+app.get('/api/health', requireAuth, async (req, res) => {
+  const results = await Promise.allSettled(STATUS_APPS.map(async (a) => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    const start = Date.now();
+    try {
+      const r = await fetch(`http://host.docker.internal:${a.port}/`, { signal: controller.signal });
+      clearTimeout(timeout);
+      const ms = Date.now() - start;
+      return { name: a.name, port: a.port, up: true, status: r.status, ms, slow: ms > 2000, checked: new Date().toISOString() };
+    } catch (e) {
+      clearTimeout(timeout);
+      return { name: a.name, port: a.port, up: false, status: 0, ms: Date.now() - start, slow: false, checked: new Date().toISOString() };
+    }
+  }));
+  const apps = results.map(r => r.status === 'fulfilled' ? r.value : r.reason);
+  const healthy = apps.filter(a => a.up && !a.slow).length;
+  res.json({ apps, healthy, total: apps.length, checked: new Date().toISOString() });
+});
+
+app.get('/health', requireAuth, (req, res) => {
+  res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="stylesheet" href="http://shared-assets:3000/design-tokens.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Health Monitor - Admin</title>
+<link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Inter",-apple-system,sans-serif;background:var(--bg,#0a0a0f);color:var(--text,#e8e8f0);min-height:100vh}
+.bg-orbs{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.12;animation:drift 25s ease-in-out infinite}
+.orb:nth-child(1){width:350px;height:350px;background:#7c3aed;top:-80px;right:-80px}
+.orb:nth-child(2){width:300px;height:300px;background:#2563eb;bottom:-60px;left:-60px;animation-delay:-10s}
+@keyframes drift{0%,100%{transform:translate(0,0)}50%{transform:translate(30px,-20px)}}
+header{position:sticky;top:0;z-index:10;background:rgba(10,10,15,0.8);backdrop-filter:blur(20px);border-bottom:1px solid var(--glass-border,rgba(255,255,255,0.08));padding:.75rem 1rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem}
+header h1{font-size:1.1rem;font-weight:700;background:linear-gradient(135deg,#7c3aed,#2563eb);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-links{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+.nav-links a{color:var(--dim,#888899);text-decoration:none;padding:8px 14px;border:1px solid var(--glass-border,rgba(255,255,255,0.08));border-radius:10px;font-size:.8rem;font-weight:500;min-height:44px;display:flex;align-items:center;transition:all .3s;backdrop-filter:blur(10px);-webkit-tap-highlight-color:transparent}
+.nav-links a:hover,.nav-links a.active{color:#fff;border-color:#7c3aed;background:rgba(124,58,237,0.15)}
+main{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:1rem;padding-bottom:calc(1rem + env(safe-area-inset-bottom,0px))}
+.summary{background:var(--glass,rgba(255,255,255,0.05));border:1px solid var(--glass-border,rgba(255,255,255,0.08));border-radius:16px;padding:1.25rem;backdrop-filter:blur(20px);margin-bottom:1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem}
+.summary-left{display:flex;align-items:baseline;gap:.75rem}
+.summary-count{font-size:1.8rem;font-weight:800;background:linear-gradient(135deg,#7c3aed,#2563eb);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.summary-label{font-size:.85rem;color:var(--dim,#888899)}
+.summary-right{text-align:right}
+.summary-time{font-size:.75rem;color:var(--dim,#888899)}
+.summary-refresh{font-size:.7rem;color:var(--dim,#666);margin-top:.25rem}
+.health-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem}
+.hcard{background:var(--glass,rgba(255,255,255,0.05));border:1px solid var(--glass-border,rgba(255,255,255,0.08));border-radius:14px;padding:1rem;backdrop-filter:blur(20px);transition:all .3s;animation:fadeUp .5s ease both;position:relative;overflow:hidden}
+.hcard::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0}
+.hcard.up::before{background:var(--green,#34d399)}
+.hcard.down::before{background:var(--red,#f87171)}
+.hcard.slow::before{background:var(--yellow,#fbbf24)}
+.hcard:hover{border-color:rgba(124,58,237,0.3);box-shadow:0 4px 20px rgba(124,58,237,0.1);transform:translateY(-2px)}
+.hcard-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem}
+.hcard-name{font-weight:700;font-size:.85rem}
+.hcard-port{color:var(--dim,#888899);font-size:.7rem;font-family:monospace}
+.dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.dot.up{background:var(--green,#34d399);box-shadow:0 0 8px rgba(52,211,153,0.5)}
+.dot.down{background:var(--red,#f87171);box-shadow:0 0 8px rgba(248,113,113,0.5)}
+.dot.slow{background:var(--yellow,#fbbf24);box-shadow:0 0 8px rgba(251,191,36,0.5)}
+.hcard-meta{display:flex;justify-content:space-between;font-size:.7rem;color:var(--dim,#888899)}
+.hcard-ms{font-variant-numeric:tabular-nums}
+.hcard-status{font-family:monospace}
+.hcard-checked{font-size:.65rem;color:var(--dim,#666);margin-top:.4rem}
+@keyframes fadeUp{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+@media(min-width:480px){.health-grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:768px){.health-grid{grid-template-columns:repeat(4,1fr);gap:1rem}main{padding:1.5rem}header h1{font-size:1.3rem}}
+@media(min-width:1024px){.health-grid{grid-template-columns:repeat(5,1fr)}main{padding:2rem}}
+@media(min-width:1280px){.health-grid{grid-template-columns:repeat(6,1fr)}}
+#loading{text-align:center;color:var(--dim,#888);padding:3rem;font-size:.9rem}
+</style>
+</head>
+<body>
+<div class="bg-orbs"><div class="orb"></div><div class="orb"></div></div>
+<header>
+  <h1>🏥 App Health Monitor</h1>
+  <div class="nav-links">
+    <a href="/">Dashboard</a>
+    <a href="/containers">Containers</a>
+    <a href="/status">Status</a>
+    <a href="/storage">Storage</a>
+    <a href="/health" class="active">Health</a>
+    <a href="/logout">Logout</a>
+  </div>
+</header>
+<main>
+  <div class="summary">
+    <div class="summary-left">
+      <div class="summary-count" id="count">—</div>
+      <div class="summary-label">apps healthy</div>
+    </div>
+    <div class="summary-right">
+      <div class="summary-time" id="checked">Checking...</div>
+      <div class="summary-refresh" id="refresh-info">Auto-refresh in 60s</div>
+    </div>
+  </div>
+  <div id="loading">Loading health status...</div>
+  <div class="health-grid" id="grid" style="display:none"></div>
+</main>
+<script>
+let countdown=60;
+function load(){
+  countdown=60;
+  fetch("/api/health").then(r=>r.json()).then(d=>{
+    document.getElementById("count").textContent=d.healthy+"/"+d.total;
+    document.getElementById("checked").textContent="Last checked: "+new Date(d.checked).toLocaleTimeString();
+    document.getElementById("loading").style.display="none";
+    const g=document.getElementById("grid");g.style.display="grid";
+    g.innerHTML=d.apps.map((a,i)=>{
+      const cls=!a.up?"down":a.slow?"slow":"up";
+      const label=!a.up?"DOWN":a.slow?"SLOW ("+a.ms+"ms)":"HTTP "+a.status;
+      return '<div class="hcard '+cls+'" style="animation-delay:'+(i*0.03).toFixed(2)+'s"><div class="hcard-top"><div><div class="hcard-name">'+a.name+'</div><div class="hcard-port">:'+a.port+'</div></div><div class="dot '+cls+'"></div></div><div class="hcard-meta"><span class="hcard-ms">'+a.ms+'ms</span><span class="hcard-status">'+label+'</span></div><div class="hcard-checked">Checked: '+new Date(a.checked).toLocaleTimeString()+'</div></div>';
+    }).join("");
+  }).catch(()=>{document.getElementById("loading").textContent="Failed to load health status";});
+}
+load();
+setInterval(()=>{
+  countdown--;
+  if(countdown<=0)load();
+  document.getElementById('refresh-info').textContent='Auto-refresh in '+countdown+'s';
+},1000);
+</script>
+</body>
+</html>`);
 });
 
 app.listen(3000, () => console.log("Admin dashboard running on :3000"));
