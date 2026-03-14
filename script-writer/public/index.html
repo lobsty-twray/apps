@@ -185,6 +185,29 @@ body{font-family:'Inter',-apple-system,system-ui,sans-serif;background:var(--bg)
 /* Toast */
 .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(16,16,26,.95);backdrop-filter:blur(20px);border:1px solid var(--glass-b);border-radius:var(--rs);padding:12px 24px;font-size:.85rem;z-index:300;opacity:0;transition:all .3s;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Teleprompter */
+.tp-overlay{position:fixed;inset:0;background:#000;z-index:500;display:none;flex-direction:column;cursor:none}
+.tp-overlay.active{display:flex}
+.tp-overlay.mirror .tp-content{transform:scaleX(-1)}
+.tp-countdown{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:510;background:#000}
+.tp-countdown .num{font-size:min(30vw,200px);font-weight:700;color:#fff;animation:tpPulse .8s ease}
+@keyframes tpPulse{0%{opacity:0;transform:scale(.5)}50%{opacity:1;transform:scale(1.1)}100%{opacity:1;transform:scale(1)}}
+.tp-scroll-wrap{flex:1;overflow:hidden;position:relative}
+.tp-content{padding:15vh 8vw 80vh;color:#fff;font-family:'Inter',sans-serif;line-height:1.6;white-space:pre-wrap;word-wrap:break-word;transition:font-size .2s}
+.tp-progress{position:fixed;top:0;left:0;height:3px;background:var(--accent,#7c3aed);z-index:520;transition:width .1s linear}
+.tp-controls{position:fixed;bottom:0;left:0;right:0;padding:16px 20px;display:flex;align-items:center;gap:12px;background:linear-gradient(transparent,rgba(0,0,0,.9));z-index:520;transition:opacity .3s;flex-wrap:wrap;justify-content:center}
+.tp-controls.hidden{opacity:0;pointer-events:none}
+.tp-ctrl-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:8px 14px;font-size:.85rem;cursor:pointer;transition:all .2s;min-height:44px;min-width:44px;display:flex;align-items:center;justify-content:center;gap:4px}
+.tp-ctrl-btn:hover{background:rgba(255,255,255,.25)}
+.tp-ctrl-btn.active{background:rgba(124,58,237,.4);border-color:rgba(124,58,237,.6)}
+.tp-speed-label,.tp-size-label{color:rgba(255,255,255,.6);font-size:.7rem;white-space:nowrap}
+.tp-range{-webkit-appearance:none;appearance:none;height:4px;background:rgba(255,255,255,.2);border-radius:2px;outline:none;width:100px}
+.tp-range::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#fff;border-radius:50%;cursor:pointer}
+.tp-range::-moz-range-thumb{width:18px;height:18px;background:#fff;border-radius:50%;cursor:pointer;border:none}
+.tp-exit{position:fixed;top:16px;right:16px;z-index:530;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:50%;width:44px;height:44px;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:opacity .3s}
+.tp-exit.hidden{opacity:0;pointer-events:none}
+@media(max-width:479px){.tp-range{width:70px}.tp-controls{gap:8px;padding:12px}}
 </style>
 </head>
 <body>
@@ -240,6 +263,7 @@ body{font-family:'Inter',-apple-system,system-ui,sans-serif;background:var(--bg)
           <button class="tb-btn" id="fontToggle" onclick="toggleFont()" title="Toggle font">𝐴𝚊</button>
           <button class="tb-btn" id="readToggle" onclick="toggleReadMode()" title="Reading mode">👁</button>
           <button class="tb-btn" id="versionToggle" onclick="toggleVersions()" title="Version history">🕐</button>
+          <button class="tb-btn" id="tpToggle" onclick="openTeleprompter()" title="Teleprompter mode">🎬</button>
         </div>
       </div>
       <div class="editor-area" id="editorArea" style="position:relative">
@@ -275,6 +299,23 @@ body{font-family:'Inter',-apple-system,system-ui,sans-serif;background:var(--bg)
   </div>
 </div>
 
+
+<!-- Teleprompter Overlay -->
+<div class="tp-overlay" id="tpOverlay">
+  <div class="tp-progress" id="tpProgress"></div>
+  <div class="tp-scroll-wrap" id="tpScrollWrap">
+    <div class="tp-content" id="tpContent"></div>
+  </div>
+  <button class="tp-exit" id="tpExit" onclick="closeTeleprompter()">✕</button>
+  <div class="tp-controls" id="tpControls">
+    <button class="tp-ctrl-btn" id="tpPlayBtn" onclick="tpTogglePlay()">▶</button>
+    <span class="tp-speed-label">Speed</span>
+    <input type="range" class="tp-range" id="tpSpeed" min="0.2" max="5" step="0.2" value="1.2">
+    <span class="tp-size-label">Size</span>
+    <input type="range" class="tp-range" id="tpSize" min="24" max="72" step="2" value="36">
+    <button class="tp-ctrl-btn" id="tpMirrorBtn" onclick="tpToggleMirror()" title="Mirror (M)">🪞</button>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -382,7 +423,106 @@ async function saveScript(auto=false){
     if(saved.versions)currentScript=saved;
     showSaveState('saved');
     if(!auto)toast('Saved ✓');
-    loadScripts();loadStats();
+    
+// --- Teleprompter ---
+let tpPlaying=false,tpScrollPos=0,tpRafId=null,tpHideTimer=null,tpMirrored=false;
+
+function openTeleprompter(){
+  const text=$('eContent').value.trim();
+  if(!text){toast('Write something first!');return}
+  const ov=$('tpOverlay');
+  $('tpContent').textContent=text;
+  $('tpContent').style.fontSize=$('tpSize').value+'px';
+  tpScrollPos=0;tpPlaying=false;tpMirrored=false;
+  ov.classList.remove('mirror');
+  $('tpPlayBtn').textContent='▶';
+  $('tpScrollWrap').scrollTop=0;
+  $('tpProgress').style.width='0%';
+  ov.classList.add('active');
+  document.body.style.overflow='hidden';
+  tpShowControls();
+  // Countdown
+  tpCountdown(3);
+}
+
+function tpCountdown(n){
+  if(n<=0){tpStartScroll();return}
+  let cd=document.createElement('div');
+  cd.className='tp-countdown';cd.innerHTML='<div class="num">'+n+'</div>';
+  $('tpOverlay').appendChild(cd);
+  setTimeout(()=>{cd.remove();tpCountdown(n-1)},900);
+}
+
+function tpStartScroll(){tpPlaying=true;$('tpPlayBtn').textContent='⏸';tpAnimate()}
+
+function tpAnimate(){
+  if(!tpPlaying)return;
+  const wrap=$('tpScrollWrap');
+  const speed=parseFloat($('tpSpeed').value);
+  wrap.scrollTop+=speed;
+  tpUpdateProgress();
+  tpRafId=requestAnimationFrame(tpAnimate);
+}
+
+function tpTogglePlay(){
+  tpPlaying=!tpPlaying;
+  $('tpPlayBtn').textContent=tpPlaying?'⏸':'▶';
+  if(tpPlaying)tpAnimate();else if(tpRafId)cancelAnimationFrame(tpRafId);
+  tpShowControls();
+}
+
+function tpToggleMirror(){
+  tpMirrored=!tpMirrored;
+  $('tpOverlay').classList.toggle('mirror',tpMirrored);
+  $('tpMirrorBtn').classList.toggle('active',tpMirrored);
+  tpShowControls();
+}
+
+function tpUpdateProgress(){
+  const wrap=$('tpScrollWrap');
+  const max=wrap.scrollHeight-wrap.clientHeight;
+  const pct=max>0?(wrap.scrollTop/max)*100:0;
+  $('tpProgress').style.width=Math.min(pct,100)+'%';
+}
+
+function closeTeleprompter(){
+  tpPlaying=false;if(tpRafId)cancelAnimationFrame(tpRafId);
+  $('tpOverlay').classList.remove('active','mirror');
+  document.body.style.overflow='';
+  // Remove any leftover countdowns
+  $('tpOverlay').querySelectorAll('.tp-countdown').forEach(e=>e.remove());
+}
+
+function tpShowControls(){
+  $('tpControls').classList.remove('hidden');
+  $('tpExit').classList.remove('hidden');
+  clearTimeout(tpHideTimer);
+  tpHideTimer=setTimeout(()=>{
+    if(tpPlaying){$('tpControls').classList.add('hidden');$('tpExit').classList.add('hidden')}
+  },3000);
+}
+
+// Size/speed changes
+$('tpSize').addEventListener('input',function(){$('tpContent').style.fontSize=this.value+'px';tpShowControls()});
+$('tpSpeed').addEventListener('input',function(){tpShowControls()});
+
+// Mouse/touch show controls
+$('tpOverlay').addEventListener('mousemove',tpShowControls);
+$('tpOverlay').addEventListener('touchstart',function(e){
+  if(e.target.closest('.tp-controls,.tp-exit'))return;
+  tpTogglePlay();
+},{passive:true});
+
+// Keyboard
+document.addEventListener('keydown',function(e){
+  if(!$('tpOverlay').classList.contains('active'))return;
+  if(e.code==='Space'){e.preventDefault();tpTogglePlay()}
+  else if(e.code==='Escape')closeTeleprompter();
+  else if(e.key==='m'||e.key==='M')tpToggleMirror();
+  else if(e.code==='ArrowUp'){e.preventDefault();const s=$('tpSpeed');s.value=Math.min(5,parseFloat(s.value)+0.2).toFixed(1);tpShowControls()}
+  else if(e.code==='ArrowDown'){e.preventDefault();const s=$('tpSpeed');s.value=Math.max(0.2,parseFloat(s.value)-0.2).toFixed(1);tpShowControls()}
+});
+loadScripts();loadStats();
     if(currentId&&!auto){const r2=await fetch(`/api/scripts/${currentId}`);currentScript=await r2.json();renderVersions()}
   }catch(e){showSaveState('');if(!auto)toast('Error saving')}
 }
@@ -474,6 +614,105 @@ app.addEventListener('touchend',e=>{
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
 function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
 
+
+// --- Teleprompter ---
+let tpPlaying=false,tpScrollPos=0,tpRafId=null,tpHideTimer=null,tpMirrored=false;
+
+function openTeleprompter(){
+  const text=$('eContent').value.trim();
+  if(!text){toast('Write something first!');return}
+  const ov=$('tpOverlay');
+  $('tpContent').textContent=text;
+  $('tpContent').style.fontSize=$('tpSize').value+'px';
+  tpScrollPos=0;tpPlaying=false;tpMirrored=false;
+  ov.classList.remove('mirror');
+  $('tpPlayBtn').textContent='▶';
+  $('tpScrollWrap').scrollTop=0;
+  $('tpProgress').style.width='0%';
+  ov.classList.add('active');
+  document.body.style.overflow='hidden';
+  tpShowControls();
+  // Countdown
+  tpCountdown(3);
+}
+
+function tpCountdown(n){
+  if(n<=0){tpStartScroll();return}
+  let cd=document.createElement('div');
+  cd.className='tp-countdown';cd.innerHTML='<div class="num">'+n+'</div>';
+  $('tpOverlay').appendChild(cd);
+  setTimeout(()=>{cd.remove();tpCountdown(n-1)},900);
+}
+
+function tpStartScroll(){tpPlaying=true;$('tpPlayBtn').textContent='⏸';tpAnimate()}
+
+function tpAnimate(){
+  if(!tpPlaying)return;
+  const wrap=$('tpScrollWrap');
+  const speed=parseFloat($('tpSpeed').value);
+  wrap.scrollTop+=speed;
+  tpUpdateProgress();
+  tpRafId=requestAnimationFrame(tpAnimate);
+}
+
+function tpTogglePlay(){
+  tpPlaying=!tpPlaying;
+  $('tpPlayBtn').textContent=tpPlaying?'⏸':'▶';
+  if(tpPlaying)tpAnimate();else if(tpRafId)cancelAnimationFrame(tpRafId);
+  tpShowControls();
+}
+
+function tpToggleMirror(){
+  tpMirrored=!tpMirrored;
+  $('tpOverlay').classList.toggle('mirror',tpMirrored);
+  $('tpMirrorBtn').classList.toggle('active',tpMirrored);
+  tpShowControls();
+}
+
+function tpUpdateProgress(){
+  const wrap=$('tpScrollWrap');
+  const max=wrap.scrollHeight-wrap.clientHeight;
+  const pct=max>0?(wrap.scrollTop/max)*100:0;
+  $('tpProgress').style.width=Math.min(pct,100)+'%';
+}
+
+function closeTeleprompter(){
+  tpPlaying=false;if(tpRafId)cancelAnimationFrame(tpRafId);
+  $('tpOverlay').classList.remove('active','mirror');
+  document.body.style.overflow='';
+  // Remove any leftover countdowns
+  $('tpOverlay').querySelectorAll('.tp-countdown').forEach(e=>e.remove());
+}
+
+function tpShowControls(){
+  $('tpControls').classList.remove('hidden');
+  $('tpExit').classList.remove('hidden');
+  clearTimeout(tpHideTimer);
+  tpHideTimer=setTimeout(()=>{
+    if(tpPlaying){$('tpControls').classList.add('hidden');$('tpExit').classList.add('hidden')}
+  },3000);
+}
+
+// Size/speed changes
+$('tpSize').addEventListener('input',function(){$('tpContent').style.fontSize=this.value+'px';tpShowControls()});
+$('tpSpeed').addEventListener('input',function(){tpShowControls()});
+
+// Mouse/touch show controls
+$('tpOverlay').addEventListener('mousemove',tpShowControls);
+$('tpOverlay').addEventListener('touchstart',function(e){
+  if(e.target.closest('.tp-controls,.tp-exit'))return;
+  tpTogglePlay();
+},{passive:true});
+
+// Keyboard
+document.addEventListener('keydown',function(e){
+  if(!$('tpOverlay').classList.contains('active'))return;
+  if(e.code==='Space'){e.preventDefault();tpTogglePlay()}
+  else if(e.code==='Escape')closeTeleprompter();
+  else if(e.key==='m'||e.key==='M')tpToggleMirror();
+  else if(e.code==='ArrowUp'){e.preventDefault();const s=$('tpSpeed');s.value=Math.min(5,parseFloat(s.value)+0.2).toFixed(1);tpShowControls()}
+  else if(e.code==='ArrowDown'){e.preventDefault();const s=$('tpSpeed');s.value=Math.max(0.2,parseFloat(s.value)-0.2).toFixed(1);tpShowControls()}
+});
 loadScripts();loadStats();
 </script>
 </body>
