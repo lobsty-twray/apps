@@ -126,6 +126,7 @@ class BudgetApp {
             this.renderCategoryChart(data.categoryBreakdown);
             this.renderRecentTransactions(txs.slice(0, 5));
             this.renderBudgetRings(budgets);
+            this.checkRecurring();
         } catch (err) { console.error('Dashboard error:', err); }
     }
 
@@ -249,7 +250,7 @@ class BudgetApp {
             <div class="tx-icon" style="background:${tx.category_color}15; color:${tx.category_color}">${tx.category_icon}</div>
             <div class="tx-details">
                 <div class="tx-name">${tx.description || tx.category_name}</div>
-                <div class="tx-meta">${tx.category_name}${tx.recurring ? ' · Recurring' : ''}</div>
+                <div class="tx-meta">${tx.category_name}${tx.recurring ? ' 🔄' : ''}</div>
             </div>
             <div class="tx-right">
                 <div class="tx-amount ${tx.type}">${tx.type === 'income' ? '+' : '-'}${this.formatCurrency(tx.amount)}</div>
@@ -571,6 +572,35 @@ class BudgetApp {
                 comp.innerHTML = '<span class="neutral">No data from last month</span>';
             }
         } catch (err) { console.error('Summary error:', err); }
+    }
+
+    // ─── Recurring ───
+    async checkRecurring() {
+        try {
+            const res = await fetch(`/api/transactions/recurring/status?month=${this.currentMonth}&year=${this.currentYear}`);
+            const data = await res.json();
+            const banner = document.getElementById("recurring-banner");
+            if (data.pending > 0) {
+                banner.style.display = "";
+                document.getElementById("recurring-count").textContent = data.pending;
+                const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+                document.getElementById("recurring-month-name").textContent = months[this.currentMonth - 1] + " " + this.currentYear;
+            } else {
+                banner.style.display = "none";
+            }
+        } catch (err) { console.error("Recurring check error:", err); }
+    }
+
+    async generateRecurring() {
+        try {
+            const btn = document.getElementById("generateRecurringBtn");
+            btn.disabled = true;
+            btn.textContent = "Generating...";
+            const res = await fetch(`/api/transactions/generate-recurring?month=${this.currentMonth}&year=${this.currentYear}`, { method: "POST" });
+            const data = await res.json();
+            btn.textContent = `✓ ${data.generated} generated`;
+            setTimeout(() => { btn.disabled = false; btn.textContent = "Generate"; this.refreshCurrentView(); }, 1500);
+        } catch (err) { console.error("Generate error:", err); }
     }
 
     formatCurrency(amount) {

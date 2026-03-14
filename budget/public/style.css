@@ -854,3 +854,28 @@ input[type="number"] { -moz-appearance: textfield; }
 .summary-comparison .up { color: var(--expense); }
 .summary-comparison .down { color: var(--income); }
 .summary-comparison .neutral { color: var(--text-muted); }
+
+/* Recurring Banner */
+.recurring-banner {
+    margin-bottom: 16px;
+    border: 1px solid rgba(124, 108, 255, 0.3);
+    background: rgba(124, 108, 255, 0.08) !important;
+}
+.recurring-banner-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.recurring-banner-text {
+    font-size: 0.9rem;
+    color: var(--text, #f0f0f5);
+    flex: 1;
+    min-width: 200px;
+}
+.btn-sm {
+    padding: 8px 16px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}

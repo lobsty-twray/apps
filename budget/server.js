@@ -318,6 +318,64 @@ app.get("/api/summary", (req, res) => {
   res.json({ income, expenses, netSavings: income - expenses, topCategory: topCat ? topCat.name : "N/A", topCategoryAmount: topCat ? topCat.total : 0, prevExpenses, pctChange: Math.round(pctChange * 10) / 10 });
 });
 
+// Recurring transactions
+app.get("/api/transactions/recurring", (req, res) => {
+  const transactions = db.prepare(`
+    SELECT t.*, c.name as category_name, c.color as category_color, c.icon as category_icon
+    FROM transactions t
+    JOIN categories c ON t.category_id = c.id
+    WHERE t.recurring = 1
+    ORDER BY t.date DESC
+  `).all();
+  res.json(transactions);
+});
+
+app.get("/api/transactions/recurring/status", (req, res) => {
+  const month = parseInt(req.query.month) || new Date().getMonth() + 1;
+  const year = parseInt(req.query.year) || new Date().getFullYear();
+  const m = month.toString().padStart(2, "0");
+  const y = year.toString();
+  const recurring = db.prepare("SELECT * FROM transactions WHERE recurring = 1").all();
+  let pending = 0;
+  for (const tx of recurring) {
+    const exists = db.prepare(`
+      SELECT 1 FROM transactions
+      WHERE category_id = ? AND amount = ? AND type = ? AND description = ?
+      AND strftime('%m', date) = ? AND strftime('%Y', date) = ?
+    `).get(tx.category_id, tx.amount, tx.type, tx.description, m, y);
+    if (!exists) pending++;
+  }
+  res.json({ pending, month, year });
+});
+
+app.post("/api/transactions/generate-recurring", (req, res) => {
+  const month = parseInt(req.query.month) || new Date().getMonth() + 1;
+  const year = parseInt(req.query.year) || new Date().getFullYear();
+  const m = month.toString().padStart(2, "0");
+  const y = year.toString();
+  const recurring = db.prepare("SELECT * FROM transactions WHERE recurring = 1").all();
+  let generated = 0, skipped = 0;
+  const insert = db.prepare(`
+    INSERT INTO transactions (type, amount, category_id, description, date, recurring)
+    VALUES (?, ?, ?, ?, ?, 0)
+  `);
+  for (const tx of recurring) {
+    const exists = db.prepare(`
+      SELECT 1 FROM transactions
+      WHERE category_id = ? AND amount = ? AND type = ? AND description = ?
+      AND strftime('%m', date) = ? AND strftime('%Y', date) = ?
+    `).get(tx.category_id, tx.amount, tx.type, tx.description, m, y);
+    if (exists) { skipped++; continue; }
+    const origDay = new Date(tx.date).getDate();
+    const maxDay = new Date(year, month, 0).getDate();
+    const day = Math.min(origDay, maxDay);
+    const dateStr = `${y}-${m}-${day.toString().padStart(2, "0")}`;
+    insert.run(tx.type, tx.amount, tx.category_id, tx.description, dateStr);
+    generated++;
+  }
+  res.json({ generated, skipped });
+});
+
 // Serve frontend
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));

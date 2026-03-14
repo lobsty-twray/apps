@@ -32,6 +32,13 @@
     <main class="main-content">
         <!-- Dashboard View -->
         <div id="dashboard-view" class="view active">
+            <!-- Recurring Banner -->
+            <div id="recurring-banner" class="glass-card recurring-banner" style="display:none">
+                <div class="recurring-banner-content">
+                    <span class="recurring-banner-text">🔄 <strong id="recurring-count">0</strong> recurring transactions ready to generate for <span id="recurring-month-name">March</span></span>
+                    <button class="btn-primary btn-sm" id="generateRecurringBtn" onclick="app.generateRecurring()">Generate</button>
+                </div>
+            </div>
             <div class="summary-cards">
                 <div class="glass-card summary-card income-card">
                     <div class="summary-icon">
