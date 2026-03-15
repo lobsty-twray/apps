@@ -861,6 +861,114 @@ body::before {
   .doc-title { font-size: 22px; }
   .auth-card h1 { font-size: 22px; }
 }
+
+/* ==================== Templates Modal ==================== */
+.templates-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease-out;
+}
+.templates-overlay.active { display: flex; }
+
+.templates-modal {
+  background: var(--bg-glass-heavy);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  width: 600px;
+  max-width: calc(100vw - 24px);
+  max-height: calc(100vh - 48px);
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
+  animation: fadeInScale 0.25s ease-out;
+  padding: 24px;
+}
+
+.templates-modal h2 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.templates-modal h2 .close-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm, 8px);
+  transition: background var(--transition);
+}
+.templates-modal h2 .close-btn:hover { background: var(--bg-hover); }
+
+.templates-category {
+  margin-bottom: 20px;
+}
+.templates-category h3 {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+
+.templates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.template-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 8px);
+  padding: 16px;
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition), transform var(--transition);
+  min-height: 44px;
+}
+.template-card:hover {
+  background: var(--bg-hover);
+  border-color: rgba(255,255,255,0.12);
+  transform: translateY(-2px);
+}
+.template-card:active { transform: scale(0.98); }
+
+.template-card .template-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+  display: block;
+}
+.template-card .template-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.template-card .template-desc {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+@media (max-width: 480px) {
+  .templates-grid { grid-template-columns: 1fr 1fr; }
+  .templates-modal { padding: 16px; }
+}
+
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg"><link rel="icon" type="image/x-icon" href="/favicons/favicon.ico"><link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png"></head>
@@ -933,6 +1041,7 @@ body::before {
     <div class="doc-tree" id="docTree"></div>
     <div class="sidebar-footer">
       <button onclick="createDoc()">＋ New page</button>
+      <button onclick="openTemplates()" style="margin-top:4px">📋 Templates</button>
     </div>
     <div class="user-bar" id="userBar">
       <span class="user-name" id="userName"></span>
@@ -2029,6 +2138,76 @@ async function removeShare(docId, userId) {
     }
   }
 })();
+
+// ====================== Templates ======================
+async function openTemplates() {
+  let overlay = document.getElementById('templatesOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'templatesOverlay';
+    overlay.className = 'templates-overlay';
+    overlay.onclick = (e) => { if (e.target === overlay) closeTemplates(); };
+    document.body.appendChild(overlay);
+  }
+  overlay.innerHTML = '<div class="templates-modal"><h2><span>📋 Templates</span><button class="close-btn" onclick="closeTemplates()">✕</button></h2><p style="color:var(--text-secondary);font-size:13px">Loading...</p></div>';
+  overlay.classList.add('active');
+
+  try {
+    const templates = await api('/templates');
+    const categories = {};
+    templates.forEach(t => {
+      if (!categories[t.category]) categories[t.category] = [];
+      categories[t.category].push(t);
+    });
+
+    let html = '<h2><span>📋 Templates</span><button class="close-btn" onclick="closeTemplates()">✕</button></h2>';
+    for (const [cat, items] of Object.entries(categories)) {
+      html += `<div class="templates-category"><h3>${cat}</h3><div class="templates-grid">`;
+      items.forEach(t => {
+        html += `<div class="template-card" onclick="useTemplate('${t.id}')">
+          <span class="template-icon">${t.icon}</span>
+          <div class="template-title">${t.title}</div>
+          <div class="template-desc">${t.description}</div>
+        </div>`;
+      });
+      html += '</div></div>';
+    }
+    overlay.querySelector('.templates-modal').innerHTML = html;
+    overlay._templates = templates;
+  } catch (err) {
+    console.error('Failed to load templates:', err);
+  }
+}
+
+function closeTemplates() {
+  const overlay = document.getElementById('templatesOverlay');
+  if (overlay) overlay.classList.remove('active');
+}
+
+async function useTemplate(templateId) {
+  const overlay = document.getElementById('templatesOverlay');
+  const templates = overlay?._templates || [];
+  const tmpl = templates.find(t => t.id === templateId);
+  if (!tmpl) return;
+  closeTemplates();
+
+  try {
+    const body = { title: tmpl.title, content: tmpl.content, icon: tmpl.icon, parent_id: null, sort_order: 0 };
+    const row = await api('/docs', { method: 'POST', body: JSON.stringify(body) });
+    const doc = {
+      id: row.id, serverId: row.id, title: tmpl.title, content: tmpl.content, icon: tmpl.icon,
+      parentId: null, children: [], sort_order: 0,
+      createdAt: row.created_at, updatedAt: row.updated_at
+    };
+    state.docs[doc.id] = doc;
+    state.order.push(doc.id);
+    renderTree();
+    selectDoc(doc.id);
+  } catch (err) {
+    console.error('Failed to create from template:', err);
+  }
+}
+
 </script>
 </body>
 </html>

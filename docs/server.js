@@ -512,6 +512,43 @@ app.put('/api/docs/:id/shared', authRequired, async (req, res) => {
   }
 });
 
+// ====================== Templates Endpoint ======================
+app.get('/api/templates', (req, res) => {
+  const templates = [
+    {
+      id: 'video-script', title: 'Video Script', icon: '📹', category: 'Content',
+      description: 'Structure your video with hook, intro, main points, and CTA',
+      content: '<h1>📹 Video Script</h1><h2>🎣 Hook</h2><p>Open with a compelling question or statement that grabs attention in the first 5 seconds...</p><h2>👋 Intro</h2><p>Introduce yourself and what this video covers...</p><h2>📌 Main Point 1</h2><p>Your first key point or argument...</p><h2>📌 Main Point 2</h2><p>Your second key point or argument...</p><h2>📌 Main Point 3</h2><p>Your third key point or argument...</p><h2>🎬 B-Roll Notes</h2><ul><li>Shot 1: </li><li>Shot 2: </li><li>Shot 3: </li></ul><h2>👋 Outro</h2><p>Summarize key takeaways...</p><h2>📣 Call to Action</h2><p>Like, subscribe, comment below with...</p>'
+    },
+    {
+      id: 'product-review', title: 'Product Review', icon: '📝', category: 'Content',
+      description: 'Review template with specs, pros, cons, and verdict',
+      content: '<h1>📝 Product Review</h1><h2>First Impressions</h2><p>Unboxing experience, build quality, initial thoughts...</p><h2>📋 Specifications</h2><ul><li><strong>Model:</strong> </li><li><strong>Price:</strong> </li><li><strong>Key Feature 1:</strong> </li><li><strong>Key Feature 2:</strong> </li></ul><h2>✅ Pros</h2><ul><li>Pro 1</li><li>Pro 2</li><li>Pro 3</li></ul><h2>❌ Cons</h2><ul><li>Con 1</li><li>Con 2</li></ul><h2>⚖️ Verdict</h2><p>Overall assessment and who this product is for...</p><h2>Score: __/10</h2>'
+    },
+    {
+      id: 'comparison', title: 'Comparison', icon: '📊', category: 'Content',
+      description: 'Side-by-side comparison table for products or options',
+      content: '<h1>📊 Comparison</h1><table><thead><tr><th>Category</th><th>Option A</th><th>Option B</th></tr></thead><tbody><tr><td><strong>Price</strong></td><td></td><td></td></tr><tr><td><strong>Performance</strong></td><td></td><td></td></tr><tr><td><strong>Features</strong></td><td></td><td></td></tr><tr><td><strong>Build Quality</strong></td><td></td><td></td></tr><tr><td><strong>Value</strong></td><td></td><td></td></tr></tbody></table><h2>Summary</h2><p>Overall recommendation and reasoning...</p>'
+    },
+    {
+      id: 'meeting-notes', title: 'Meeting Notes', icon: '🎯', category: 'Work',
+      description: 'Capture agenda, discussion, and action items',
+      content: '<h1>🎯 Meeting Notes</h1><p><strong>Date:</strong> </p><p><strong>Attendees:</strong> </p><h2>📋 Agenda</h2><ol><li>Item 1</li><li>Item 2</li><li>Item 3</li></ol><h2>💬 Discussion</h2><p>Key points discussed...</p><h2>✅ Action Items</h2><ul><li>[ ] Action 1 — <em>Owner, Due date</em></li><li>[ ] Action 2 — <em>Owner, Due date</em></li></ul><h2>📅 Follow-ups</h2><ul><li>Next meeting: </li><li>Pending decisions: </li></ul>'
+    },
+    {
+      id: 'project-brief', title: 'Project Brief', icon: '💡', category: 'Work',
+      description: 'Define project goals, timeline, and success metrics',
+      content: '<h1>💡 Project Brief</h1><h2>Overview</h2><p>Brief description of the project and its purpose...</p><h2>🎯 Goals</h2><ol><li>Goal 1</li><li>Goal 2</li><li>Goal 3</li></ol><h2>📅 Timeline</h2><ul><li><strong>Start:</strong> </li><li><strong>Milestone 1:</strong> </li><li><strong>Milestone 2:</strong> </li><li><strong>Deadline:</strong> </li></ul><h2>🔧 Resources</h2><ul><li>Team members: </li><li>Budget: </li><li>Tools: </li></ul><h2>📊 Success Metrics</h2><ul><li>Metric 1: </li><li>Metric 2: </li><li>Metric 3: </li></ul>'
+    },
+    {
+      id: 'checklist', title: 'Checklist', icon: '📋', category: 'Personal',
+      description: 'Simple checklist with sections for tasks and to-dos',
+      content: '<h1>📋 Checklist</h1><h2>Priority Tasks</h2><ul><li>[ ] Task 1</li><li>[ ] Task 2</li><li>[ ] Task 3</li></ul><h2>Secondary Tasks</h2><ul><li>[ ] Task 4</li><li>[ ] Task 5</li></ul><h2>Notes</h2><p>Additional notes or context...</p>'
+    }
+  ];
+  res.json(templates);
+});
+
 // Serve SPA
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
