@@ -61,6 +61,10 @@ class LobstyBoard {
         document.getElementById('label-form').addEventListener('submit', (e) => this.handleLabelSubmit(e));
         document.getElementById('task-delete-btn').addEventListener('click', () => this.deleteTask());
         document.getElementById('doc-link-trigger').addEventListener('click', () => this.showDocInput());
+        document.getElementById('subtask-add-btn').addEventListener('click', () => this.addSubtask());
+        document.getElementById('subtask-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); this.addSubtask(); }
+        });
         document.getElementById('doc-add-btn').addEventListener('click', () => this.addDocLink());
         document.getElementById('doc-cancel-btn').addEventListener('click', () => this.hideDocInput());
         document.getElementById('doc-url-input').addEventListener('keydown', (e) => {
@@ -486,6 +490,12 @@ class LobstyBoard {
                     `).join('')}
                 </div>
             ` : ''}
+            \${(task.subtask_count > 0) ? \`
+                <div class="subtask-progress">
+                    <span class="subtask-progress-text">✓ \${task.subtask_done}/\${task.subtask_count}</span>
+                    <div class="subtask-bar"><div class="subtask-bar-fill" style="width:\${Math.round(task.subtask_done/task.subtask_count*100)}%"></div></div>
+                </div>
+            \` : ''}
             <div class="task-meta">
                 <span class="priority-badge priority-${task.priority}" title="${task.priority}"></span>
                 ${task.assignee ? `<span class="assignee-badge" title="${task.assignee}">${task.assignee === 'Lobsty' ? '🦞' : '👤'} ${task.assignee}</span>` : ''}
@@ -691,6 +701,59 @@ class LobstyBoard {
             this.quillEditor.setText('');
         }
         this.showModal('task-modal');
+        if (task) {
+            this.loadSubtasks(task.id);
+        } else {
+            this.renderSubtasks([]);
+        }
+    }
+
+    async loadSubtasks(taskId) {
+        try {
+            const subtasks = await this.apiCall(\`/api/tasks/\${taskId}/subtasks\`);
+            this.renderSubtasks(subtasks, taskId);
+        } catch { this.renderSubtasks([], taskId); }
+    }
+
+    renderSubtasks(subtasks, taskId) {
+        const container = document.getElementById('subtask-list');
+        if (!container) return;
+        container.innerHTML = '';
+        subtasks.forEach(st => {
+            const item = document.createElement('div');
+            item.className = 'subtask-item' + (st.completed ? ' completed' : '');
+            item.innerHTML = \`
+                <input type="checkbox" class="subtask-checkbox" \${st.completed ? 'checked' : ''}>
+                <span class="subtask-title">\${this.escapeHtml(st.title)}</span>
+                <button type="button" class="subtask-delete" title="Delete">&times;</button>
+            \`;
+            item.querySelector('.subtask-checkbox').addEventListener('change', async () => {
+                await this.apiCall(\`/api/subtasks/\${st.id}/toggle\`, { method: 'PUT' });
+                if (taskId) this.loadSubtasks(taskId);
+                if (this.currentProject) await this.loadTasks(this.currentProject.id);
+            });
+            item.querySelector('.subtask-delete').addEventListener('click', async (e) => {
+                e.stopPropagation();
+                await this.apiCall(\`/api/subtasks/\${st.id}\`, { method: 'DELETE' });
+                if (taskId) this.loadSubtasks(taskId);
+                if (this.currentProject) await this.loadTasks(this.currentProject.id);
+            });
+            container.appendChild(item);
+        });
+    }
+
+    async addSubtask() {
+        const input = document.getElementById('subtask-input');
+        const title = input.value.trim();
+        if (!title) return;
+        const taskId = document.getElementById('task-delete-btn').dataset.taskId;
+        if (!taskId) { this.showError('Save the task first, then add subtasks'); return; }
+        try {
+            await this.apiCall(\`/api/tasks/\${taskId}/subtasks\`, { method: 'POST', body: JSON.stringify({ title }) });
+            input.value = '';
+            this.loadSubtasks(taskId);
+            if (this.currentProject) await this.loadTasks(this.currentProject.id);
+        } catch {}
     }
 
     renderTaskLabels(task = null) {

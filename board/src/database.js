@@ -64,6 +64,19 @@ function initDatabase() {
     )
   `);
 
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS subtasks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      task_id INTEGER NOT NULL,
+      title TEXT NOT NULL,
+      completed INTEGER DEFAULT 0,
+      position INTEGER DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (task_id) REFERENCES tasks (id) ON DELETE CASCADE
+    )
+  `);
+
   // Migrate: add new columns if missing
   const cols = db.prepare("PRAGMA table_info(tasks)").all().map(c => c.name);
   if (!cols.includes('due_date')) db.exec("ALTER TABLE tasks ADD COLUMN due_date TEXT DEFAULT NULL");
@@ -84,6 +97,8 @@ function initDatabase() {
     CREATE INDEX IF NOT EXISTS idx_task_labels_task_id ON task_labels (task_id);
     CREATE INDEX IF NOT EXISTS idx_task_labels_label_id ON task_labels (label_id);
     CREATE INDEX IF NOT EXISTS idx_task_docs_task_id ON task_docs (task_id);
+    CREATE INDEX IF NOT EXISTS idx_subtasks_task_id ON subtasks (task_id);
+    CREATE INDEX IF NOT EXISTS idx_subtasks_task_id ON subtasks (task_id);
   `);
 
   // Set done_at for existing done tasks

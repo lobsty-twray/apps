@@ -71,7 +71,9 @@ app.delete('/api/projects/:id', (req, res) => {
 const TASK_SELECT = `
   SELECT t.*, p.name as project_name, p.color as project_color,
          GROUP_CONCAT(DISTINCT l.name) as labels,
-         GROUP_CONCAT(DISTINCT l.color) as label_colors
+         GROUP_CONCAT(DISTINCT l.color) as label_colors,
+         (SELECT COUNT(*) FROM subtasks WHERE task_id = t.id) as subtask_count,
+         (SELECT COUNT(*) FROM subtasks WHERE task_id = t.id AND completed = 1) as subtask_done
   FROM tasks t
   LEFT JOIN projects p ON t.project_id = p.id
   LEFT JOIN task_labels tl ON t.id = tl.task_id
@@ -372,6 +374,59 @@ app.get("/api/search", (req, res) => {
     const tasks = db.prepare("SELECT t.id, t.title, t.description, t.status, p.name as project_name FROM tasks t LEFT JOIN projects p ON t.project_id = p.id WHERE (t.title LIKE ? OR t.description LIKE ?) AND t.archived = 0 LIMIT 10").all("%" + q + "%", "%" + q + "%");
     res.json(tasks);
   } catch (error) { res.json([]); }
+});
+
+
+// ── Subtasks API ──
+app.get('/api/tasks/:id/subtasks', (req, res) => {
+  try {
+    const subtasks = db.prepare('SELECT * FROM subtasks WHERE task_id = ? ORDER BY position, id').all(req.params.id);
+    res.json(subtasks);
+  } catch (error) { res.status(500).json({ error: error.message }); }
+});
+
+app.post('/api/tasks/:id/subtasks', (req, res) => {
+  try {
+    const { title } = req.body;
+    if (!title) return res.status(400).json({ error: 'Subtask title is required' });
+    const maxPos = db.prepare('SELECT COALESCE(MAX(position), -1) as mp FROM subtasks WHERE task_id = ?').get(req.params.id).mp;
+    const stmt = db.prepare('INSERT INTO subtasks (task_id, title, position) VALUES (?, ?, ?)');
+    const result = stmt.run(req.params.id, title, maxPos + 1);
+    const subtask = db.prepare('SELECT * FROM subtasks WHERE id = ?').get(result.lastInsertRowid);
+    res.status(201).json(subtask);
+  } catch (error) { res.status(500).json({ error: error.message }); }
+});
+
+app.put('/api/subtasks/:id', (req, res) => {
+  try {
+    const { title, completed } = req.body;
+    const existing = db.prepare('SELECT * FROM subtasks WHERE id = ?').get(req.params.id);
+    if (!existing) return res.status(404).json({ error: 'Subtask not found' });
+    const newTitle = title !== undefined ? title : existing.title;
+    const newCompleted = completed !== undefined ? (completed ? 1 : 0) : existing.completed;
+    db.prepare('UPDATE subtasks SET title = ?, completed = ? WHERE id = ?').run(newTitle, newCompleted, req.params.id);
+    const subtask = db.prepare('SELECT * FROM subtasks WHERE id = ?').get(req.params.id);
+    res.json(subtask);
+  } catch (error) { res.status(500).json({ error: error.message }); }
+});
+
+app.delete('/api/subtasks/:id', (req, res) => {
+  try {
+    const result = db.prepare('DELETE FROM subtasks WHERE id = ?').run(req.params.id);
+    if (result.changes === 0) return res.status(404).json({ error: 'Subtask not found' });
+    res.status(204).send();
+  } catch (error) { res.status(500).json({ error: error.message }); }
+});
+
+app.put('/api/subtasks/:id/toggle', (req, res) => {
+  try {
+    const existing = db.prepare('SELECT * FROM subtasks WHERE id = ?').get(req.params.id);
+    if (!existing) return res.status(404).json({ error: 'Subtask not found' });
+    const newVal = existing.completed ? 0 : 1;
+    db.prepare('UPDATE subtasks SET completed = ? WHERE id = ?').run(newVal, req.params.id);
+    const subtask = db.prepare('SELECT * FROM subtasks WHERE id = ?').get(req.params.id);
+    res.json(subtask);
+  } catch (error) { res.status(500).json({ error: error.message }); }
 });
 
 app.listen(PORT, () => {
