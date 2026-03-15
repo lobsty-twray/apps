@@ -158,7 +158,7 @@ async function initDatabase() {
 
 
 
-    await client.query(\`
+    await client.query(`
       CREATE TABLE IF NOT EXISTS time_entries (
         id SERIAL PRIMARY KEY,
         video_id INTEGER REFERENCES videos(id) ON DELETE CASCADE,
@@ -170,7 +170,7 @@ async function initDatabase() {
         created_by INTEGER REFERENCES users(id),
         created_at TIMESTAMPTZ DEFAULT NOW()
       )
-    \`);
+    `);
 
     // Seed default admin user
     const existing = await client.query('SELECT id FROM users WHERE email = $1', ['ray@twray.dev']);
