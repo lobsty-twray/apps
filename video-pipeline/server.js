@@ -156,6 +156,22 @@ async function initDatabase() {
       )
     `);
 
+
+
+    await client.query(\`
+      CREATE TABLE IF NOT EXISTS time_entries (
+        id SERIAL PRIMARY KEY,
+        video_id INTEGER REFERENCES videos(id) ON DELETE CASCADE,
+        stage TEXT NOT NULL,
+        started_at TIMESTAMPTZ NOT NULL,
+        ended_at TIMESTAMPTZ,
+        duration_seconds INTEGER,
+        note TEXT,
+        created_by INTEGER REFERENCES users(id),
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    \`);
+
     // Seed default admin user
     const existing = await client.query('SELECT id FROM users WHERE email = $1', ['ray@twray.dev']);
     if (existing.rows.length === 0) {
@@ -740,6 +756,129 @@ app.get('/api/export/csv', authRequired, async (req, res) => {
     res.setHeader('Content-Disposition', 'attachment; filename=video-pipeline-export.csv');
     res.send(csv);
   } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+
+// ==================== TIME TRACKING ROUTES ====================
+// Start timer
+app.post('/api/videos/:id/time/start', authRequired, async (req, res) => {
+  try {
+    const { stage, note } = req.body;
+    if (!stage) return res.status(400).json({ error: 'Stage is required' });
+    // Check for existing active timer on this video
+    const active = await pool.query(
+      'SELECT * FROM time_entries WHERE video_id = $1 AND ended_at IS NULL',
+      [req.params.id]
+    );
+    if (active.rows.length > 0) {
+      return res.status(409).json({ error: 'Timer already running', active: active.rows[0] });
+    }
+    const result = await pool.query(
+      'INSERT INTO time_entries (video_id, stage, started_at, note, created_by) VALUES ($1, $2, NOW(), $3, $4) RETURNING *',
+      [req.params.id, stage, note || null, req.userId]
+    );
+    await pool.query(
+      'INSERT INTO activity_log (video_id, user_id, action, details) VALUES ($1, $2, $3, $4)',
+      [req.params.id, req.userId, 'timer_started', `Started ${stage} timer`]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error('Error starting timer:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Stop timer
+app.post('/api/videos/:id/time/stop', authRequired, async (req, res) => {
+  try {
+    const active = await pool.query(
+      'SELECT * FROM time_entries WHERE video_id = $1 AND ended_at IS NULL ORDER BY started_at DESC LIMIT 1',
+      [req.params.id]
+    );
+    if (active.rows.length === 0) {
+      return res.status(404).json({ error: 'No active timer' });
+    }
+    const entry = active.rows[0];
+    const result = await pool.query(
+      `UPDATE time_entries SET ended_at = NOW(), duration_seconds = EXTRACT(EPOCH FROM (NOW() - started_at))::INTEGER WHERE id = $1 RETURNING *`,
+      [entry.id]
+    );
+    await pool.query(
+      'INSERT INTO activity_log (video_id, user_id, action, details) VALUES ($1, $2, $3, $4)',
+      [req.params.id, req.userId, 'timer_stopped', `Stopped ${entry.stage} timer`]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Error stopping timer:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get time entries for a video
+app.get('/api/videos/:id/time', authRequired, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT te.*, u.name as created_by_name FROM time_entries te LEFT JOIN users u ON u.id = te.created_by WHERE te.video_id = $1 ORDER BY te.started_at DESC',
+      [req.params.id]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching time entries:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Delete time entry
+app.delete('/api/videos/:id/time/:entryId', authRequired, async (req, res) => {
+  try {
+    await pool.query('DELETE FROM time_entries WHERE id = $1 AND video_id = $2', [req.params.entryId, req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error deleting time entry:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Time summary across all videos
+app.get('/api/time/summary', authRequired, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT v.id as video_id, v.title,
+        COALESCE(SUM(te.duration_seconds), 0) as total_seconds,
+        json_agg(json_build_object('stage', te.stage, 'seconds', te.duration_seconds) ORDER BY te.stage) FILTER (WHERE te.duration_seconds IS NOT NULL) as stage_breakdown
+      FROM videos v
+      LEFT JOIN time_entries te ON te.video_id = v.id AND te.ended_at IS NOT NULL
+      GROUP BY v.id, v.title
+      HAVING COALESCE(SUM(te.duration_seconds), 0) > 0
+      ORDER BY total_seconds DESC
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching time summary:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Manual time entry
+app.post('/api/videos/:id/time/manual', authRequired, async (req, res) => {
+  try {
+    const { stage, duration_seconds, note } = req.body;
+    if (!stage || !duration_seconds) return res.status(400).json({ error: 'Stage and duration required' });
+    const started = new Date();
+    const ended = new Date(started.getTime() - duration_seconds * 1000);
+    const result = await pool.query(
+      'INSERT INTO time_entries (video_id, stage, started_at, ended_at, duration_seconds, note, created_by) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+      [req.params.id, stage, ended, started, duration_seconds, note || null, req.userId]
+    );
+    await pool.query(
+      'INSERT INTO activity_log (video_id, user_id, action, details) VALUES ($1, $2, $3, $4)',
+      [req.params.id, req.userId, 'time_manual', `Added manual ${stage} entry`]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error('Error adding manual time:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });

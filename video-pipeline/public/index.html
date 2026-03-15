@@ -303,6 +303,40 @@
     /* ===== LOADING ===== */
     .spinner{width:20px;height:20px;border:2px solid var(--glass-border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
     @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* ===== TIME TRACKING ===== */
+    .timer-section{margin-bottom:20px}
+    .timer-active{background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.25);border-radius:var(--radius-sm);padding:16px;margin-bottom:12px;position:relative;overflow:hidden}
+    .timer-active::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent);animation:timerPulse 2s ease-in-out infinite}
+    @keyframes timerPulse{0%,100%{opacity:1}50%{opacity:.4}}
+    .timer-active-stage{font-size:12px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+    .timer-active-time{font-size:32px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-1px;color:var(--text);margin-bottom:8px}
+    .timer-active-note{font-size:11px;color:var(--text2);margin-bottom:8px}
+    .timer-stop-btn{width:100%;padding:12px;background:var(--danger);color:#fff;border:none;border-radius:var(--radius-xs);font-weight:700;font-size:15px;min-height:48px;cursor:pointer;transition:all .15s}
+    .timer-stop-btn:hover{filter:brightness(1.1)}
+    .timer-stop-btn:active{transform:scale(.98)}
+    .timer-start-row{display:flex;gap:8px;margin-bottom:12px}
+    .timer-start-row select{flex:1;padding:10px 12px;min-height:44px}
+    .timer-start-btn{padding:10px 20px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-xs);font-weight:600;font-size:13px;min-height:44px;cursor:pointer;transition:all .15s;white-space:nowrap}
+    .timer-start-btn:hover{background:var(--accent-hover)}
+    .timer-total{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+    .timer-total-chip{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;background:var(--glass);color:var(--text2)}
+    .timer-total-chip.grand{background:rgba(124,58,237,0.15);color:var(--accent)}
+    .timer-log-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--glass-border);font-size:12px}
+    .timer-log-item:last-child{border:none}
+    .timer-log-stage{font-weight:600;color:var(--text2);min-width:70px}
+    .timer-log-dur{color:var(--text);font-weight:700;font-variant-numeric:tabular-nums;min-width:60px}
+    .timer-log-date{color:var(--text3);flex:1}
+    .timer-log-del{color:var(--text3);cursor:pointer;padding:4px;font-size:14px;min-width:28px;min-height:28px;display:flex;align-items:center;justify-content:center;border-radius:4px;transition:all .15s}
+    .timer-log-del:hover{color:var(--danger);background:rgba(239,68,68,0.1)}
+    .timer-manual-row{display:none;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:end}
+    .timer-manual-row.show{display:flex}
+    .timer-manual-row .mfield{min-width:60px}
+    .timer-manual-row input,.timer-manual-row select{min-height:44px;padding:8px 10px}
+    .timer-manual-btn{padding:6px 12px;background:var(--glass);color:var(--text2);border:1px solid var(--glass-border);border-radius:var(--radius-xs);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;min-height:36px}
+    .timer-manual-btn:hover{background:var(--glass-hover);color:var(--text)}
+    .timer-toggle-manual{font-size:11px;color:var(--text3);cursor:pointer;transition:color .15s;margin-bottom:8px;display:inline-block}
+    .timer-toggle-manual:hover{color:var(--accent)}
   </style>
 </head>
 <body>
@@ -427,6 +461,31 @@
         <div class="msection"><div class="msection-title">Sponsors</div><div id="m-sponsors"></div><button class="btn-sm btn-ghost" id="btn-add-sponsor" style="margin-top:6px">+ Add Sponsor</button></div>
       </div>
       <div class="modal-right">
+        <div class="msection timer-section">
+          <div class="msection-title">⏱ Time Tracking</div>
+          <div id="m-timer-active"></div>
+          <div class="timer-start-row" id="m-timer-start-row">
+            <select class="mselect" id="m-timer-stage">
+              <option value="Scripting">✍️ Scripting</option>
+              <option value="Filming">🎬 Filming</option>
+              <option value="Editing">✂️ Editing</option>
+              <option value="Reviewing">🔍 Reviewing</option>
+              <option value="Publishing">🚀 Publishing</option>
+              <option value="Other">📌 Other</option>
+            </select>
+            <button class="timer-start-btn" id="m-timer-start">▶ Start</button>
+          </div>
+          <div id="m-timer-totals" class="timer-total"></div>
+          <span class="timer-toggle-manual" id="m-timer-toggle-manual">+ Add manual entry</span>
+          <div class="timer-manual-row" id="m-timer-manual">
+            <div class="mfield"><label>Stage</label><select class="mselect" id="m-manual-stage"><option value="Scripting">Scripting</option><option value="Filming">Filming</option><option value="Editing">Editing</option><option value="Reviewing">Reviewing</option><option value="Publishing">Publishing</option><option value="Other">Other</option></select></div>
+            <div class="mfield"><label>Hours</label><input type="number" class="input" id="m-manual-hrs" min="0" max="99" value="0" style="font-size:13px"></div>
+            <div class="mfield"><label>Mins</label><input type="number" class="input" id="m-manual-mins" min="0" max="59" value="30" style="font-size:13px"></div>
+            <div class="mfield"><label>Note</label><input type="text" class="input" id="m-manual-note" placeholder="Optional" style="font-size:13px"></div>
+            <button class="timer-manual-btn" id="m-manual-add">Add</button>
+          </div>
+          <div id="m-timer-log"></div>
+        </div>
         <div class="msection"><div class="msection-title">Checklist</div><div id="m-checklist"></div><div class="cl-add" id="cl-add-btn">+ Add item</div></div>
         <div class="msection"><div class="msection-title">Notes</div><div class="note-input-row"><textarea class="note-inp" id="note-input" placeholder="Add a note..." rows="1"></textarea><button class="btn-sm btn-fill" id="btn-add-note">Add</button></div><div id="m-notes"></div></div>
         <div class="msection"><div class="msection-title">Activity</div><div id="m-activity"></div></div>
@@ -645,7 +704,7 @@ function hideCtx(){document.getElementById('ctx-menu').style.display='none'}
 // Video modal
 async function openVideoModal(id){
   currentVideoId=id;
-  try{const v=await api(`/api/videos/${id}`);renderModal(v);document.getElementById('video-modal').classList.add('active')}catch{toast('Failed to load','error')}
+  try{const v=await api(`/api/videos/${id}`);renderModal(v);document.getElementById('video-modal').classList.add('active');loadTimeEntries(id)}catch{toast('Failed to load','error')}
 }
 function closeModal(){document.getElementById('video-modal').classList.remove('active');currentVideoId=null}
 
@@ -833,6 +892,133 @@ document.addEventListener('keydown',e=>{
   if(e.key==='n'){e.preventDefault();openNV()}
   else if(e.key==='k'){e.preventDefault();document.getElementById('search-input').focus()}
 });
+
+
+// ==================== TIME TRACKING ====================
+let timerInterval=null;
+
+function fmtDuration(s){
+  if(!s||s<0)s=0;
+  const h=Math.floor(s/3600),m=Math.floor((s%3600)/60);
+  if(h>0)return `${h}h ${m}m`;
+  if(m>0)return `${m}m`;
+  return `${Math.floor(s)}s`;
+}
+
+function fmtTimerLive(startedAt){
+  const elapsed=Math.floor((Date.now()-new Date(startedAt).getTime())/1000);
+  const h=Math.floor(elapsed/3600),m=Math.floor((elapsed%3600)/60),s=elapsed%60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+async function loadTimeEntries(videoId){
+  try{
+    const entries=await api(`/api/videos/${videoId}/time`);
+    renderTimerUI(entries,videoId);
+  }catch(e){console.error('Time load error:',e)}
+}
+
+function renderTimerUI(entries,videoId){
+  const activeEntry=entries.find(e=>!e.ended_at);
+  const completed=entries.filter(e=>e.ended_at);
+  const activeEl=document.getElementById('m-timer-active');
+  const startRow=document.getElementById('m-timer-start-row');
+
+  // Clear old interval
+  if(timerInterval){clearInterval(timerInterval);timerInterval=null}
+
+  if(activeEntry){
+    startRow.style.display='none';
+    activeEl.innerHTML=`<div class="timer-active">
+      <div class="timer-active-stage">⏱ ${esc(activeEntry.stage)}</div>
+      <div class="timer-active-time" id="timer-live">${fmtTimerLive(activeEntry.started_at)}</div>
+      ${activeEntry.note?`<div class="timer-active-note">${esc(activeEntry.note)}</div>`:''}
+      <button class="timer-stop-btn" id="timer-stop-btn">⏹ Stop Timer</button>
+    </div>`;
+    timerInterval=setInterval(()=>{
+      const el=document.getElementById('timer-live');
+      if(el)el.textContent=fmtTimerLive(activeEntry.started_at);
+    },1000);
+    document.getElementById('timer-stop-btn').addEventListener('click',async()=>{
+      await api(`/api/videos/${videoId}/time/stop`,{method:'POST'});
+      toast('Timer stopped','success');
+      loadTimeEntries(videoId);
+      loadVideos();
+    });
+  }else{
+    startRow.style.display='flex';
+    activeEl.innerHTML='';
+  }
+
+  // Totals
+  const totals={};let grand=0;
+  completed.forEach(e=>{
+    totals[e.stage]=(totals[e.stage]||0)+e.duration_seconds;
+    grand+=e.duration_seconds;
+  });
+  const totalsEl=document.getElementById('m-timer-totals');
+  if(grand>0){
+    totalsEl.innerHTML=`<span class="timer-total-chip grand">Total: ${fmtDuration(grand)}</span>`+
+      Object.entries(totals).map(([s,sec])=>`<span class="timer-total-chip">${esc(s)}: ${fmtDuration(sec)}</span>`).join('');
+  }else{
+    totalsEl.innerHTML='';
+  }
+
+  // Log
+  const logEl=document.getElementById('m-timer-log');
+  if(completed.length){
+    logEl.innerHTML=completed.map(e=>`<div class="timer-log-item">
+      <span class="timer-log-stage">${esc(e.stage)}</span>
+      <span class="timer-log-dur">${fmtDuration(e.duration_seconds)}</span>
+      <span class="timer-log-date">${fmtDate(e.started_at)}</span>
+      <span class="timer-log-del" data-tid="${e.id}" title="Delete">×</span>
+    </div>`).join('');
+    logEl.querySelectorAll('.timer-log-del').forEach(b=>b.addEventListener('click',async()=>{
+      await api(`/api/videos/${videoId}/time/${b.dataset.tid}`,{method:'DELETE'});
+      loadTimeEntries(videoId);
+    }));
+  }else{
+    logEl.innerHTML='<div style="color:var(--text3);font-size:12px;padding:4px 0">No time entries yet</div>';
+  }
+}
+
+// Start timer
+document.getElementById('m-timer-start').addEventListener('click',async()=>{
+  if(!currentVideoId)return;
+  const stage=document.getElementById('m-timer-stage').value;
+  try{
+    await api(`/api/videos/${currentVideoId}/time/start`,{method:'POST',body:JSON.stringify({stage})});
+    toast('Timer started','success');
+    loadTimeEntries(currentVideoId);
+  }catch(e){toast(e.message||'Failed','error')}
+});
+
+// Toggle manual entry
+document.getElementById('m-timer-toggle-manual').addEventListener('click',()=>{
+  document.getElementById('m-timer-manual').classList.toggle('show');
+});
+
+// Add manual entry
+document.getElementById('m-manual-add').addEventListener('click',async()=>{
+  if(!currentVideoId)return;
+  const stage=document.getElementById('m-manual-stage').value;
+  const hrs=parseInt(document.getElementById('m-manual-hrs').value)||0;
+  const mins=parseInt(document.getElementById('m-manual-mins').value)||0;
+  const secs=hrs*3600+mins*60;
+  if(secs<=0){toast('Enter a duration','error');return}
+  const note=document.getElementById('m-manual-note').value.trim();
+  await api(`/api/videos/${currentVideoId}/time/manual`,{method:'POST',body:JSON.stringify({stage,duration_seconds:secs,note:note||null})});
+  document.getElementById('m-manual-hrs').value='0';
+  document.getElementById('m-manual-mins').value='30';
+  document.getElementById('m-manual-note').value='';
+  document.getElementById('m-timer-manual').classList.remove('show');
+  toast('Time added','success');
+  loadTimeEntries(currentVideoId);
+});
+
+// Clean up timer interval on modal close
+const origCloseModal=closeModal;
+closeModal=function(){if(timerInterval){clearInterval(timerInterval);timerInterval=null}origCloseModal()};
 
 // Init
 checkAuth();
