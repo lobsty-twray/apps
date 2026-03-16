@@ -879,3 +879,16 @@ input[type="number"] { -moz-appearance: textfield; }
     font-size: 0.8rem;
     white-space: nowrap;
 }
+
+/* Frequency Badge */
+.freq-badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    padding: 2px 7px;
+    border-radius: 10px;
+    background: rgba(124, 108, 255, 0.12);
+    color: rgba(124, 108, 255, 0.8);
+    margin-left: 6px;
+    vertical-align: middle;
+    font-weight: 500;
+}

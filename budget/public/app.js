@@ -63,6 +63,17 @@ class BudgetApp {
             });
         });
 
+        // Recurring toggle -> show/hide frequency dropdown
+        const recurringCheckbox = document.querySelector('[name="recurring"]');
+        if (recurringCheckbox) {
+            recurringCheckbox.addEventListener('change', () => {
+                const freqGroup = document.querySelector('.recurring-freq-group');
+                if (freqGroup) {
+                    freqGroup.style.display = recurringCheckbox.checked ? '' : 'none';
+                }
+            });
+        }
+
         // Forms
         document.getElementById('transaction-form').addEventListener('submit', e => { e.preventDefault(); this.saveTransaction(); });
         document.getElementById('category-form').addEventListener('submit', e => { e.preventDefault(); this.saveCategory(); });
@@ -244,13 +255,19 @@ class BudgetApp {
         container.innerHTML = this.transactions.map((tx, i) => this.transactionHTML(tx, i, true)).join('');
     }
 
+    frequencyLabel(freq) {
+        const labels = { weekly: 'Weekly', biweekly: 'Bi-weekly', monthly: 'Monthly', yearly: 'Yearly' };
+        return labels[freq] || 'Monthly';
+    }
+
     transactionHTML(tx, index, showActions) {
         const delay = Math.min(index * 40, 300);
+        const freqBadge = tx.recurring ? `<span class="freq-badge">🔄 ${this.frequencyLabel(tx.recurring_frequency)}</span>` : '';
         return `<div class="transaction-item stagger-in" style="animation-delay:${delay}ms" onclick="app.toggleTxActions(this)">
             <div class="tx-icon" style="background:${tx.category_color}15; color:${tx.category_color}">${tx.category_icon}</div>
             <div class="tx-details">
                 <div class="tx-name">${tx.description || tx.category_name}</div>
-                <div class="tx-meta">${tx.category_name}${tx.recurring ? ' 🔄' : ''}</div>
+                <div class="tx-meta">${tx.category_name} ${freqBadge}</div>
             </div>
             <div class="tx-right">
                 <div class="tx-amount ${tx.type}">${tx.type === 'income' ? '+' : '-'}${this.formatCurrency(tx.amount)}</div>
@@ -466,6 +483,7 @@ class BudgetApp {
         const modal = document.getElementById('transaction-modal');
         const form = document.getElementById('transaction-form');
         const title = document.getElementById('transaction-modal-title');
+        const freqGroup = document.querySelector('.recurring-freq-group');
 
         if (tx) {
             title.textContent = 'Edit Transaction';
@@ -476,6 +494,8 @@ class BudgetApp {
             form.elements.description.value = tx.description || '';
             form.elements.date.value = tx.date;
             form.elements.recurring.checked = tx.recurring;
+            form.elements.recurring_frequency.value = tx.recurring_frequency || 'monthly';
+            if (freqGroup) freqGroup.style.display = tx.recurring ? '' : 'none';
             form.dataset.id = tx.id;
         } else {
             title.textContent = 'Add Transaction';
@@ -483,6 +503,7 @@ class BudgetApp {
             form.elements.type.value = 'expense';
             document.querySelectorAll('.type-btn').forEach(b => b.classList.toggle('active', b.dataset.type === 'expense'));
             form.elements.date.value = new Date().toISOString().split('T')[0];
+            if (freqGroup) freqGroup.style.display = 'none';
             delete form.dataset.id;
         }
         this.updateTransactionCategorySelects();
@@ -496,6 +517,7 @@ class BudgetApp {
         const form = document.getElementById('transaction-form');
         const data = Object.fromEntries(new FormData(form).entries());
         data.recurring = form.elements.recurring.checked;
+        data.recurring_frequency = data.recurring ? form.elements.recurring_frequency.value : null;
 
         const method = form.dataset.id ? 'PUT' : 'POST';
         const url = form.dataset.id ? `/api/transactions/${form.dataset.id}` : '/api/transactions';

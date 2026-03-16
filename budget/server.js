@@ -52,6 +52,13 @@ function initDatabase() {
     );
   `);
 
+  // Migration: add recurring_frequency column
+  try {
+    db.exec(`ALTER TABLE transactions ADD COLUMN recurring_frequency TEXT DEFAULT NULL`);
+  } catch (e) {
+    // Column already exists, ignore
+  }
+
   // Seed default categories
   const defaultCategories = [
     { name: "Housing", type: "expense", color: "#ff6b6b", icon: "🏠" },
@@ -145,30 +152,30 @@ app.get("/api/transactions", (req, res) => {
 });
 
 app.post("/api/transactions", (req, res) => {
-  const { type, amount, category_id, description, date, recurring } = req.body;
+  const { type, amount, category_id, description, date, recurring, recurring_frequency } = req.body;
   
   if (!type || !amount || !category_id || !date) {
     return res.status(400).json({ error: "Missing required fields" });
   }
 
   const stmt = db.prepare(`
-    INSERT INTO transactions (type, amount, category_id, description, date, recurring)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO transactions (type, amount, category_id, description, date, recurring, recurring_frequency)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `);
 
-  const result = stmt.run(type, amount, category_id, description, date, recurring ? 1 : 0);
+  const result = stmt.run(type, amount, category_id, description, date, recurring ? 1 : 0, recurring ? (recurring_frequency || 'monthly') : null);
   res.json({ id: result.lastInsertRowid, success: true });
 });
 
 app.put("/api/transactions/:id", (req, res) => {
-  const { type, amount, category_id, description, date, recurring } = req.body;
+  const { type, amount, category_id, description, date, recurring, recurring_frequency } = req.body;
   const stmt = db.prepare(`
     UPDATE transactions 
-    SET type = ?, amount = ?, category_id = ?, description = ?, date = ?, recurring = ?
+    SET type = ?, amount = ?, category_id = ?, description = ?, date = ?, recurring = ?, recurring_frequency = ?
     WHERE id = ?
   `);
 
-  const result = stmt.run(type, amount, category_id, description, date, recurring ? 1 : 0, req.params.id);
+  const result = stmt.run(type, amount, category_id, description, date, recurring ? 1 : 0, recurring ? (recurring_frequency || 'monthly') : null, req.params.id);
   res.json({ success: result.changes > 0 });
 });
 
@@ -276,7 +283,7 @@ app.get("/api/trends", (req, res) => {
 // CSV Export
 app.get("/api/transactions/export", (req, res) => {
   let query = `
-    SELECT t.date, t.description, t.amount, c.name as category, t.type, t.recurring
+    SELECT t.date, t.description, t.amount, c.name as category, t.type, t.recurring, t.recurring_frequency
     FROM transactions t
     JOIN categories c ON t.category_id = c.id
     WHERE 1=1
@@ -289,10 +296,10 @@ app.get("/api/transactions/export", (req, res) => {
   }
   query += ` ORDER BY t.date DESC`;
   const rows = db.prepare(query).all(...params);
-  let csv = "date,description,amount,category,type,recurring\n";
+  let csv = "date,description,amount,category,type,recurring,recurring_frequency\n";
   for (const r of rows) {
     const desc = (r.description || "").replace(/"/g, '""');
-    csv += `${r.date},"${desc}",${r.amount},${r.category},${r.type},${r.recurring ? "yes" : "no"}\n`;
+    csv += `${r.date},"${desc}",${r.amount},${r.category},${r.type},${r.recurring ? "yes" : "no"},${r.recurring_frequency || ""}\n`;
   }
   res.setHeader("Content-Type", "text/csv");
   res.setHeader("Content-Disposition", `attachment; filename="budget-export.csv"`);
@@ -338,12 +345,38 @@ app.get("/api/transactions/recurring/status", (req, res) => {
   const recurring = db.prepare("SELECT * FROM transactions WHERE recurring = 1").all();
   let pending = 0;
   for (const tx of recurring) {
-    const exists = db.prepare(`
-      SELECT 1 FROM transactions
-      WHERE category_id = ? AND amount = ? AND type = ? AND description = ?
-      AND strftime('%m', date) = ? AND strftime('%Y', date) = ?
-    `).get(tx.category_id, tx.amount, tx.type, tx.description, m, y);
-    if (!exists) pending++;
+    const freq = tx.recurring_frequency || 'monthly';
+    
+    // For yearly: only pending if original month matches target month
+    if (freq === 'yearly') {
+      const origMonth = new Date(tx.date).getMonth() + 1;
+      if (origMonth !== month) continue;
+    }
+    
+    if (freq === 'weekly') {
+      // Check if 4 weekly transactions exist
+      const count = db.prepare(`
+        SELECT COUNT(*) as cnt FROM transactions
+        WHERE category_id = ? AND amount = ? AND type = ? AND description = ?
+        AND strftime('%m', date) = ? AND strftime('%Y', date) = ? AND recurring = 0
+      `).get(tx.category_id, tx.amount, tx.type, tx.description, m, y).cnt;
+      if (count < 4) pending++;
+    } else if (freq === 'biweekly') {
+      const count = db.prepare(`
+        SELECT COUNT(*) as cnt FROM transactions
+        WHERE category_id = ? AND amount = ? AND type = ? AND description = ?
+        AND strftime('%m', date) = ? AND strftime('%Y', date) = ? AND recurring = 0
+      `).get(tx.category_id, tx.amount, tx.type, tx.description, m, y).cnt;
+      if (count < 2) pending++;
+    } else {
+      // monthly or yearly (single)
+      const exists = db.prepare(`
+        SELECT 1 FROM transactions
+        WHERE category_id = ? AND amount = ? AND type = ? AND description = ?
+        AND strftime('%m', date) = ? AND strftime('%Y', date) = ? AND recurring = 0
+      `).get(tx.category_id, tx.amount, tx.type, tx.description, m, y);
+      if (!exists) pending++;
+    }
   }
   res.json({ pending, month, year });
 });
@@ -359,19 +392,83 @@ app.post("/api/transactions/generate-recurring", (req, res) => {
     INSERT INTO transactions (type, amount, category_id, description, date, recurring)
     VALUES (?, ?, ?, ?, ?, 0)
   `);
+  
   for (const tx of recurring) {
-    const exists = db.prepare(`
-      SELECT 1 FROM transactions
-      WHERE category_id = ? AND amount = ? AND type = ? AND description = ?
-      AND strftime('%m', date) = ? AND strftime('%Y', date) = ?
-    `).get(tx.category_id, tx.amount, tx.type, tx.description, m, y);
-    if (exists) { skipped++; continue; }
-    const origDay = new Date(tx.date).getDate();
+    const freq = tx.recurring_frequency || 'monthly';
     const maxDay = new Date(year, month, 0).getDate();
-    const day = Math.min(origDay, maxDay);
-    const dateStr = `${y}-${m}-${day.toString().padStart(2, "0")}`;
-    insert.run(tx.type, tx.amount, tx.category_id, tx.description, dateStr);
-    generated++;
+    
+    if (freq === 'yearly') {
+      const origMonth = new Date(tx.date).getMonth() + 1;
+      if (origMonth !== month) { skipped++; continue; }
+      // Same as monthly — generate one
+      const exists = db.prepare(`
+        SELECT 1 FROM transactions
+        WHERE category_id = ? AND amount = ? AND type = ? AND description = ?
+        AND strftime('%m', date) = ? AND strftime('%Y', date) = ? AND recurring = 0
+      `).get(tx.category_id, tx.amount, tx.type, tx.description, m, y);
+      if (exists) { skipped++; continue; }
+      const origDay = new Date(tx.date).getDate();
+      const day = Math.min(origDay, maxDay);
+      insert.run(tx.type, tx.amount, tx.category_id, tx.description, `${y}-${m}-${day.toString().padStart(2, "0")}`);
+      generated++;
+    } else if (freq === 'weekly') {
+      // Generate 4 transactions for each week
+      const existingCount = db.prepare(`
+        SELECT COUNT(*) as cnt FROM transactions
+        WHERE category_id = ? AND amount = ? AND type = ? AND description = ?
+        AND strftime('%m', date) = ? AND strftime('%Y', date) = ? AND recurring = 0
+      `).get(tx.category_id, tx.amount, tx.type, tx.description, m, y).cnt;
+      if (existingCount >= 4) { skipped++; continue; }
+      const needed = 4 - existingCount;
+      // Place on days 1, 8, 15, 22
+      const weekDays = [1, 8, 15, 22];
+      let added = 0;
+      for (const d of weekDays) {
+        if (added >= needed) break;
+        if (d > maxDay) break;
+        const dateStr = `${y}-${m}-${d.toString().padStart(2, "0")}`;
+        // Check this exact date doesn't already exist
+        const dup = db.prepare(`
+          SELECT 1 FROM transactions
+          WHERE category_id = ? AND amount = ? AND type = ? AND description = ? AND date = ? AND recurring = 0
+        `).get(tx.category_id, tx.amount, tx.type, tx.description, dateStr);
+        if (dup) continue;
+        insert.run(tx.type, tx.amount, tx.category_id, tx.description, dateStr);
+        generated++;
+        added++;
+      }
+    } else if (freq === 'biweekly') {
+      // Generate 2 transactions on 1st and 15th
+      const existingCount = db.prepare(`
+        SELECT COUNT(*) as cnt FROM transactions
+        WHERE category_id = ? AND amount = ? AND type = ? AND description = ?
+        AND strftime('%m', date) = ? AND strftime('%Y', date) = ? AND recurring = 0
+      `).get(tx.category_id, tx.amount, tx.type, tx.description, m, y).cnt;
+      if (existingCount >= 2) { skipped++; continue; }
+      const biDays = [1, 15];
+      for (const d of biDays) {
+        const dateStr = `${y}-${m}-${d.toString().padStart(2, "0")}`;
+        const dup = db.prepare(`
+          SELECT 1 FROM transactions
+          WHERE category_id = ? AND amount = ? AND type = ? AND description = ? AND date = ? AND recurring = 0
+        `).get(tx.category_id, tx.amount, tx.type, tx.description, dateStr);
+        if (dup) continue;
+        insert.run(tx.type, tx.amount, tx.category_id, tx.description, dateStr);
+        generated++;
+      }
+    } else {
+      // monthly (default)
+      const exists = db.prepare(`
+        SELECT 1 FROM transactions
+        WHERE category_id = ? AND amount = ? AND type = ? AND description = ?
+        AND strftime('%m', date) = ? AND strftime('%Y', date) = ? AND recurring = 0
+      `).get(tx.category_id, tx.amount, tx.type, tx.description, m, y);
+      if (exists) { skipped++; continue; }
+      const origDay = new Date(tx.date).getDate();
+      const day = Math.min(origDay, maxDay);
+      insert.run(tx.type, tx.amount, tx.category_id, tx.description, `${y}-${m}-${day.toString().padStart(2, "0")}`);
+      generated++;
+    }
   }
   res.json({ generated, skipped });
 });
