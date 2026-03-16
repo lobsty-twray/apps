@@ -146,7 +146,6 @@ body {
 .pri-btn.active.p-low { border-color: var(--success); color: var(--success); background: var(--success-soft); }
 .cat-btn.active { border-color: var(--cat-color, var(--accent)); color: var(--cat-color, var(--accent)); background: color-mix(in srgb, var(--cat-color, var(--accent)) 12%, transparent); }
 
-/* Due date input */
 .due-date-input {
   padding: 6px 14px; border: 1px solid var(--glass-border);
   border-radius: 20px; background: rgba(255,255,255,0.03);
@@ -186,7 +185,7 @@ body {
 }
 .filter-chip.active .count { background: var(--accent-soft); }
 
-.todo-list { list-style: none; }
+.todo-list { list-style: none; padding: 0; margin: 0; }
 
 .todo-card {
   position: relative;
@@ -210,12 +209,11 @@ body {
 .todo-card.checking { animation: checkPop 0.4s cubic-bezier(0.34,1.56,0.64,1); }
 @keyframes checkPop { 0% { transform: scale(1); } 30% { transform: scale(1.02); } 100% { transform: scale(1); } }
 
-/* Due date visual indicators */
 .todo-card.due-overdue:not(.done) { border-left: 3px solid var(--danger); box-shadow: inset 3px 0 12px -4px rgba(255,68,102,0.15); }
 .todo-card.due-today:not(.done) { border-left: 3px solid var(--warning); box-shadow: inset 3px 0 12px -4px rgba(255,170,51,0.12); }
 .todo-card.due-tomorrow:not(.done) { border-left: 3px solid rgba(255,170,51,0.4); }
 
-.todo-inner { display: flex; align-items: center; gap: 12px; padding: 14px 16px; }
+.todo-inner { display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; }
 
 .check-wrap {
   position: relative; width: 26px; height: 26px; min-width: 26px;
@@ -302,30 +300,193 @@ body {
 .clear-done:hover { background: var(--danger-soft); color: var(--danger); border-color: var(--danger); }
 .clear-done.show { display: block; }
 
-@media (max-width: 480px) {
-  .app { padding: 12px 12px; }
-  .header { padding: 16px 0 20px; }
-  .header h1 { font-size: 1.75rem; }
-  .stat-card { padding: 10px 8px; }
-  .stat-num { font-size: 1.2rem; }
-  .add-section { padding: 12px; }
+/* --- Subtasks --- */
+.subtask-section {
+  max-height: 0; overflow: hidden; transition: max-height 0.35s ease, padding 0.35s ease;
+  border-top: 0px solid transparent;
 }
-@media (max-width: 360px) {
-  .stats-row { gap: 4px; }
-  .stat-card { padding: 8px 6px; }
-  .stat-num { font-size: 1.1rem; }
+.todo-card.expanded .subtask-section {
+  max-height: 600px;
+  border-top: 1px solid rgba(255,255,255,0.04);
 }
-@media (min-width: 768px) {
-  .app { padding: 40px 20px; }
-  .header { padding: 30px 0 30px; }
+.subtask-list { padding: 8px 16px 4px 54px; }
+.subtask-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 0; min-height: 40px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  animation: fadeIn 0.2s ease;
 }
-@media (min-width: 1024px) {
-  .app { max-width: 600px; }
+.subtask-item:last-child { border-bottom: none; }
+.subtask-check {
+  width: 20px; height: 20px; min-width: 20px; border-radius: 50%;
+  border: 2px solid var(--text-muted); background: transparent;
+  cursor: pointer; transition: var(--transition);
+  display: flex; align-items: center; justify-content: center;
+  padding: 0; touch-action: manipulation;
 }
+.subtask-check:hover { border-color: var(--accent); }
+.subtask-check.done { border-color: var(--success); background: var(--success); }
+.subtask-check svg { width: 10px; height: 10px; opacity: 0; transition: var(--bounce); color: #0a0a0f; }
+.subtask-check.done svg { opacity: 1; transform: scale(1); }
+.subtask-text {
+  flex: 1; font-size: 0.85rem; color: var(--text-secondary);
+  line-height: 1.4; word-break: break-word;
+}
+.subtask-text.done { text-decoration: line-through; color: var(--text-muted); }
+.subtask-del {
+  background: none; border: none; color: var(--text-muted);
+  width: 32px; height: 32px; min-width: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; cursor: pointer; transition: var(--transition);
+  touch-action: manipulation; opacity: 0; font-size: 0.8rem; padding: 0;
+}
+.subtask-item:hover .subtask-del { opacity: 0.5; }
+.subtask-del:hover { opacity: 1 !important; color: var(--danger); background: var(--danger-soft); }
 
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+.subtask-add {
+  display: flex; gap: 8px; padding: 6px 16px 10px 54px;
+}
+.subtask-add input {
+  flex: 1; padding: 8px 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary); font-size: 0.85rem; font-family: inherit;
+  outline: none; transition: var(--transition); -webkit-appearance: none;
+  min-height: 36px;
+}
+.subtask-add input::placeholder { color: var(--text-muted); }
+.subtask-add input:focus { border-color: rgba(124,58,237,0.4); background: rgba(255,255,255,0.05); }
+
+/* Subtask progress indicator */
+.subtask-progress {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.7rem; color: var(--text-secondary);
+  padding: 2px 8px; border-radius: 10px;
+  background: rgba(255,255,255,0.04);
+}
+.subtask-progress-bar {
+  width: 40px; height: 4px; background: rgba(255,255,255,0.08);
+  border-radius: 2px; overflow: hidden;
+}
+.subtask-progress-fill {
+  height: 100%; background: var(--accent);
+  border-radius: 2px; transition: width var(--transition);
+}
+.subtask-progress.all-done .subtask-progress-fill { background: var(--success); }
+.subtask-progress .all-done-icon { font-size: 0.75rem; }
+
+/* Expand indicator */
+.expand-indicator {
+  font-size: 0.65rem; color: var(--text-muted); transition: transform var(--transition);
+  margin-left: 4px;
+}
+.todo-card.expanded .expand-indicator { transform: rotate(180deg); }
+
+.search-bar {
+  position: relative; margin-bottom: 16px;
+}
+.search-bar input {
+  width: 100%; padding: 12px 80px 12px 40px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  color: var(--text-primary); font-size: 0.92rem; font-family: inherit;
+  outline: none; transition: var(--transition); -webkit-appearance: none;
+  min-height: 44px; box-sizing: border-box;
+}
+.search-bar input::placeholder { color: var(--text-muted); }
+.search-bar input:focus { border-color: rgba(124,58,237,0.4); box-shadow: 0 0 20px var(--accent-glow); }
+.search-bar .search-icon {
+  position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+  color: var(--text-muted); pointer-events: none; font-size: 0.9rem;
+}
+.search-bar .search-meta {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  display: flex; align-items: center; gap: 6px;
+}
+.search-bar .search-count { font-size: 0.72rem; color: var(--text-muted); white-space: nowrap; }
+.search-bar .search-clear {
+  width: 28px; height: 28px; border: none; border-radius: 50%;
+  background: rgba(255,255,255,0.06); color: var(--text-muted);
+  cursor: pointer; display: none; align-items: center; justify-content: center;
+  font-size: 0.85rem; transition: var(--transition); touch-action: manipulation;
+}
+.search-bar .search-clear:hover { background: var(--danger-soft); color: var(--danger); }
+.search-bar .search-clear.show { display: flex; }
+.search-bar .search-kbd {
+  font-size: 0.65rem; color: var(--text-muted); border: 1px solid var(--glass-border);
+  border-radius: 4px; padding: 1px 5px; font-family: inherit; pointer-events: none;
+}
+.search-bar input:focus ~ .search-meta .search-kbd,
+.search-bar input:not(:placeholder-shown) ~ .search-meta .search-kbd { display: none; }
+.no-results {
+  text-align: center; padding: 40px 20px;
+  color: var(--text-muted); font-size: 0.9rem;
+}
+.no-results .no-results-icon { font-size: 2rem; margin-bottom: 8px; opacity: 0.5; }
+
+/* Productivity */
+.productivity-section {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  margin-bottom: 20px; overflow: hidden; transition: var(--transition);
+}
+.productivity-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; cursor: pointer; user-select: none;
+  -webkit-user-select: none; touch-action: manipulation;
+}
+.productivity-header:hover { background: rgba(255,255,255,0.02); }
+.productivity-title { font-size: 0.9rem; font-weight: 600; color: var(--text-primary); }
+.productivity-chevron {
+  font-size: 0.75rem; color: var(--text-muted); transition: transform var(--transition);
+}
+.productivity-section.open .productivity-chevron { transform: rotate(180deg); }
+.productivity-body {
+  max-height: 0; overflow: hidden; transition: max-height 0.35s ease, padding 0.35s ease;
+  padding: 0 16px;
+}
+.productivity-section.open .productivity-body { max-height: 300px; padding: 0 16px 16px; }
+.heatmap-row { display: flex; gap: 6px; justify-content: center; margin-bottom: 14px; }
+.heatmap-day { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.heatmap-label { font-size: 0.65rem; color: var(--text-muted); font-weight: 500; }
+.heatmap-cell {
+  width: 32px; height: 32px; border-radius: 6px;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+  transition: var(--transition);
+}
+.heatmap-cell.lvl-1 { background: rgba(124,58,237,0.25); border-color: rgba(124,58,237,0.3); }
+.heatmap-cell.lvl-2 { background: rgba(124,58,237,0.45); border-color: rgba(124,58,237,0.5); }
+.heatmap-cell.lvl-3 { background: rgba(124,58,237,0.7); border-color: rgba(124,58,237,0.75); box-shadow: 0 0 8px rgba(124,58,237,0.3); }
+.productivity-stats { display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; }
+.streak-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 20px;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+  font-size: 0.82rem; font-weight: 600; color: var(--text-secondary);
+}
+.streak-badge.active {
+  background: rgba(255,140,0,0.1); border-color: rgba(255,140,0,0.25);
+  color: #ffaa33; box-shadow: 0 0 12px rgba(255,140,0,0.15);
+}
+.week-summary { font-size: 0.8rem; color: var(--text-muted); font-weight: 400; }
+.pomo-settings {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 8px;
+}
+.pomo-settings label {
+  font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px;
+}
+.pomo-settings input[type="number"] {
+  width: 48px; padding: 4px 6px; background: rgba(255,255,255,0.03);
+  border: 1px solid var(--glass-border); border-radius: 8px;
+  color: var(--text-primary); font-size: 0.78rem; font-family: inherit;
+  outline: none; text-align: center; -webkit-appearance: none;
+}
+.pomo-settings input[type="number"]:focus { border-color: rgba(124,58,237,0.4); }
 
 .focus-btn {
   padding: 6px 16px; border: 1px solid rgba(124,58,237,0.3);
@@ -367,111 +528,6 @@ body {
 }
 .todo-card.drag-over { border-top: 2px solid rgba(124,58,237,0.6); }
 
-/* Search bar */
-.search-bar {
-  position: relative; margin-bottom: 16px;
-}
-.search-bar input {
-  width: 100%; padding: 12px 80px 12px 40px;
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-md);
-  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-  color: var(--text-primary); font-size: 0.92rem; font-family: inherit;
-  outline: none; transition: var(--transition); -webkit-appearance: none;
-  min-height: 44px; box-sizing: border-box;
-}
-.search-bar input::placeholder { color: var(--text-muted); }
-.search-bar input:focus { border-color: rgba(124,58,237,0.4); box-shadow: 0 0 20px var(--accent-glow); }
-.search-bar .search-icon {
-  position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
-  color: var(--text-muted); pointer-events: none; font-size: 0.9rem;
-}
-.search-bar .search-meta {
-  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-  display: flex; align-items: center; gap: 6px;
-}
-.search-bar .search-count {
-  font-size: 0.72rem; color: var(--text-muted); white-space: nowrap;
-}
-.search-bar .search-clear {
-  width: 28px; height: 28px; border: none; border-radius: 50%;
-  background: rgba(255,255,255,0.06); color: var(--text-muted);
-  cursor: pointer; display: none; align-items: center; justify-content: center;
-  font-size: 0.85rem; transition: var(--transition); touch-action: manipulation;
-}
-.search-bar .search-clear:hover { background: var(--danger-soft); color: var(--danger); }
-.search-bar .search-clear.show { display: flex; }
-.search-bar .search-kbd {
-  font-size: 0.65rem; color: var(--text-muted); border: 1px solid var(--glass-border);
-  border-radius: 4px; padding: 1px 5px; font-family: inherit; pointer-events: none;
-}
-.search-bar input:focus ~ .search-meta .search-kbd,
-.search-bar input:not(:placeholder-shown) ~ .search-meta .search-kbd { display: none; }
-.no-results {
-  text-align: center; padding: 40px 20px;
-  color: var(--text-muted); font-size: 0.9rem;
-}
-.no-results .no-results-icon { font-size: 2rem; margin-bottom: 8px; opacity: 0.5; }
-
-/* Productivity Section */
-.productivity-section {
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-lg);
-  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-  margin-bottom: 20px; overflow: hidden; transition: var(--transition);
-}
-.productivity-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 16px; cursor: pointer; user-select: none;
-  -webkit-user-select: none; touch-action: manipulation;
-}
-.productivity-header:hover { background: rgba(255,255,255,0.02); }
-.productivity-title { font-size: 0.9rem; font-weight: 600; color: var(--text-primary); }
-.productivity-chevron {
-  font-size: 0.75rem; color: var(--text-muted); transition: transform var(--transition);
-}
-.productivity-section.open .productivity-chevron { transform: rotate(180deg); }
-.productivity-body {
-  max-height: 0; overflow: hidden; transition: max-height 0.35s ease, padding 0.35s ease;
-  padding: 0 16px;
-}
-.productivity-section.open .productivity-body {
-  max-height: 300px; padding: 0 16px 16px;
-}
-.heatmap-row { display: flex; gap: 6px; justify-content: center; margin-bottom: 14px; }
-.heatmap-day { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.heatmap-label { font-size: 0.65rem; color: var(--text-muted); font-weight: 500; }
-.heatmap-cell {
-  width: 32px; height: 32px; border-radius: 6px;
-  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
-  transition: var(--transition);
-}
-.heatmap-cell.lvl-1 { background: rgba(124,58,237,0.25); border-color: rgba(124,58,237,0.3); }
-.heatmap-cell.lvl-2 { background: rgba(124,58,237,0.45); border-color: rgba(124,58,237,0.5); }
-.heatmap-cell.lvl-3 { background: rgba(124,58,237,0.7); border-color: rgba(124,58,237,0.75); box-shadow: 0 0 8px rgba(124,58,237,0.3); }
-.productivity-stats { display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; }
-.streak-badge {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 6px 14px; border-radius: 20px;
-  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
-  font-size: 0.82rem; font-weight: 600; color: var(--text-secondary);
-}
-.streak-badge.active {
-  background: rgba(255,140,0,0.1); border-color: rgba(255,140,0,0.25);
-  color: #ffaa33; box-shadow: 0 0 12px rgba(255,140,0,0.15);
-}
-.week-summary {
-  font-size: 0.8rem; color: var(--text-muted); font-weight: 400;
-}
-@media (max-width: 360px) {
-  .heatmap-cell { width: 28px; height: 28px; }
-  .heatmap-row { gap: 4px; }
-}
-
-
-/* Pomodoro Timer */
 .pomo-btn {
   background: none; border: none; color: var(--text-muted);
   width: 36px; height: 44px; min-width: 36px;
@@ -483,10 +539,7 @@ body {
 .pomo-btn:hover { color: var(--accent); opacity: 1; }
 .pomo-btn:active { transform: scale(0.9); }
 .pomo-btn.has-pomos { opacity: 0.7; }
-.pomo-badge {
-  font-size: 0.65rem; color: var(--danger); font-weight: 600;
-  margin-left: 2px; white-space: nowrap;
-}
+.pomo-badge { font-size: 0.65rem; color: var(--danger); font-weight: 600; margin-left: 2px; white-space: nowrap; }
 
 .pomo-widget {
   position: fixed; bottom: calc(env(safe-area-inset-bottom, 20px) + 20px); right: 16px;
@@ -504,7 +557,6 @@ body {
 @keyframes pomoIn { from { opacity:0; transform: translateY(20px) scale(0.9); } to { opacity:1; transform: translateY(0) scale(1); } }
 .pomo-widget.hiding { animation: pomoOut 0.25s ease both; }
 @keyframes pomoOut { to { opacity:0; transform: translateY(20px) scale(0.9); } }
-
 .pomo-widget-task {
   font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 8px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -519,20 +571,10 @@ body {
   color: var(--text-primary); text-align: center; margin: 4px 0 10px;
   font-variant-numeric: tabular-nums;
 }
-.pomo-progress {
-  width: 100%; height: 3px; background: rgba(255,255,255,0.06);
-  border-radius: 2px; margin-bottom: 12px; overflow: hidden;
-}
-.pomo-progress-bar {
-  height: 100%; background: linear-gradient(90deg, #7c3aed, #6a5aee);
-  border-radius: 2px; transition: width 1s linear;
-}
-.pomo-widget.break-mode .pomo-progress-bar {
-  background: linear-gradient(90deg, #44ddaa, #33cc99);
-}
-.pomo-widget-controls {
-  display: flex; gap: 8px; justify-content: center;
-}
+.pomo-progress { width: 100%; height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; margin-bottom: 12px; overflow: hidden; }
+.pomo-progress-bar { height: 100%; background: linear-gradient(90deg, #7c3aed, #6a5aee); border-radius: 2px; transition: width 1s linear; }
+.pomo-widget.break-mode .pomo-progress-bar { background: linear-gradient(90deg, #44ddaa, #33cc99); }
+.pomo-widget-controls { display: flex; gap: 8px; justify-content: center; }
 .pomo-ctrl-btn {
   padding: 8px 18px; border: 1px solid var(--glass-border);
   border-radius: 20px; background: transparent;
@@ -543,21 +585,32 @@ body {
 .pomo-ctrl-btn:hover { background: var(--glass-hover); color: var(--text-primary); }
 .pomo-ctrl-btn.stop:hover { color: var(--danger); border-color: var(--danger); }
 
-.pomo-settings {
-  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
-  margin-top: 8px;
+@media (max-width: 480px) {
+  .app { padding: 12px 12px; }
+  .header { padding: 16px 0 20px; }
+  .header h1 { font-size: 1.75rem; }
+  .stat-card { padding: 10px 8px; }
+  .stat-num { font-size: 1.2rem; }
+  .add-section { padding: 12px; }
+  .subtask-list { padding-left: 44px; }
+  .subtask-add { padding-left: 44px; }
 }
-.pomo-settings label {
-  font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px;
+@media (max-width: 360px) {
+  .stats-row { gap: 4px; }
+  .stat-card { padding: 8px 6px; }
+  .stat-num { font-size: 1.1rem; }
+  .heatmap-cell { width: 28px; height: 28px; }
+  .heatmap-row { gap: 4px; }
 }
-.pomo-settings input[type="number"] {
-  width: 48px; padding: 4px 6px; background: rgba(255,255,255,0.03);
-  border: 1px solid var(--glass-border); border-radius: 8px;
-  color: var(--text-primary); font-size: 0.78rem; font-family: inherit;
-  outline: none; text-align: center; -webkit-appearance: none;
+@media (min-width: 768px) {
+  .app { padding: 40px 20px; }
+  .header { padding: 30px 0 30px; }
 }
-.pomo-settings input[type="number"]:focus { border-color: rgba(124,58,237,0.4); }
+@media (min-width: 1024px) { .app { max-width: 600px; } }
 
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
 </style>
 </head>
 <body>
@@ -576,14 +629,13 @@ body {
     </div>
   </header>
 
-
   <div class="productivity-section" id="productivitySection">
     <div class="productivity-header" onclick="toggleProductivity()">
       <span class="productivity-title">📊 Productivity</span>
       <span class="productivity-chevron">▼</span>
     </div>
     <div class="productivity-body">
-            <div class="pomo-settings" style="margin-bottom:12px">
+      <div class="pomo-settings" style="margin-bottom:12px">
         <label>🍅 Work <input type="number" id="pomoWorkMin" min="1" max="120" value="25" onchange="savePomodoroSettings()"> min</label>
         <label>☕ Break <input type="number" id="pomoBreakMin" min="1" max="60" value="5" onchange="savePomodoroSettings()"> min</label>
       </div>
@@ -646,7 +698,6 @@ body {
   </div>
   <button class="clear-done" id="clearDone" onclick="clearDone()">🗑 Clear completed tasks</button>
 
-  <!-- Pomodoro Timer Widget -->
   <div class="pomo-widget" id="pomoWidget" style="display:none">
     <div class="pomo-widget-task" id="pomoTask"><span class="pomo-label">FOCUS</span><span id="pomoTaskName"></span></div>
     <div class="pomo-widget-time" id="pomoTime">25:00</div>
@@ -656,7 +707,6 @@ body {
       <button class="pomo-ctrl-btn stop" id="pomoStopBtn" onclick="pomoStop()">✕ Stop</button>
     </div>
   </div>
-
 </div>
 
 <script>
@@ -668,21 +718,13 @@ const CATEGORIES = {
   learning: { color: 'var(--cat-learning)', label: 'Learning' },
 };
 
-let todos = JSON.parse(localStorage.getItem('todos_v2') || '[]');
-if (!todos.length) {
-  const old = JSON.parse(localStorage.getItem('todos') || '[]');
-  if (old.length) {
-    todos = old.map(t => ({ text: t.text, done: t.done, priority: 'none', category: '', due: '', created: Date.now() }));
-    save();
-  }
-}
-// Migrate: add due field to existing todos
-todos.forEach(t => { if (t.due === undefined) t.due = ''; });
-save();
-
+let todos = [];
 let filter = 'all';
 let currentPriority = 'none';
 let currentCategory = '';
+let searchQuery = '';
+let focusMode = false;
+let expandedTodos = new Set();
 
 const $ = id => document.getElementById(id);
 const input = $('input');
@@ -691,24 +733,113 @@ input.addEventListener('keydown', e => { if (e.key === 'Enter') addTodo(); });
 const now = new Date();
 $('dateLabel').textContent = now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
 
-function save() { localStorage.setItem('todos_v2', JSON.stringify(todos)); }
-
-function togglePriority() {
-  $('priSelector').classList.toggle('show');
-  $('priToggle').classList.toggle('active');
-}
-function toggleCategory() {
-  $('catSelector').classList.toggle('show');
-  $('catToggle').classList.toggle('active');
-}
-function toggleDueDate() {
-  $('dueSelector').classList.toggle('show');
-  $('dueToggle').classList.toggle('active');
-}
-function clearDueInput() {
-  $('dueInput').value = '';
+// API helpers
+async function api(url, opts = {}) {
+  opts.headers = { 'Content-Type': 'application/json', ...opts.headers };
+  if (opts.body && typeof opts.body === 'object') opts.body = JSON.stringify(opts.body);
+  const res = await fetch(url, opts);
+  return res.json();
 }
 
+async function loadTodos() {
+  try {
+    todos = await api('/api/todos');
+    // Migrate localStorage data if DB is empty and localStorage has data
+    const old = JSON.parse(localStorage.getItem('todos_v2') || '[]');
+    if (todos.length === 0 && old.length > 0) {
+      for (const t of old) {
+        await api('/api/todos', { method: 'POST', body: { text: t.text, priority: t.priority || 'none', category: t.category || '', due: t.due || '' } });
+        // If was done, toggle it
+      }
+      todos = await api('/api/todos');
+      // Mark done ones
+      for (let i = 0; i < old.length; i++) {
+        if (old[i].done) {
+          const match = todos.find(t => t.text === old[i].text && !t.done);
+          if (match) {
+            await api('/api/todos/' + match.id, { method: 'PATCH', body: { done: true } });
+          }
+        }
+      }
+      todos = await api('/api/todos');
+      localStorage.removeItem('todos_v2');
+    }
+  } catch(e) {
+    console.error('Failed to load todos:', e);
+    todos = [];
+  }
+  render();
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function getTimeAgo(ts) {
+  if (!ts) return '';
+  const diff = Date.now() - ts;
+  const mins = Math.floor(diff/60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return mins + 'm ago';
+  const hrs = Math.floor(mins/60);
+  if (hrs < 24) return hrs + 'h ago';
+  const days = Math.floor(hrs/24);
+  if (days < 7) return days + 'd ago';
+  return new Date(ts).toLocaleDateString('en-US', {month:'short',day:'numeric'});
+}
+
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function daysDiff(dateStr) {
+  if (!dateStr) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const due = new Date(dateStr + 'T00:00:00');
+  return Math.round((due - today) / 86400000);
+}
+function dueLabel(dateStr) {
+  if (!dateStr) return null;
+  const diff = daysDiff(dateStr);
+  if (diff < 0) return { text: 'Overdue!', cls: 'overdue' };
+  if (diff === 0) return { text: 'Due today', cls: 'today' };
+  if (diff === 1) return { text: 'Due tomorrow', cls: 'tomorrow' };
+  const d = new Date(dateStr + 'T00:00:00');
+  return { text: 'Due ' + d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), cls: 'upcoming' };
+}
+function dueSortKey(t) { return t.due ? daysDiff(t.due) : 9999; }
+function isDueSoon(t) {
+  if (!t.due || t.done) return false;
+  const diff = daysDiff(t.due);
+  return diff !== null && diff <= 3;
+}
+
+function getFiltered() {
+  let items = [...todos];
+  if (filter === 'active') items = items.filter(t => !t.done);
+  else if (filter === 'done') items = items.filter(t => t.done);
+  else if (filter === 'due-soon') items = items.filter(t => isDueSoon(t));
+  else if (CATEGORIES[filter]) items = items.filter(t => t.category === filter);
+  if (focusMode) {
+    items = items.filter(t => {
+      if (!t.done) return true;
+      const d = new Date(t.created_at); const n = new Date();
+      return d.getFullYear()===n.getFullYear() && d.getMonth()===n.getMonth() && d.getDate()===n.getDate();
+    });
+  }
+  if (searchQuery) items = items.filter(t => t.text.toLowerCase().includes(searchQuery));
+  const priOrder = { high: 0, medium: 1, low: 2, none: 3 };
+  items.sort((a,b) => {
+    if (a.done !== b.done) return a.done ? 1 : -1;
+    const da = dueSortKey(a), db = dueSortKey(b);
+    if (da !== db) return da - db;
+    return (priOrder[a.priority]||3) - (priOrder[b.priority]||3);
+  });
+  return items;
+}
+
+function togglePriority() { $('priSelector').classList.toggle('show'); $('priToggle').classList.toggle('active'); }
+function toggleCategory() { $('catSelector').classList.toggle('show'); $('catToggle').classList.toggle('active'); }
+function toggleDueDate() { $('dueSelector').classList.toggle('show'); $('dueToggle').classList.toggle('active'); }
+function clearDueInput() { $('dueInput').value = ''; }
 function setPriority(p) {
   currentPriority = p;
   document.querySelectorAll('.pri-btn').forEach(b => {
@@ -723,59 +854,8 @@ function setCategory(c) {
     b.classList.toggle('active', bc === c || (c === '' && bc === 'none'));
   });
 }
-
-function setFilter(f) { filter = f; renderFilters(); renderList(); }
-
-// Due date helpers
-function todayStr() {
-  const d = new Date();
-  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-}
-function tomorrowStr() {
-  const d = new Date(); d.setDate(d.getDate()+1);
-  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-}
-function daysDiff(dateStr) {
-  if (!dateStr) return null;
-  const today = new Date(); today.setHours(0,0,0,0);
-  const due = new Date(dateStr + 'T00:00:00'); 
-  return Math.round((due - today) / 86400000);
-}
-function dueLabel(dateStr) {
-  if (!dateStr) return null;
-  const diff = daysDiff(dateStr);
-  if (diff < 0) return { text: 'Overdue!', cls: 'overdue' };
-  if (diff === 0) return { text: 'Due today', cls: 'today' };
-  if (diff === 1) return { text: 'Due tomorrow', cls: 'tomorrow' };
-  const d = new Date(dateStr + 'T00:00:00');
-  return { text: 'Due ' + d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), cls: 'upcoming' };
-}
-function dueSortKey(t) {
-  if (!t.due) return 9999;
-  const diff = daysDiff(t.due);
-  return diff;
-}
-function isDueSoon(t) {
-  if (!t.due || t.done) return false;
-  const diff = daysDiff(t.due);
-  return diff !== null && diff <= 3;
-}
-
-function getFiltered() {
-  let items = todos.map((t,i) => ({...t, idx:i}));
-  if (filter === 'active') items = items.filter(t => !t.done);
-  else if (filter === 'done') items = items.filter(t => t.done);
-  else if (filter === 'due-soon') items = items.filter(t => isDueSoon(t));
-  else if (CATEGORIES[filter]) items = items.filter(t => t.category === filter);
-  const priOrder = { high: 0, medium: 1, low: 2, none: 3 };
-  items.sort((a,b) => {
-    if (a.done !== b.done) return a.done ? 1 : -1;
-    const da = dueSortKey(a), db = dueSortKey(b);
-    if (da !== db) return da - db;
-    return (priOrder[a.priority]||3) - (priOrder[b.priority]||3);
-  });
-  return items;
-}
+function setFilter(f) { filter = f; render(); }
+function toggleFocusMode() { focusMode = !focusMode; $('focusBtn').classList.toggle('active', focusMode); render(); }
 
 function renderFilters() {
   const active = todos.filter(t=>!t.done).length;
@@ -783,15 +863,26 @@ function renderFilters() {
   const dueSoon = todos.filter(t => isDueSoon(t)).length;
   const cats = {};
   todos.forEach(t => { if(t.category && !t.done) cats[t.category] = (cats[t.category]||0)+1; });
-
-  let html = `<button class="filter-chip ${filter==='all'?'active':''}" onclick="setFilter('all')">All<span class="count">${todos.length}</span></button>`;
-  html += `<button class="filter-chip ${filter==='active'?'active':''}" onclick="setFilter('active')">Active<span class="count">${active}</span></button>`;
-  if (dueSoon > 0) html += `<button class="filter-chip ${filter==='due-soon'?'active':''}" onclick="setFilter('due-soon')">⏰ Due Soon<span class="count">${dueSoon}</span></button>`;
-  html += `<button class="filter-chip ${filter==='done'?'active':''}" onclick="setFilter('done')">Done<span class="count">${done}</span></button>`;
+  let html = '<button class="filter-chip '+(filter==='all'?'active':'')+'" onclick="setFilter(\'all\')">All<span class="count">'+todos.length+'</span></button>';
+  html += '<button class="filter-chip '+(filter==='active'?'active':'')+'" onclick="setFilter(\'active\')">Active<span class="count">'+active+'</span></button>';
+  if (dueSoon > 0) html += '<button class="filter-chip '+(filter==='due-soon'?'active':'')+'" onclick="setFilter(\'due-soon\')">⏰ Due Soon<span class="count">'+dueSoon+'</span></button>';
+  html += '<button class="filter-chip '+(filter==='done'?'active':'')+'" onclick="setFilter(\'done\')">Done<span class="count">'+done+'</span></button>';
   for (const [key,cnt] of Object.entries(cats)) {
-    html += `<button class="filter-chip ${filter===key?'active':''}" onclick="setFilter('${key}')">${CATEGORIES[key]?.label||key}<span class="count">${cnt}</span></button>`;
+    html += '<button class="filter-chip '+(filter===key?'active':'')+'" onclick="setFilter(\''+key+'\')">'+(CATEGORIES[key]?.label||key)+'<span class="count">'+cnt+'</span></button>';
   }
   $('filterBar').innerHTML = html;
+}
+
+function subtaskProgressHtml(subtasks) {
+  if (!subtasks || !subtasks.length) return '';
+  const done = subtasks.filter(s => s.done).length;
+  const total = subtasks.length;
+  const allDone = done === total;
+  const pct = Math.round((done / total) * 100);
+  if (allDone) {
+    return '<span class="subtask-progress all-done">✅ '+done+'/'+total+'<span class="subtask-progress-bar"><span class="subtask-progress-fill" style="width:100%"></span></span></span>';
+  }
+  return '<span class="subtask-progress">'+done+'/'+total+'<span class="subtask-progress-bar"><span class="subtask-progress-fill" style="width:'+pct+'%"></span></span></span>';
 }
 
 function renderList() {
@@ -799,13 +890,21 @@ function renderList() {
   const list = $('list');
   list.innerHTML = '';
   $('emptyState').style.display = filtered.length ? 'none' : '';
-
   const doneCount = todos.filter(t=>t.done).length;
   $('clearDone').classList.toggle('show', doneCount > 0);
-
   $('statTotal').textContent = todos.length;
   $('statActive').textContent = todos.filter(t=>!t.done).length;
   $('statDone').textContent = doneCount;
+
+  if (searchQuery) {
+    $('searchCount').textContent = filtered.length + ' result' + (filtered.length !== 1 ? 's' : '');
+    if (filtered.length === 0) {
+      list.innerHTML = '<div class="no-results"><div class="no-results-icon">🔎</div>No matching todos for "' + esc(searchQuery) + '"</div>';
+      return;
+    }
+  } else {
+    $('searchCount').textContent = '';
+  }
 
   filtered.forEach((t, fi) => {
     const li = document.createElement('li');
@@ -816,90 +915,146 @@ function renderList() {
       else if (dueInfo.cls === 'today') dueClass = ' due-today';
       else if (dueInfo.cls === 'tomorrow') dueClass = ' due-tomorrow';
     }
-    li.className = 'todo-card' + (t.done ? ' done' : '') + dueClass;
-    li.style.animationDelay = `${fi * 0.03}s`;
-    li.dataset.index = t.idx;
+    const isExpanded = expandedTodos.has(t.id);
+    li.className = 'todo-card' + (t.done ? ' done' : '') + dueClass + (isExpanded ? ' expanded' : '');
+    li.style.animationDelay = fi * 0.03 + 's';
+    li.dataset.id = t.id;
 
     const priClass = t.priority && t.priority !== 'none' ? t.priority : 'none';
     const catInfo = CATEGORIES[t.category];
-    const catHtml = catInfo ? `<span class="todo-cat" style="color:${catInfo.color};background:color-mix(in srgb, ${catInfo.color} 15%, transparent)">${catInfo.label}</span>` : '';
-    const dueHtml = dueInfo ? `<span class="todo-due ${dueInfo.cls}">${dueInfo.text}</span>` : '';
-    const timeAgo = getTimeAgo(t.created);
-    const metaHtml = (catHtml || dueHtml || timeAgo) ? `<div class="todo-meta">${catHtml}${dueHtml}<span class="todo-time">${timeAgo}</span></div>` : '';
+    const catHtml = catInfo ? '<span class="todo-cat" style="color:'+catInfo.color+';background:color-mix(in srgb, '+catInfo.color+' 15%, transparent)">'+catInfo.label+'</span>' : '';
+    const dueHtml = dueInfo ? '<span class="todo-due '+dueInfo.cls+'">'+dueInfo.text+'</span>' : '';
+    const timeAgo = getTimeAgo(t.created_at);
+    const subtasks = t.subtasks || [];
+    const subProgressHtml = subtaskProgressHtml(subtasks);
+    const metaHtml = '<div class="todo-meta">' + catHtml + dueHtml + subProgressHtml + '<span class="todo-time">' + timeAgo + '</span></div>';
+    const expandIcon = '<span class="expand-indicator">▼</span>';
 
-    li.innerHTML = `
-      <div class="swipe-bg">Delete</div>
-      <div class="todo-inner">
-        <div class="drag-handle" title="Drag to reorder">≡</div>
-        <div class="check-wrap" onclick="toggle(${t.idx})">
-          <div class="check-circle">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          </div>
-        </div>
-        <div class="priority-dot ${priClass}"></div>
-        <div class="todo-content">
-          <div class="todo-text">${esc(t.text)}</div>
-          ${metaHtml}
-        </div>
-        <button class="del-btn" onclick="remove(${t.idx})" aria-label="Delete">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
-      </div>`;
-    setupSwipe(li, t.idx);
+    // Subtask section
+    let subtaskHtml = '<div class="subtask-section"><div class="subtask-list">';
+    for (const s of subtasks) {
+      subtaskHtml += '<div class="subtask-item" data-sid="'+s.id+'">'
+        + '<button class="subtask-check'+(s.done?' done':'')+'" onclick="toggleSubtask('+t.id+',\''+s.id+'\','+(!s.done)+')">'
+        + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+        + '</button>'
+        + '<span class="subtask-text'+(s.done?' done':'')+'">'+esc(s.text)+'</span>'
+        + '<button class="subtask-del" onclick="deleteSubtask('+t.id+',\''+s.id+'\')">✕</button>'
+        + '</div>';
+    }
+    subtaskHtml += '</div>';
+    subtaskHtml += '<div class="subtask-add"><input type="text" placeholder="Add subtask..." onkeydown="subtaskKeydown(event,'+t.id+')"></div>';
+    subtaskHtml += '</div>';
+
+    li.innerHTML = '<div class="swipe-bg">Delete</div>'
+      + '<div class="todo-inner" onclick="toggleExpand('+t.id+', event)">'
+      + '<div class="drag-handle" title="Drag to reorder">≡</div>'
+      + '<div class="check-wrap" onclick="event.stopPropagation();toggleTodo('+t.id+','+(!t.done)+')">'
+      + '<div class="check-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>'
+      + '</div>'
+      + '<div class="priority-dot '+priClass+'"></div>'
+      + '<div class="todo-content"><div class="todo-text">'+esc(t.text)+' '+expandIcon+'</div>'+metaHtml+'</div>'
+      + '<button class="del-btn" onclick="event.stopPropagation();removeTodo('+t.id+')" aria-label="Delete">'
+      + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
+      + '</button>'
+      + '</div>'
+      + subtaskHtml;
+
+    setupSwipe(li, t.id);
     list.appendChild(li);
   });
+  setupDrag();
+  setupPomoButtons();
 }
 
-function render() { renderFilters(); renderList(); }
+function render() { renderFilters(); renderList(); renderProductivity(); }
 
-function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-
-function getTimeAgo(ts) {
-  if (!ts) return '';
-  const diff = Date.now() - ts;
-  const mins = Math.floor(diff/60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins/60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs/24);
-  if (days < 7) return `${days}d ago`;
-  return new Date(ts).toLocaleDateString('en-US', {month:'short',day:'numeric'});
+function toggleExpand(id, event) {
+  if (event && (event.target.closest('.check-wrap') || event.target.closest('.del-btn') || event.target.closest('.pomo-btn'))) return;
+  if (expandedTodos.has(id)) expandedTodos.delete(id);
+  else expandedTodos.add(id);
+  renderList();
+  // Focus input if expanding
+  if (expandedTodos.has(id)) {
+    const card = document.querySelector('[data-id="'+id+'"]');
+    if (card) {
+      const inp = card.querySelector('.subtask-add input');
+      if (inp) setTimeout(() => inp.focus(), 100);
+    }
+  }
 }
 
-function addTodo() {
+// API actions
+async function addTodo() {
   const v = input.value.trim();
   if (!v) return;
   const dueVal = $('dueInput').value || '';
-  todos.unshift({ text: v, done: false, priority: currentPriority, category: currentCategory, due: dueVal, created: Date.now() });
-  input.value = '';
-  $('dueInput').value = '';
-  save(); render();
+  await api('/api/todos', { method: 'POST', body: { text: v, priority: currentPriority, category: currentCategory, due: dueVal } });
+  input.value = ''; $('dueInput').value = '';
   currentPriority = 'none'; currentCategory = '';
   document.querySelectorAll('.pri-btn,.cat-btn').forEach(b => b.classList.remove('active'));
-  $('priSelector').classList.remove('show'); $('catSelector').classList.remove('show'); $('dueSelector').classList.remove('show');
-  $('priToggle').classList.remove('active'); $('catToggle').classList.remove('active'); $('dueToggle').classList.remove('active');
+  ['priSelector','catSelector','dueSelector'].forEach(id => $(id).classList.remove('show'));
+  ['priToggle','catToggle','dueToggle'].forEach(id => $(id).classList.remove('active'));
+  todos = await api('/api/todos');
+  render();
 }
 
-function toggle(i) {
-  todos[i].done = !todos[i].done;
-  if (todos[i].done) todos[i].completedAt = Date.now();
-  else delete todos[i].completedAt;
-  save();
-  const card = document.querySelector(`[data-index="${i}"]`);
-  if (card) { card.classList.add('checking'); setTimeout(() => render(), 350); }
-  else render();
+async function toggleTodo(id, done) {
+  await api('/api/todos/' + id, { method: 'PATCH', body: { done } });
+  todos = await api('/api/todos');
+  render();
 }
 
-function remove(i) {
-  const card = document.querySelector(`[data-index="${i}"]`);
-  if (card) { card.classList.add('removing'); setTimeout(() => { todos.splice(i,1); save(); render(); }, 300); }
-  else { todos.splice(i,1); save(); render(); }
+async function removeTodo(id) {
+  const card = document.querySelector('[data-id="'+id+'"]');
+  if (card) {
+    card.classList.add('removing');
+    setTimeout(async () => {
+      await api('/api/todos/' + id, { method: 'DELETE' });
+      todos = await api('/api/todos');
+      render();
+    }, 300);
+  } else {
+    await api('/api/todos/' + id, { method: 'DELETE' });
+    todos = await api('/api/todos');
+    render();
+  }
 }
 
-function clearDone() { todos = todos.filter(t => !t.done); save(); render(); }
+async function clearDone() {
+  await api('/api/todos', { method: 'DELETE' });
+  todos = await api('/api/todos');
+  render();
+}
 
-function setupSwipe(el, idx) {
+// Subtask actions
+async function subtaskKeydown(e, todoId) {
+  if (e.key === 'Enter') {
+    const text = e.target.value.trim();
+    if (!text) return;
+    e.target.value = '';
+    await api('/api/todos/' + todoId + '/subtasks', { method: 'POST', body: { text } });
+    todos = await api('/api/todos');
+    expandedTodos.add(todoId);
+    renderList();
+    // Re-focus input
+    const card = document.querySelector('[data-id="'+todoId+'"]');
+    if (card) { const inp = card.querySelector('.subtask-add input'); if (inp) inp.focus(); }
+  }
+}
+
+async function toggleSubtask(todoId, subtaskId, done) {
+  await api('/api/todos/' + todoId + '/subtasks/' + subtaskId, { method: 'PATCH', body: { done } });
+  todos = await api('/api/todos');
+  renderList();
+}
+
+async function deleteSubtask(todoId, subtaskId) {
+  await api('/api/todos/' + todoId + '/subtasks/' + subtaskId, { method: 'DELETE' });
+  todos = await api('/api/todos');
+  renderList();
+}
+
+function setupSwipe(el, id) {
   let startX=0, currentX=0, swiping=false;
   el.addEventListener('touchstart', e => { startX = e.touches[0].clientX; swiping=false; }, {passive:true});
   el.addEventListener('touchmove', e => {
@@ -908,7 +1063,7 @@ function setupSwipe(el, idx) {
     if (diff > 10) {
       swiping = true; el.classList.add('swiping');
       const inner = el.querySelector('.todo-inner');
-      inner.style.transform = `translateX(-${Math.min(diff,120)}px)`;
+      inner.style.transform = 'translateX(-'+Math.min(diff,120)+'px)';
       inner.style.transition = 'none';
     } else {
       const inner = el.querySelector('.todo-inner');
@@ -922,38 +1077,23 @@ function setupSwipe(el, idx) {
     inner.style.transition = '';
     if (diff > 80) {
       el.classList.remove('swiping'); el.classList.add('removing');
-      setTimeout(() => { todos.splice(idx,1); save(); render(); }, 300);
+      setTimeout(async () => {
+        await api('/api/todos/' + id, { method: 'DELETE' });
+        todos = await api('/api/todos');
+        render();
+      }, 300);
     } else { inner.style.transform = ''; el.classList.remove('swiping'); }
   }, {passive:true});
 }
 
-// Focus Mode
-let focusMode = false;
-function toggleFocusMode() {
-  focusMode = !focusMode;
-  $('focusBtn').classList.toggle('active', focusMode);
-  render();
-}
-function isCreatedToday(ts) {
-  if (!ts) return false;
-  const d = new Date(ts), n = new Date();
-  return d.getFullYear()===n.getFullYear() && d.getMonth()===n.getMonth() && d.getDate()===n.getDate();
-}
-const _baseGetFiltered = getFiltered;
-getFiltered = function() {
-  let items = _baseGetFiltered();
-  if (focusMode) items = items.filter(t => !t.done || isCreatedToday(t.created));
-  return items;
-};
-
-// Drag and Drop
+// Drag
 function setupDrag() {
   const list = $('list');
   list.querySelectorAll('.todo-card').forEach(card => {
     const handle = card.querySelector('.drag-handle');
     if (!handle) return;
-    let srcIdx, startY, dragging;
-    function startDrag(y) { srcIdx = parseInt(card.dataset.index); startY = y; dragging = false; }
+    let srcId, startY, dragging;
+    function startDrag(y) { srcId = parseInt(card.dataset.id); startY = y; dragging = false; }
     function moveDrag(x, y) {
       if (!dragging && Math.abs(y - startY) > 8) {
         dragging = true; card.classList.add('dragging');
@@ -969,18 +1109,23 @@ function setupDrag() {
         if (over && over !== card) over.classList.add('drag-over');
       }
     }
-    function endDrag() {
+    async function endDrag() {
       card.classList.remove('dragging');
       card.style.transform = ''; card.style.position = ''; card.style.zIndex = '';
       if (dragging) {
         const over = list.querySelector('.drag-over');
         if (over) {
-          const tIdx = parseInt(over.dataset.index);
-          if (srcIdx !== tIdx) {
+          const tId = parseInt(over.dataset.id);
+          const srcIdx = todos.findIndex(t => t.id === srcId);
+          const tIdx = todos.findIndex(t => t.id === tId);
+          if (srcIdx !== -1 && tIdx !== -1 && srcIdx !== tIdx) {
             const item = todos.splice(srcIdx, 1)[0];
             const adj = srcIdx < tIdx ? tIdx - 1 : tIdx;
             todos.splice(adj, 0, item);
-            save(); render();
+            const orders = todos.map((t, i) => ({ id: t.id, sort_order: i }));
+            await api('/api/todos/reorder', { method: 'POST', body: { orders } });
+            todos = await api('/api/todos');
+            render();
           }
         }
         list.querySelectorAll('.todo-card').forEach(c => c.classList.remove('drag-over'));
@@ -999,12 +1144,7 @@ function setupDrag() {
   });
 }
 
-const _baseRenderList = renderList;
-renderList = function() { _baseRenderList(); setupDrag(); };
-
-
 // Search
-let searchQuery = '';
 const searchInput = $('searchInput');
 searchInput.addEventListener('input', () => {
   searchQuery = searchInput.value.trim().toLowerCase();
@@ -1020,101 +1160,54 @@ document.addEventListener('keydown', e => {
   if (e.key === '/' && document.activeElement !== input && document.activeElement !== searchInput && document.activeElement.tagName !== 'INPUT') {
     e.preventDefault(); searchInput.focus();
   }
-  if (e.key === 'Escape' && document.activeElement === searchInput) {
-    clearSearch(); searchInput.blur();
-  }
+  if (e.key === 'Escape' && document.activeElement === searchInput) { clearSearch(); searchInput.blur(); }
 });
 
-// Patch getFiltered to include search
-const _searchGetFiltered = getFiltered;
-getFiltered = function() {
-  let items = _searchGetFiltered();
-  if (searchQuery) items = items.filter(t => t.text.toLowerCase().includes(searchQuery));
-  return items;
-};
-
-// Patch renderList to show search count and no-results
-const _searchRenderList = renderList;
-renderList = function() {
-  _searchRenderList();
-  const filtered = getFiltered();
-  if (searchQuery) {
-    $('searchCount').textContent = filtered.length + ' result' + (filtered.length !== 1 ? 's' : '');
-    if (filtered.length === 0) {
-      $('emptyState').style.display = 'none';
-      const list = $('list');
-      list.innerHTML = '<div class="no-results"><div class="no-results-icon">🔎</div>No matching todos for &ldquo;' + esc(searchQuery) + '&rdquo;</div>';
-    }
-  } else {
-    $('searchCount').textContent = '';
-  }
-};
-
-
-// Productivity Stats
+// Productivity
 function toggleProductivity() {
   const sec = $('productivitySection');
   sec.classList.toggle('open');
   localStorage.setItem('productivity_open', sec.classList.contains('open') ? '1' : '0');
 }
-(function initProductivity() {
-  if (localStorage.getItem('productivity_open') === '1') $('productivitySection').classList.add('open');
-})();
+if (localStorage.getItem('productivity_open') === '1') $('productivitySection').classList.add('open');
 
 function renderProductivity() {
   const dayLabels = ['M','T','W','T','F','S','S'];
   const now = new Date();
   const dow = (now.getDay() + 6) % 7;
   const weekStart = new Date(now); weekStart.setHours(0,0,0,0); weekStart.setDate(weekStart.getDate() - dow);
-
   const counts = [0,0,0,0,0,0,0];
   let weekTotal = 0;
   todos.forEach(t => {
-    if (t.completedAt) {
-      const d = new Date(t.completedAt);
-      d.setHours(0,0,0,0);
+    if (t.completed_at) {
+      const d = new Date(t.completed_at); d.setHours(0,0,0,0);
       const diff = Math.floor((d - weekStart) / 86400000);
       if (diff >= 0 && diff < 7) { counts[diff]++; weekTotal++; }
     }
   });
-
   let hhtml = '';
   for (let i = 0; i < 7; i++) {
     const lvl = counts[i] === 0 ? '' : counts[i] === 1 ? ' lvl-1' : counts[i] === 2 ? ' lvl-2' : ' lvl-3';
     hhtml += '<div class="heatmap-day"><span class="heatmap-label">' + dayLabels[i] + '</span><div class="heatmap-cell' + lvl + '" title="' + counts[i] + ' completed"></div></div>';
   }
   $('heatmapRow').innerHTML = hhtml;
-
   let streak = 0;
   const today = new Date(); today.setHours(0,0,0,0);
   const completionDates = new Set();
-  todos.forEach(t => {
-    if (t.completedAt) {
-      const d = new Date(t.completedAt); d.setHours(0,0,0,0);
-      completionDates.add(d.getTime());
-    }
-  });
+  todos.forEach(t => { if (t.completed_at) { const d = new Date(t.completed_at); d.setHours(0,0,0,0); completionDates.add(d.getTime()); } });
   const checkDay = new Date(today);
   if (!completionDates.has(checkDay.getTime())) checkDay.setDate(checkDay.getDate() - 1);
-  while (completionDates.has(checkDay.getTime())) {
-    streak++;
-    checkDay.setDate(checkDay.getDate() - 1);
-  }
-
+  while (completionDates.has(checkDay.getTime())) { streak++; checkDay.setDate(checkDay.getDate() - 1); }
   const badge = $('streakBadge');
-  badge.textContent = '\U0001f525 ' + streak + ' day streak';
+  badge.textContent = '🔥 ' + streak + ' day streak';
   badge.classList.toggle('active', streak > 0);
   $('weekSummary').textContent = 'Completed ' + weekTotal + ' task' + (weekTotal !== 1 ? 's' : '') + ' this week';
 }
 
-const _baseRender = render;
-render = function() { _baseRender(); renderProductivity(); };
-
-// Pomodoro Timer System
+// Pomodoro (kept in localStorage since it's timer state)
 let pomoState = JSON.parse(localStorage.getItem('pomo_state') || 'null');
 let pomoInterval = null;
 let pomoSettings = JSON.parse(localStorage.getItem('pomo_settings') || '{"work":25,"break":5}');
-
 function savePomodoroSettings() {
   pomoSettings.work = parseInt($('pomoWorkMin').value) || 25;
   pomoSettings.break = parseInt($('pomoBreakMin').value) || 5;
@@ -1124,219 +1217,116 @@ function loadPomodoroSettings() {
   $('pomoWorkMin').value = pomoSettings.work;
   $('pomoBreakMin').value = pomoSettings.break;
 }
+function getPomoCounts() { return JSON.parse(localStorage.getItem('pomo_counts') || '{}'); }
+function savePomoCounts(counts) { localStorage.setItem('pomo_counts', JSON.stringify(counts)); }
 
-function getPomoCounts() {
-  return JSON.parse(localStorage.getItem('pomo_counts') || '{}');
-}
-function savePomoCounts(counts) {
-  localStorage.setItem('pomo_counts', JSON.stringify(counts));
-}
-
-function startPomo(todoIdx) {
-  const todo = todos[todoIdx];
+function startPomo(todoId) {
+  const todo = todos.find(t => t.id === todoId);
   if (!todo) return;
   if (Notification.permission === 'default') Notification.requestPermission();
   const dur = pomoSettings.work * 60;
-  pomoState = {
-    todoIdx, todoText: todo.text, 
-    totalSeconds: dur, remaining: dur,
-    paused: false, isBreak: false, startedAt: Date.now()
-  };
-  savePomo();
-  showPomoWidget();
-  runPomoTimer();
+  pomoState = { todoId, todoText: todo.text, totalSeconds: dur, remaining: dur, paused: false, isBreak: false, startedAt: Date.now() };
+  savePomo(); showPomoWidget(); runPomoTimer();
 }
-
-function savePomo() {
-  if (pomoState) localStorage.setItem('pomo_state', JSON.stringify(pomoState));
-  else localStorage.removeItem('pomo_state');
-}
-
+function savePomo() { if (pomoState) localStorage.setItem('pomo_state', JSON.stringify(pomoState)); else localStorage.removeItem('pomo_state'); }
 function showPomoWidget() {
   if (!pomoState) return;
-  const w = $('pomoWidget');
-  w.style.display = '';
-  w.classList.remove('hiding', 'break-mode');
+  const w = $('pomoWidget'); w.style.display = ''; w.classList.remove('hiding', 'break-mode');
   if (pomoState.isBreak) w.classList.add('break-mode');
   $('pomoTask').querySelector('.pomo-label').textContent = pomoState.isBreak ? 'BREAK' : 'FOCUS';
   $('pomoTaskName').textContent = pomoState.todoText;
   updatePomoDisplay();
 }
-
 function updatePomoDisplay() {
   if (!pomoState) return;
   const m = Math.floor(pomoState.remaining / 60);
   const s = pomoState.remaining % 60;
   $('pomoTime').textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
-  const pct = (pomoState.remaining / pomoState.totalSeconds) * 100;
-  $('pomoProgress').style.width = pct + '%';
+  $('pomoProgress').style.width = (pomoState.remaining / pomoState.totalSeconds * 100) + '%';
   $('pomoPauseBtn').textContent = pomoState.paused ? '▶ Resume' : '⏸ Pause';
 }
-
 function runPomoTimer() {
   clearInterval(pomoInterval);
   if (!pomoState || pomoState.paused) return;
   pomoInterval = setInterval(() => {
     if (!pomoState || pomoState.paused) { clearInterval(pomoInterval); return; }
     pomoState.remaining--;
-    if (pomoState.remaining <= 0) {
-      clearInterval(pomoInterval);
-      pomoComplete();
-      return;
-    }
-    savePomo();
-    updatePomoDisplay();
+    if (pomoState.remaining <= 0) { clearInterval(pomoInterval); pomoComplete(); return; }
+    savePomo(); updatePomoDisplay();
   }, 1000);
 }
-
 function pomoComplete() {
   if (!pomoState) return;
   playPomoSound(pomoState.isBreak);
   if (!pomoState.isBreak) {
-    // Work session complete
     const counts = getPomoCounts();
-    const key = 'todo_' + pomoState.todoIdx + '_' + pomoState.todoText;
-    counts[key] = (counts[key] || 0) + 1;
-    savePomoCounts(counts);
-    if (Notification.permission === 'granted') {
-      new Notification('🍅 Pomodoro complete!', { body: 'Take a ' + pomoSettings.break + '-min break. Task: ' + pomoState.todoText });
-    }
-    // Start break
+    const key = 'todo_' + pomoState.todoId + '_' + pomoState.todoText;
+    counts[key] = (counts[key] || 0) + 1; savePomoCounts(counts);
+    if (Notification.permission === 'granted') new Notification('🍅 Pomodoro complete!', { body: 'Take a ' + pomoSettings.break + '-min break.' });
     const dur = pomoSettings.break * 60;
-    pomoState.totalSeconds = dur;
-    pomoState.remaining = dur;
-    pomoState.isBreak = true;
-    pomoState.paused = false;
-    savePomo();
-    showPomoWidget();
-    runPomoTimer();
-    render();
+    pomoState.totalSeconds = dur; pomoState.remaining = dur; pomoState.isBreak = true; pomoState.paused = false;
+    savePomo(); showPomoWidget(); runPomoTimer(); render();
   } else {
-    // Break complete
-    if (Notification.permission === 'granted') {
-      new Notification('☕ Break over!', { body: 'Ready to focus again?' });
-    }
-    pomoState = null;
-    savePomo();
-    hidePomoWidget();
-    render();
+    if (Notification.permission === 'granted') new Notification('☕ Break over!', { body: 'Ready to focus again?' });
+    pomoState = null; savePomo(); hidePomoWidget(); render();
   }
 }
-
-function pomoPause() {
-  if (!pomoState) return;
-  pomoState.paused = !pomoState.paused;
-  savePomo();
-  updatePomoDisplay();
-  if (!pomoState.paused) runPomoTimer();
-}
-
-function pomoStop() {
-  clearInterval(pomoInterval);
-  pomoState = null;
-  savePomo();
-  hidePomoWidget();
-  render();
-}
-
-function hidePomoWidget() {
-  const w = $('pomoWidget');
-  w.classList.add('hiding');
-  setTimeout(() => { w.style.display = 'none'; w.classList.remove('hiding'); }, 250);
-}
-
+function pomoPause() { if (!pomoState) return; pomoState.paused = !pomoState.paused; savePomo(); updatePomoDisplay(); if (!pomoState.paused) runPomoTimer(); }
+function pomoStop() { clearInterval(pomoInterval); pomoState = null; savePomo(); hidePomoWidget(); render(); }
+function hidePomoWidget() { const w = $('pomoWidget'); w.classList.add('hiding'); setTimeout(() => { w.style.display = 'none'; w.classList.remove('hiding'); }, 250); }
 function playPomoSound(isBreak) {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
     const freqs = isBreak ? [523, 659, 784] : [784, 659, 523];
     freqs.forEach((f, i) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.value = f;
+      const osc = ctx.createOscillator(); const gain = ctx.createGain();
+      osc.type = 'sine'; osc.frequency.value = f;
       gain.gain.setValueAtTime(0.15, ctx.currentTime + i * 0.2);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.2 + 0.3);
       osc.connect(gain); gain.connect(ctx.destination);
-      osc.start(ctx.currentTime + i * 0.2);
-      osc.stop(ctx.currentTime + i * 0.2 + 0.3);
+      osc.start(ctx.currentTime + i * 0.2); osc.stop(ctx.currentTime + i * 0.2 + 0.3);
     });
   } catch(e) {}
 }
 
-function getPomoCountForTodo(idx, text) {
-  const counts = getPomoCounts();
-  const key = 'todo_' + idx + '_' + text;
-  return counts[key] || 0;
+function setupPomoButtons() {
+  document.querySelectorAll('.todo-card').forEach(card => {
+    const id = parseInt(card.dataset.id);
+    const todo = todos.find(t => t.id === id);
+    if (!todo || todo.done) return;
+    const inner = card.querySelector('.todo-inner');
+    const delBtn = inner.querySelector('.del-btn');
+    if (!delBtn) return;
+    const cnt = getPomoCounts()['todo_' + id + '_' + todo.text] || 0;
+    if (cnt > 0) {
+      const meta = inner.querySelector('.todo-meta');
+      if (meta) { const b = document.createElement('span'); b.className = 'pomo-badge'; b.textContent = '🍅×' + cnt; meta.appendChild(b); }
+    }
+    const btn = document.createElement('button');
+    btn.className = 'pomo-btn' + (cnt > 0 ? ' has-pomos' : '');
+    btn.title = 'Start Pomodoro'; btn.textContent = '⏱';
+    btn.onclick = (e) => { e.stopPropagation(); startPomo(id); };
+    if (pomoState && pomoState.todoId === id && !pomoState.isBreak) {
+      btn.style.color = 'var(--accent)'; btn.style.opacity = '1';
+    }
+    inner.insertBefore(btn, delBtn);
+  });
 }
 
-// Restore timer on page load
 function restorePomo() {
   loadPomodoroSettings();
   if (!pomoState) return;
-  // Adjust remaining based on elapsed time if not paused
   if (!pomoState.paused && pomoState.startedAt) {
     const elapsed = Math.floor((Date.now() - pomoState.startedAt) / 1000);
-    const totalElapsed = pomoState.totalSeconds - pomoState.remaining + elapsed;
-    pomoState.remaining = Math.max(0, pomoState.totalSeconds - totalElapsed);
+    pomoState.remaining = Math.max(0, pomoState.totalSeconds - (pomoState.totalSeconds - pomoState.remaining + elapsed));
   }
   if (pomoState.remaining <= 0) { pomoComplete(); return; }
   showPomoWidget();
   if (!pomoState.paused) runPomoTimer();
 }
 
-// Patch renderList to add pomo buttons and badges
-const _pomoRenderList = renderList;
-renderList = function() {
-  _pomoRenderList();
-  document.querySelectorAll('.todo-card').forEach(card => {
-    const idx = parseInt(card.dataset.index);
-    const todo = todos[idx];
-    if (!todo) return;
-    const inner = card.querySelector('.todo-inner');
-    const delBtn = inner.querySelector('.del-btn');
-    if (!delBtn) return;
-    
-    // Pomo count badge in meta
-    const cnt = getPomoCountForTodo(idx, todo.text);
-    if (cnt > 0) {
-      const meta = inner.querySelector('.todo-meta');
-      if (meta) {
-        const badge = document.createElement('span');
-        badge.className = 'pomo-badge';
-        badge.textContent = '🍅×' + cnt;
-        meta.appendChild(badge);
-      } else {
-        const content = inner.querySelector('.todo-content');
-        if (content) {
-          const metaDiv = document.createElement('div');
-          metaDiv.className = 'todo-meta';
-          metaDiv.innerHTML = '<span class="pomo-badge">🍅×' + cnt + '</span>';
-          content.appendChild(metaDiv);
-        }
-      }
-    }
-    
-    // Pomo start button
-    if (!todo.done) {
-      const btn = document.createElement('button');
-      btn.className = 'pomo-btn' + (cnt > 0 ? ' has-pomos' : '');
-      btn.title = 'Start Pomodoro';
-      btn.textContent = '⏱';
-      btn.onclick = (e) => { e.stopPropagation(); startPomo(idx); };
-      // Check if this todo has active timer
-      if (pomoState && pomoState.todoIdx === idx && !pomoState.isBreak) {
-        btn.style.color = 'var(--accent)';
-        btn.style.opacity = '1';
-        btn.style.animation = 'focusGlow 2s ease-in-out infinite alternate';
-      }
-      inner.insertBefore(btn, delBtn);
-    }
-  });
-};
-
 restorePomo();
-
-render();
+loadTodos();
 </script>
 </body>
 </html>

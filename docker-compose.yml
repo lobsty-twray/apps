@@ -539,7 +539,12 @@ services:
     container_name: lobsty-todo
     restart: unless-stopped
     ports:
-    - 8090:80
+    - 8090:3000
+    environment:
+    - DATABASE_URL=postgresql://lobsty:lobsty2026@postgres:5432/lobsty_main
+    depends_on:
+      postgres:
+        condition: service_healthy
   budget-tracker:
     build: ./budget
     container_name: lobsty-budget
