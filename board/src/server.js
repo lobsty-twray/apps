@@ -429,6 +429,18 @@ app.put('/api/subtasks/:id/toggle', (req, res) => {
   } catch (error) { res.status(500).json({ error: error.message }); }
 });
 
+// ── Due Summary API ──
+app.get('/api/tasks/due-summary', (req, res) => {
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    const nextWeek = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
+    const overdue = db.prepare("SELECT COUNT(*) as c FROM tasks WHERE due_date < ? AND status != 'done' AND archived = 0").get(today).c;
+    const dueToday = db.prepare("SELECT COUNT(*) as c FROM tasks WHERE due_date = ? AND status != 'done' AND archived = 0").get(today).c;
+    const dueThisWeek = db.prepare("SELECT COUNT(*) as c FROM tasks WHERE due_date > ? AND due_date <= ? AND status != 'done' AND archived = 0").get(today, nextWeek).c;
+    res.json({ overdue, dueToday, dueThisWeek });
+  } catch (error) { res.status(500).json({ error: error.message }); }
+});
+
 app.listen(PORT, () => {
   console.log(`🦞 Lobsty Board running on port ${PORT}`);
 });

@@ -318,7 +318,8 @@ class LobstyBoard {
 
             const archivedDate = task.archived_at ? new Date(task.archived_at + 'Z').toLocaleDateString() : '';
 
-            card.innerHTML = `
+            if (cardBorderClass) card.classList.add(cardBorderClass);
+        card.innerHTML = `
                 <div class="archive-card-info">
                     <div class="archive-card-top">
                         <span class="priority-badge priority-${task.priority}"></span>
@@ -369,6 +370,24 @@ class LobstyBoard {
     async loadTasks(projectId) {
         this.tasks = await this.apiCall(`/api/projects/${projectId}/tasks`);
         this.renderTasks();
+        this.updateOverdueBanner();
+    }
+
+    async updateOverdueBanner() {
+        try {
+            const data = await this.apiCall('/api/tasks/due-summary');
+            const banner = document.getElementById('overdue-banner');
+            const text = document.getElementById('overdue-banner-text');
+            if (!banner || !text) return;
+            if (data.overdue === 0 && data.dueToday === 0) {
+                banner.style.display = 'none'; return;
+            }
+            const parts = [];
+            if (data.overdue > 0) parts.push(`${data.overdue} overdue`);
+            if (data.dueToday > 0) parts.push(`${data.dueToday} due today`);
+            text.textContent = parts.join(', ');
+            banner.style.display = '';
+        } catch (e) { /* ignore */ }
     }
 
     async loadLabels() {
@@ -467,15 +486,26 @@ class LobstyBoard {
 
         // Due date display
         let dueHtml = '';
+        let cardBorderClass = '';
         if (task.due_date) {
             const due = new Date(task.due_date + 'T00:00:00');
             const now = new Date();
             now.setHours(0,0,0,0);
-            const isOverdue = due < now && task.status !== 'done';
-            const isSoon = !isOverdue && (due - now) <= 2 * 86400000 && task.status !== 'done';
-            const cls = isOverdue ? 'due-overdue' : isSoon ? 'due-soon' : 'due-normal';
+            const diffDays = Math.round((due - now) / 86400000);
             const formatted = due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            dueHtml = `<span class="due-badge ${cls}" title="Due ${task.due_date}">📅 ${formatted}</span>`;
+            let cls, label;
+            if (task.status === 'done') {
+                cls = 'due-normal'; label = formatted;
+            } else if (diffDays < 0) {
+                cls = 'due-overdue'; label = `Overdue ${Math.abs(diffDays)}d`; cardBorderClass = 'card-overdue';
+            } else if (diffDays === 0) {
+                cls = 'due-today'; label = 'Due Today'; cardBorderClass = 'card-due-today';
+            } else if (diffDays <= 7) {
+                cls = 'due-this-week'; label = `Due in ${diffDays}d`; cardBorderClass = 'card-due-week';
+            } else {
+                cls = 'due-normal'; label = formatted;
+            }
+            dueHtml = `<span class="due-badge ${cls}" title="Due ${task.due_date}">📅 ${label}</span>`;
         }
 
         card.innerHTML = `
@@ -1193,4 +1223,10 @@ class LobstyBoard {
 
 
 
-document.addEventListener('DOMContentLoaded', () => { new LobstyBoard(); });
+document.addEventListener('DOMContentLoaded', () => {
+    const board = new LobstyBoard();
+    const bannerClose = document.getElementById('overdue-banner-close');
+    if (bannerClose) bannerClose.addEventListener('click', () => {
+        document.getElementById('overdue-banner').style.display = 'none';
+    });
+});

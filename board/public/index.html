@@ -16,7 +16,44 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <style>
-    </style>
+/* Overdue Banner */
+.overdue-banner {
+    margin: 0 0 0.75rem 0;
+    border-radius: var(--radius-md, 10px);
+    background: linear-gradient(135deg, rgba(239,68,68,0.15), rgba(245,158,11,0.12));
+    border: 1px solid rgba(239,68,68,0.25);
+    padding: 0.6rem 1rem;
+    animation: bannerPulse 3s ease-in-out infinite;
+}
+.overdue-banner-content {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.82rem; font-weight: 500; color: var(--text, #fff);
+}
+.overdue-banner-icon { font-size: 1rem; }
+.overdue-banner-close {
+    margin-left: auto; background: none; border: none;
+    color: var(--text-dim); font-size: 1.1rem; cursor: pointer;
+    padding: 0 0.25rem; line-height: 1;
+}
+.overdue-banner-close:hover { color: var(--text); }
+@keyframes bannerPulse {
+    0%, 100% { border-color: rgba(239,68,68,0.25); }
+    50% { border-color: rgba(239,68,68,0.45); }
+}
+
+/* Due date card borders */
+.task-card.card-overdue { border-left: 3px solid #ef4444 !important; }
+.task-card.card-due-today { border-left: 3px solid #f59e0b !important; }
+.task-card.card-due-week { border-left: 3px solid #3b82f6 !important; }
+
+/* Due badge variants */
+.due-badge.due-today {
+    color: #f59e0b; background: rgba(245,158,11,0.15);
+}
+.due-badge.due-this-week {
+    color: #3b82f6; background: rgba(59,130,246,0.12);
+}
+</style>
 <style>
 /* Stats Modal Styles */
 .stats-modal-content { max-width: 720px; width: 95vw; max-height: 90vh; overflow-y: auto; }
@@ -167,6 +204,16 @@
                         <div class="filter-pills" id="filter-labels"></div>
                     </div>
                     <button id="filter-clear-btn" class="btn btn-glass btn-sm filter-clear-btn" style="display:none;">✕ Clear filters</button>
+                </div>
+            </div>
+
+
+            <!-- Overdue Banner -->
+            <div id="overdue-banner" class="overdue-banner" style="display: none;">
+                <div class="overdue-banner-content">
+                    <span class="overdue-banner-icon">⚠️</span>
+                    <span id="overdue-banner-text"></span>
+                    <button id="overdue-banner-close" class="overdue-banner-close">&times;</button>
                 </div>
             </div>
 
