@@ -610,6 +610,90 @@ app.get('/api/template-categories', authRequired, async (req, res) => {
 
 // ─── SPA Fallback ────────────────────────────────────────────────────────────
 
+// ─── Dashboard View ──────────────────────────────────────────────────────────
+
+app.get('/api/dashboard', authRequired, async (req, res) => {
+  try {
+    const stats = await pool.query(`
+      SELECT
+        COUNT(*) AS total,
+        COUNT(*) FILTER (WHERE status = 'draft') AS draft,
+        COUNT(*) FILTER (WHERE status = 'review') AS review,
+        COUNT(*) FILTER (WHERE status = 'approved') AS approved,
+        COUNT(*) FILTER (WHERE status = 'done') AS done,
+        COUNT(*) FILTER (WHERE status = 'rejected') AS rejected,
+        COUNT(*) FILTER (WHERE status = 'done' AND updated_at >= date_trunc('week', NOW())) AS done_this_week,
+        COALESCE(ROUND(EXTRACT(EPOCH FROM AVG(NOW() - created_at)) / 86400.0, 1), 0) AS avg_age_days
+      FROM drafts
+      WHERE status NOT IN ('done', 'rejected')
+    `);
+
+    // For total/done/rejected we need a separate count that includes all
+    const allStats = await pool.query(`
+      SELECT
+        COUNT(*) AS total,
+        COUNT(*) FILTER (WHERE status = 'done') AS done,
+        COUNT(*) FILTER (WHERE status = 'rejected') AS rejected,
+        COUNT(*) FILTER (WHERE status = 'done' AND updated_at >= date_trunc('week', NOW())) AS done_this_week
+      FROM drafts
+    `);
+
+    const s = stats.rows[0];
+    const a = allStats.rows[0];
+
+    const activity = await pool.query(`
+      SELECT h.action, h.old_value, h.new_value, h.created_at,
+        u.display_name AS user_name,
+        d.title AS draft_title
+      FROM draft_history h
+      JOIN users u ON h.user_id = u.id
+      JOIN drafts d ON h.draft_id = d.id
+      ORDER BY h.created_at DESC
+      LIMIT 10
+    `);
+
+    const recentActivity = activity.rows.map(row => {
+      let action = row.action;
+      if (action === 'status_change') action = `moved to ${row.new_value}`;
+      else if (action === 'content_edit') action = 'edited';
+      else if (action === 'title_change') action = 'renamed';
+
+      const now = Date.now();
+      const then = new Date(row.created_at).getTime();
+      const diffSec = Math.floor((now - then) / 1000);
+      let timeAgo;
+      if (diffSec < 60) timeAgo = 'just now';
+      else if (diffSec < 3600) timeAgo = Math.floor(diffSec / 60) + 'm ago';
+      else if (diffSec < 86400) timeAgo = Math.floor(diffSec / 3600) + 'h ago';
+      else timeAgo = Math.floor(diffSec / 86400) + 'd ago';
+
+      return {
+        user: row.user_name,
+        action,
+        draftTitle: row.draft_title,
+        timeAgo
+      };
+    });
+
+    res.json({
+      stats: {
+        total: parseInt(a.total),
+        draft: parseInt(s.draft),
+        review: parseInt(s.review),
+        approved: parseInt(s.approved),
+        done: parseInt(a.done),
+        rejected: parseInt(a.rejected),
+        doneThisWeek: parseInt(a.done_this_week),
+        avgAgeDays: parseFloat(s.avg_age_days)
+      },
+      recentActivity
+    });
+  } catch (err) {
+    console.error('Dashboard error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });

@@ -1292,6 +1292,144 @@
         grid-template-columns: 1fr;
       }
     }
+
+    /* ─── Dashboard ─────────────────────── */
+    .dashboard-view { display: none; animation: fadeSlideUp 0.3s ease; }
+
+    .stats-cards {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    @media (min-width: 768px) {
+      .stats-cards { grid-template-columns: repeat(5, 1fr); }
+    }
+
+    .stat-card {
+      background: var(--bg-glass);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius);
+      padding: 18px;
+      text-align: center;
+      transition: var(--transition-smooth);
+    }
+
+    .stat-card:hover {
+      border-color: var(--border-glass-hover);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-glass);
+    }
+
+    .stat-card-value {
+      font-size: 32px;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.2;
+    }
+
+    .stat-card-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 4px;
+    }
+
+    .stat-card.attention .stat-card-value {
+      background: linear-gradient(135deg, var(--orange), var(--red));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-card.success .stat-card-value {
+      background: linear-gradient(135deg, var(--green), #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .activity-feed {
+      background: var(--bg-glass);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .activity-feed-title {
+      font-size: 14px;
+      font-weight: 700;
+      padding: 16px 18px 12px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 12px;
+    }
+
+    .activity-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 18px;
+      border-top: 1px solid var(--border-glass);
+      font-size: 13px;
+      color: var(--text-secondary);
+      transition: var(--transition-fast);
+    }
+
+    .activity-item:hover { background: var(--bg-glass-hover); }
+
+    .activity-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .activity-text { flex: 1; }
+    .activity-text strong { color: var(--text-primary); }
+    .activity-text em { color: var(--accent); font-style: normal; font-weight: 600; }
+    .activity-time { font-size: 11px; color: var(--text-tertiary); white-space: nowrap; }
+
+    .activity-empty {
+      padding: 32px 18px;
+      text-align: center;
+      color: var(--text-tertiary);
+      font-size: 13px;
+    }
+
+    /* ─── Draft Age Indicator ───────────── */
+    .age-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-left: 6px;
+    }
+
+    .age-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .age-fresh .age-dot { background: var(--green); box-shadow: 0 0 6px rgba(52,211,153,0.4); }
+    .age-aging .age-dot { background: var(--yellow); box-shadow: 0 0 6px rgba(251,191,36,0.4); }
+    .age-aging .age-label { color: var(--yellow); }
+    .age-stale .age-dot { background: var(--red); box-shadow: 0 0 6px rgba(248,113,113,0.4); }
+    .age-stale .age-label { color: var(--red); }
   </style>
   <link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg">
   <link rel="icon" type="image/x-icon" href="/favicons/favicon.ico">
@@ -1348,8 +1486,11 @@
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-section">
-        <h3>Dashboard</h3>
-        <button class="sidebar-item active" data-view="all" onclick="setView('all')">
+        <h3>Views</h3>
+        <button class="sidebar-item active" data-view="dashboard" onclick="setView('dashboard')">
+          <span class="icon">&#128202;</span> Dashboard
+        </button>
+        <button class="sidebar-item" data-view="all" onclick="setView('all')">
           <span class="icon">&#128196;</span> All Drafts <span class="count" id="countAll">0</span>
         </button>
         <button class="sidebar-item" data-view="review" onclick="setView('review')">
@@ -1401,6 +1542,18 @@
     </aside>
 
     <main class="content">
+      <!-- Dashboard View -->
+      <div class="dashboard-view" id="dashboardView">
+        <div class="content-header">
+          <h2>&#128202; Dashboard</h2>
+        </div>
+        <div class="stats-cards" id="dashboardStats"></div>
+        <div class="activity-feed" id="activityFeed">
+          <div class="activity-feed-title">&#128337; Recent Activity</div>
+          <div id="activityList"><div class="activity-empty">Loading...</div></div>
+        </div>
+      </div>
+
       <!-- List View -->
       <div id="listView">
         <div class="content-header">
@@ -1591,7 +1744,7 @@
 // ─── State ────────────────────────────────────────────────────────────────────
 let token = localStorage.getItem('drafts_token');
 let currentUser = null;
-let currentView = 'all';
+let currentView = 'dashboard';
 let currentDraft = null;
 let editingDraftId = null;
 let searchTimeout = null;
@@ -1683,6 +1836,7 @@ async function showApp() {
   avatar.textContent = currentUser.display_name[0].toUpperCase();
 
   await Promise.all([loadStats(), loadDrafts(), loadTemplateCount()]);
+  setView('dashboard');
 }
 
 // ─── Stats ────────────────────────────────────────────────────────────────────
@@ -1712,11 +1866,13 @@ function setView(view) {
     all: 'All Drafts', review: 'Needs Review', urgent: 'Urgent',
     draft: 'Drafts', approved: 'Approved', done: 'Done', rejected: 'Rejected',
     'type-email': 'Emails', 'type-todo': 'Todos', 'type-idea': 'Ideas',
-    'type-note': 'Notes', 'type-script': 'Scripts', templates: 'Templates'
+    'type-note': 'Notes', 'type-script': 'Scripts', templates: 'Templates',
+    dashboard: 'Dashboard'
   };
 
   document.getElementById('viewTitle').textContent = titles[view] || 'All Drafts';
-  document.getElementById('listView').style.display = 'block';
+  document.getElementById('listView').style.display = view === 'dashboard' ? 'none' : 'block';
+  document.getElementById('dashboardView').style.display = view === 'dashboard' ? 'block' : 'none';
   document.getElementById('detailView').style.display = 'none';
 
   document.getElementById('sidebar').classList.remove('open');
@@ -1725,13 +1881,19 @@ function setView(view) {
   // Toggle search bar visibility and header button for templates view
   const searchBar = document.querySelector('.search-bar');
   const headerBtn = document.querySelector('.content-header .btn-primary');
-  if (view === 'templates') {
+  if (view === 'dashboard') {
     searchBar.style.display = 'none';
+    headerBtn.style.display = 'none';
+    loadDashboard();
+  } else if (view === 'templates') {
+    searchBar.style.display = 'none';
+    headerBtn.style.display = '';
     headerBtn.textContent = '+ New Template';
     headerBtn.onclick = openCreateTemplateModal;
     loadTemplates();
   } else {
     searchBar.style.display = '';
+    headerBtn.style.display = '';
     headerBtn.textContent = '+ New Draft';
     headerBtn.onclick = function() { openCreateModal(); };
     loadDrafts();
@@ -1782,7 +1944,7 @@ function renderDraftList(drafts) {
     return `
     <div class="draft-card" data-type="${d.type}" onclick="openDraft(${d.id})">
       <div class="draft-card-top">
-        <div class="draft-card-title">${esc(d.title)}</div>
+        <div class="draft-card-title">${esc(d.title)}${getAgeIndicator(d.created_at)}</div>
         <div class="draft-card-meta">
           <span class="badge badge-${d.type}">${typeIcon(d.type)} ${d.type}</span>
           <span class="badge badge-${d.status}">${statusLabel(d.status)}</span>
@@ -2401,6 +2563,63 @@ async function deleteTemplate(id) {
   } catch (err) {
     showToast('Failed to delete');
   }
+}
+
+
+
+// ─── Dashboard ────────────────────────────────────────────────────────────────
+async function loadDashboard() {
+  try {
+    const data = await api('/dashboard');
+    const s = data.stats;
+    document.getElementById('dashboardStats').innerHTML = `
+      <div class="stat-card">
+        <div class="stat-card-value">${s.total}</div>
+        <div class="stat-card-label">Total Drafts</div>
+      </div>
+      <div class="stat-card ${s.review > 0 ? 'attention' : ''}">
+        <div class="stat-card-value">${s.review}</div>
+        <div class="stat-card-label">Needs Review</div>
+      </div>
+      <div class="stat-card success">
+        <div class="stat-card-value">${s.approved}</div>
+        <div class="stat-card-label">Approved</div>
+      </div>
+      <div class="stat-card success">
+        <div class="stat-card-value">${s.doneThisWeek}</div>
+        <div class="stat-card-label">Done This Week</div>
+      </div>
+      <div class="stat-card ${s.avgAgeDays > 5 ? 'attention' : ''}">
+        <div class="stat-card-value">${s.avgAgeDays}</div>
+        <div class="stat-card-label">Avg Age (days)</div>
+      </div>
+    `;
+
+    const list = document.getElementById('activityList');
+    if (data.recentActivity.length === 0) {
+      list.innerHTML = '<div class="activity-empty">No recent activity</div>';
+    } else {
+      list.innerHTML = data.recentActivity.map(a => `
+        <div class="activity-item">
+          <div class="activity-dot"></div>
+          <div class="activity-text"><strong>${esc(a.user)}</strong> ${esc(a.action)} <em>'${esc(a.draftTitle)}'</em></div>
+          <div class="activity-time">${esc(a.timeAgo)}</div>
+        </div>
+      `).join('');
+    }
+  } catch (err) {
+    console.error('Dashboard error:', err);
+  }
+}
+
+function getAgeIndicator(createdAt) {
+  const diffMs = Date.now() - new Date(createdAt).getTime();
+  const days = diffMs / 86400000;
+  if (days < 1) return '<span class="age-indicator age-fresh"><span class="age-dot"></span></span>';
+  if (days <= 3) return '';
+  const label = Math.floor(days) + 'd ago';
+  if (days <= 7) return '<span class="age-indicator age-aging"><span class="age-dot"></span><span class="age-label">' + label + '</span></span>';
+  return '<span class="age-indicator age-stale"><span class="age-dot"></span><span class="age-label">' + label + '</span></span>';
 }
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
