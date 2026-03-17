@@ -156,6 +156,20 @@
                 </div>
             </div>
         </div>
+
+        <!-- Goals View -->
+        <div id="goals-view" class="view">
+            <div class="goals-summary-bar glass-card" id="goals-summary-bar">
+                <div class="goals-summary-text">
+                    <span class="goals-summary-label">Total Saved</span>
+                    <span class="goals-summary-amount" id="goals-total-text">$0 / $0 (0%)</span>
+                </div>
+                <div class="goals-summary-track">
+                    <div class="goals-summary-fill" id="goals-summary-fill" style="width:0%"></div>
+                </div>
+            </div>
+            <div class="goals-grid" id="goals-grid"></div>
+        </div>
     </main>
 
     <!-- FAB -->
@@ -174,9 +188,9 @@
             <span>Transactions</span>
         </button>
         <div class="bottom-nav-spacer"></div>
-        <button class="bottom-nav-item" data-view="budgets">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
-            <span>Budgets</span>
+        <button class="bottom-nav-item" data-view="goals">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <span>Goals</span>
         </button>
         <button class="bottom-nav-item" data-view="trends">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 20l5-8 4 4 9-12"/></svg>
@@ -288,6 +302,85 @@
                 <div class="form-actions">
                     <button type="button" class="btn-ghost" onclick="app.closeBudgetModal()">Cancel</button>
                     <button type="submit" class="btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Goal Modal -->
+    <div id="goal-modal" class="modal-overlay">
+        <div class="modal-sheet glass-card">
+            <div class="sheet-handle"></div>
+            <h3 class="modal-title" id="goal-modal-title">Add Savings Goal</h3>
+            <form id="goal-form">
+                <div class="form-group">
+                    <label>Goal Name</label>
+                    <input type="text" name="name" required class="glass-input" placeholder="e.g. New Car">
+                </div>
+                <div class="amount-input-wrapper">
+                    <span class="currency-symbol">$</span>
+                    <input type="number" name="target_amount" step="0.01" min="1" required placeholder="0.00" class="amount-input" inputmode="decimal">
+                </div>
+                <div class="form-group">
+                    <label>Icon</label>
+                    <div class="emoji-picker-grid" id="goal-emoji-picker">
+                        <button type="button" class="emoji-pick active" data-emoji="🎯">🎯</button>
+                        <button type="button" class="emoji-pick" data-emoji="💰">💰</button>
+                        <button type="button" class="emoji-pick" data-emoji="🏠">🏠</button>
+                        <button type="button" class="emoji-pick" data-emoji="🚗">🚗</button>
+                        <button type="button" class="emoji-pick" data-emoji="✈️">✈️</button>
+                        <button type="button" class="emoji-pick" data-emoji="🎮">🎮</button>
+                        <button type="button" class="emoji-pick" data-emoji="📱">📱</button>
+                        <button type="button" class="emoji-pick" data-emoji="💻">💻</button>
+                        <button type="button" class="emoji-pick" data-emoji="🎵">🎵</button>
+                        <button type="button" class="emoji-pick" data-emoji="🏋️">🏋️</button>
+                        <button type="button" class="emoji-pick" data-emoji="🎓">🎓</button>
+                        <button type="button" class="emoji-pick" data-emoji="💍">💍</button>
+                        <button type="button" class="emoji-pick" data-emoji="🏖️">🏖️</button>
+                        <button type="button" class="emoji-pick" data-emoji="🎁">🎁</button>
+                        <button type="button" class="emoji-pick" data-emoji="🐾">🐾</button>
+                    </div>
+                    <input type="hidden" name="icon" value="🎯">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Color</label>
+                        <input type="color" name="color" value="#7c3aed" required class="color-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Deadline (optional)</label>
+                        <input type="date" name="deadline" class="glass-input">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-ghost" onclick="app.closeGoalModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Contribute Modal -->
+    <div id="contribute-modal" class="modal-overlay">
+        <div class="modal-sheet glass-card">
+            <div class="sheet-handle"></div>
+            <h3 class="modal-title">Contribute to <span id="contribute-goal-name"></span></h3>
+            <form id="contribute-form">
+                <input type="hidden" name="goal_id">
+                <div class="amount-input-wrapper">
+                    <span class="currency-symbol">$</span>
+                    <input type="number" name="amount" step="0.01" min="0.01" required placeholder="0.00" class="amount-input" inputmode="decimal">
+                </div>
+                <div class="contribute-quick-amounts">
+                    <button type="button" class="quick-amount-btn" data-amount="10">$10</button>
+                    <button type="button" class="quick-amount-btn" data-amount="25">$25</button>
+                    <button type="button" class="quick-amount-btn" data-amount="50">$50</button>
+                    <button type="button" class="quick-amount-btn" data-amount="100">$100</button>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-ghost" onclick="app.closeContributeModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Contribute</button>
                 </div>
             </form>
         </div>

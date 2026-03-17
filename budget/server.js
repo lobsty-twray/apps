@@ -50,6 +50,17 @@ function initDatabase() {
       FOREIGN KEY (category_id) REFERENCES categories(id),
       UNIQUE(category_id, month, year)
     );
+
+    CREATE TABLE IF NOT EXISTS savings_goals (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      target_amount REAL NOT NULL,
+      current_amount REAL DEFAULT 0,
+      deadline TEXT,
+      icon TEXT DEFAULT "🎯",
+      color TEXT DEFAULT "#7c3aed",
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
   `);
 
   // Migration: add recurring_frequency column
@@ -471,6 +482,74 @@ app.post("/api/transactions/generate-recurring", (req, res) => {
     }
   }
   res.json({ generated, skipped });
+});
+
+
+// ─── Savings Goals ───
+app.get("/api/savings-goals/summary", (req, res) => {
+  const summary = db.prepare(`
+    SELECT 
+      COALESCE(SUM(current_amount), 0) as total_saved,
+      COALESCE(SUM(target_amount), 0) as total_target,
+      COUNT(*) as goal_count
+    FROM savings_goals
+  `).get();
+  summary.progress = summary.total_target > 0 ? Math.round((summary.total_saved / summary.total_target) * 1000) / 10 : 0;
+  res.json(summary);
+});
+
+app.get("/api/savings-goals", (req, res) => {
+  const goals = db.prepare("SELECT * FROM savings_goals ORDER BY created_at DESC").all();
+  const result = goals.map(g => ({
+    ...g,
+    progress: g.target_amount > 0 ? Math.round((g.current_amount / g.target_amount) * 1000) / 10 : 0
+  }));
+  res.json(result);
+});
+
+app.post("/api/savings-goals", (req, res) => {
+  const { name, target_amount, icon, color, deadline } = req.body;
+  if (!name || !target_amount) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+  const stmt = db.prepare(`
+    INSERT INTO savings_goals (name, target_amount, icon, color, deadline)
+    VALUES (?, ?, ?, ?, ?)
+  `);
+  const result = stmt.run(name, target_amount, icon || '🎯', color || '#7c3aed', deadline || null);
+  res.json({ id: result.lastInsertRowid, success: true });
+});
+
+app.put("/api/savings-goals/:id", (req, res) => {
+  const { name, target_amount, icon, color, deadline } = req.body;
+  const stmt = db.prepare(`
+    UPDATE savings_goals SET name = ?, target_amount = ?, icon = ?, color = ?, deadline = ?
+    WHERE id = ?
+  `);
+  const result = stmt.run(name, target_amount, icon, color, deadline || null, req.params.id);
+  res.json({ success: result.changes > 0 });
+});
+
+app.delete("/api/savings-goals/:id", (req, res) => {
+  const stmt = db.prepare("DELETE FROM savings_goals WHERE id = ?");
+  const result = stmt.run(req.params.id);
+  res.json({ success: result.changes > 0 });
+});
+
+app.post("/api/savings-goals/:id/contribute", (req, res) => {
+  const { amount } = req.body;
+  if (!amount || amount <= 0) {
+    return res.status(400).json({ error: "Invalid amount" });
+  }
+  const stmt = db.prepare("UPDATE savings_goals SET current_amount = current_amount + ? WHERE id = ?");
+  const result = stmt.run(amount, req.params.id);
+  if (result.changes > 0) {
+    const goal = db.prepare("SELECT * FROM savings_goals WHERE id = ?").get(req.params.id);
+    goal.progress = goal.target_amount > 0 ? Math.round((goal.current_amount / goal.target_amount) * 1000) / 10 : 0;
+    res.json({ success: true, goal });
+  } else {
+    res.status(404).json({ error: "Goal not found" });
+  }
 });
 
 // Serve frontend

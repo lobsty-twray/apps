@@ -9,6 +9,7 @@ class BudgetApp {
         this.categoryChart = null;
         this.trendsChart = null;
         this.savingsChart = null;
+        this.savingsGoals = [];
         this.init();
     }
 
@@ -31,7 +32,8 @@ class BudgetApp {
 
         // FAB
         document.getElementById('fab').addEventListener('click', () => {
-            if (this.currentView === 'budgets') this.openBudgetModal();
+            if (this.currentView === 'goals') this.openGoalModal();
+            else if (this.currentView === 'budgets') this.openBudgetModal();
             else if (this.currentView === 'categories') this.openCategoryModal();
             else this.openTransactionModal();
         });
@@ -74,10 +76,28 @@ class BudgetApp {
             });
         }
 
+        // Emoji picker for goals
+        document.querySelectorAll('#goal-emoji-picker .emoji-pick').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('#goal-emoji-picker .emoji-pick').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                document.querySelector('#goal-form [name="icon"]').value = btn.dataset.emoji;
+            });
+        });
+
+        // Quick amount buttons for contribute
+        document.querySelectorAll('.quick-amount-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelector('#contribute-form [name="amount"]').value = btn.dataset.amount;
+            });
+        });
+
         // Forms
         document.getElementById('transaction-form').addEventListener('submit', e => { e.preventDefault(); this.saveTransaction(); });
         document.getElementById('category-form').addEventListener('submit', e => { e.preventDefault(); this.saveCategory(); });
         document.getElementById('budget-form').addEventListener('submit', e => { e.preventDefault(); this.saveBudget(); });
+        document.getElementById('goal-form').addEventListener('submit', e => { e.preventDefault(); this.saveGoal(); });
+        document.getElementById('contribute-form').addEventListener('submit', e => { e.preventDefault(); this.contributeToGoal(); });
 
         // Modal overlay close
         document.querySelectorAll('.modal-overlay').forEach(overlay => {
@@ -109,6 +129,7 @@ class BudgetApp {
             case 'transactions': this.loadTransactions(); break;
             case 'categories': this.loadCategories().then(() => this.renderCategories()); break;
             case 'budgets': this.loadBudgets(); break;
+            case 'goals': this.loadGoals(); break;
             case 'trends': this.loadTrends(); break;
         }
     }
@@ -623,6 +644,140 @@ class BudgetApp {
             btn.textContent = `✓ ${data.generated} generated`;
             setTimeout(() => { btn.disabled = false; btn.textContent = "Generate"; this.refreshCurrentView(); }, 1500);
         } catch (err) { console.error("Generate error:", err); }
+    }
+
+
+    // ─── Savings Goals ───
+    async loadGoals() {
+        try {
+            const [goalsRes, summaryRes] = await Promise.all([
+                fetch('/api/savings-goals'),
+                fetch('/api/savings-goals/summary')
+            ]);
+            this.savingsGoals = await goalsRes.json();
+            const summary = await summaryRes.json();
+            this.renderGoalsSummary(summary);
+            this.renderGoals();
+        } catch (err) { console.error('Goals error:', err); }
+    }
+
+    renderGoalsSummary(summary) {
+        const text = document.getElementById('goals-total-text');
+        const fill = document.getElementById('goals-summary-fill');
+        text.textContent = `${this.formatCurrency(summary.total_saved)} / ${this.formatCurrency(summary.total_target)} (${summary.progress}%)`;
+        fill.style.width = Math.min(summary.progress, 100) + '%';
+    }
+
+    renderGoals() {
+        const container = document.getElementById('goals-grid');
+        if (!this.savingsGoals.length) {
+            container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🎯</div><p>No savings goals yet</p><p style="opacity:0.5;font-size:0.85rem">Tap + to create one</p></div>';
+            return;
+        }
+        container.innerHTML = this.savingsGoals.map((g, i) => {
+            const pct = Math.min(g.progress, 100);
+            const delay = Math.min(i * 60, 300);
+            let deadlineHTML = '';
+            if (g.deadline) {
+                const now = new Date();
+                const dl = new Date(g.deadline + 'T00:00:00');
+                const diff = Math.ceil((dl - now) / (1000 * 60 * 60 * 24));
+                if (diff > 0) deadlineHTML = `<span class="goal-deadline">⏳ ${diff} day${diff !== 1 ? 's' : ''} left</span>`;
+                else if (diff === 0) deadlineHTML = `<span class="goal-deadline goal-deadline-urgent">⏳ Due today</span>`;
+                else deadlineHTML = `<span class="goal-deadline goal-deadline-overdue">⏳ ${Math.abs(diff)} day${Math.abs(diff) !== 1 ? 's' : ''} overdue</span>`;
+            }
+            const completed = pct >= 100;
+            return `<div class="goal-card glass-card stagger-in${completed ? ' goal-completed' : ''}" style="animation-delay:${delay}ms; --goal-color:${g.color}">
+                <div class="goal-header">
+                    <div class="goal-icon-name">
+                        <span class="goal-icon">${g.icon}</span>
+                        <span class="goal-name">${g.name}</span>
+                    </div>
+                    <button class="goal-delete" onclick="app.deleteGoal(${g.id})">×</button>
+                </div>
+                <div class="goal-progress-bar">
+                    <div class="goal-progress-track">
+                        <div class="goal-progress-fill" style="width:${pct}%; background:${g.color}"></div>
+                    </div>
+                    <div class="goal-progress-text">
+                        <span>${this.formatCurrency(g.current_amount)} / ${this.formatCurrency(g.target_amount)}</span>
+                        <span class="goal-pct">${g.progress}%</span>
+                    </div>
+                </div>
+                ${deadlineHTML}
+                <div class="goal-actions">
+                    ${!completed ? `<button class="btn-primary btn-sm goal-contribute-btn" onclick="app.openContributeModal(${g.id})">+ Contribute</button>` : '<span class="goal-complete-badge">✅ Complete!</span>'}
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    openGoalModal(goal = null) {
+        const modal = document.getElementById('goal-modal');
+        const form = document.getElementById('goal-form');
+        const title = document.getElementById('goal-modal-title');
+        if (goal) {
+            title.textContent = 'Edit Goal';
+            form.elements.name.value = goal.name;
+            form.elements.target_amount.value = goal.target_amount;
+            form.elements.icon.value = goal.icon;
+            form.elements.color.value = goal.color;
+            form.elements.deadline.value = goal.deadline || '';
+            document.querySelectorAll('#goal-emoji-picker .emoji-pick').forEach(b => b.classList.toggle('active', b.dataset.emoji === goal.icon));
+            form.dataset.id = goal.id;
+        } else {
+            title.textContent = 'Add Savings Goal';
+            form.reset();
+            form.elements.icon.value = '🎯';
+            form.elements.color.value = '#7c3aed';
+            document.querySelectorAll('#goal-emoji-picker .emoji-pick').forEach(b => b.classList.toggle('active', b.dataset.emoji === '🎯'));
+            delete form.dataset.id;
+        }
+        modal.classList.add('active');
+    }
+
+    closeGoalModal() { document.getElementById('goal-modal').classList.remove('active'); }
+
+    async saveGoal() {
+        const form = document.getElementById('goal-form');
+        const data = Object.fromEntries(new FormData(form).entries());
+        data.target_amount = parseFloat(data.target_amount);
+        const method = form.dataset.id ? 'PUT' : 'POST';
+        const url = form.dataset.id ? `/api/savings-goals/${form.dataset.id}` : '/api/savings-goals';
+        const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+        if (res.ok) { this.closeGoalModal(); this.loadGoals(); }
+    }
+
+    async deleteGoal(id) {
+        if (!confirm('Delete this savings goal?')) return;
+        const res = await fetch(`/api/savings-goals/${id}`, { method: 'DELETE' });
+        if (res.ok) this.loadGoals();
+    }
+
+    openContributeModal(goalId) {
+        const goal = this.savingsGoals.find(g => g.id === goalId);
+        if (!goal) return;
+        const modal = document.getElementById('contribute-modal');
+        const form = document.getElementById('contribute-form');
+        document.getElementById('contribute-goal-name').textContent = goal.icon + ' ' + goal.name;
+        form.elements.goal_id.value = goalId;
+        form.elements.amount.value = '';
+        modal.classList.add('active');
+    }
+
+    closeContributeModal() { document.getElementById('contribute-modal').classList.remove('active'); }
+
+    async contributeToGoal() {
+        const form = document.getElementById('contribute-form');
+        const goalId = form.elements.goal_id.value;
+        const amount = parseFloat(form.elements.amount.value);
+        if (!amount || amount <= 0) return;
+        const res = await fetch(`/api/savings-goals/${goalId}/contribute`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ amount })
+        });
+        if (res.ok) { this.closeContributeModal(); this.loadGoals(); }
     }
 
     formatCurrency(amount) {
