@@ -6,7 +6,7 @@ const fs = require("fs");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const DATABASE_URL = process.env.DATABASE_URL || "postgresql://lobsty:***REMOVED***@localhost:5432/gear_inventory";
+const DATABASE_URL = process.env.DATABASE_URL || "postgresql://lobsty:lobsty2026@localhost:5432/gear_inventory";
 
 const pool = new Pool({ connectionString: DATABASE_URL });
 
@@ -44,6 +44,23 @@ async function initDb() {
         notes TEXT,
         image_url TEXT,
         created_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS kits (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        description TEXT,
+        icon TEXT DEFAULT '📦',
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS kit_items (
+        id SERIAL PRIMARY KEY,
+        kit_id INTEGER REFERENCES kits(id) ON DELETE CASCADE,
+        gear_id INTEGER REFERENCES gear(id) ON DELETE CASCADE,
+        UNIQUE(kit_id, gear_id)
       )
     `);
     console.log("✅ Database initialized");
@@ -147,6 +164,107 @@ app.get("/api/categories", async (req, res) => {
   try {
     const result = await pool.query("SELECT DISTINCT category FROM gear ORDER BY category");
     res.json(result.rows.map(r => r.category));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ========== KITS API ==========
+
+// List all kits with item count and total value
+app.get("/api/kits", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT k.*, 
+        COUNT(ki.id)::int as item_count,
+        COALESCE(SUM(g.purchase_price::numeric), 0) as total_value,
+        COALESCE(json_agg(json_build_object('id', g.id, 'name', g.name, 'image_url', g.image_url, 'category', g.category)) FILTER (WHERE g.id IS NOT NULL), '[]') as items_preview
+      FROM kits k
+      LEFT JOIN kit_items ki ON ki.kit_id = k.id
+      LEFT JOIN gear g ON g.id = ki.gear_id
+      GROUP BY k.id
+      ORDER BY k.created_at DESC
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Create kit
+app.post("/api/kits", async (req, res) => {
+  try {
+    const { name, description, icon } = req.body;
+    const result = await pool.query(
+      "INSERT INTO kits (name, description, icon) VALUES ($1, $2, $3) RETURNING *",
+      [name, description || null, icon || '📦']
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get single kit with full gear items
+app.get("/api/kits/:id", async (req, res) => {
+  try {
+    const kit = await pool.query("SELECT * FROM kits WHERE id = $1", [req.params.id]);
+    if (!kit.rows.length) return res.status(404).json({ error: "Kit not found" });
+    const items = await pool.query(`
+      SELECT g.* FROM gear g
+      JOIN kit_items ki ON ki.gear_id = g.id
+      WHERE ki.kit_id = $1
+      ORDER BY g.name
+    `, [req.params.id]);
+    res.json({ ...kit.rows[0], items: items.rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update kit
+app.put("/api/kits/:id", async (req, res) => {
+  try {
+    const { name, description, icon } = req.body;
+    const result = await pool.query(
+      "UPDATE kits SET name=$1, description=$2, icon=$3 WHERE id=$4 RETURNING *",
+      [name, description || null, icon || '📦', req.params.id]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Delete kit
+app.delete("/api/kits/:id", async (req, res) => {
+  try {
+    await pool.query("DELETE FROM kits WHERE id = $1", [req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Add gear to kit
+app.post("/api/kits/:id/items", async (req, res) => {
+  try {
+    const { gear_id } = req.body;
+    await pool.query(
+      "INSERT INTO kit_items (kit_id, gear_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
+      [req.params.id, gear_id]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Remove gear from kit
+app.delete("/api/kits/:id/items/:gear_id", async (req, res) => {
+  try {
+    await pool.query("DELETE FROM kit_items WHERE kit_id = $1 AND gear_id = $2", [req.params.id, req.params.gear_id]);
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

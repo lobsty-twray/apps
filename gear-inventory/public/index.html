@@ -108,10 +108,9 @@ body::before{content:'';position:fixed;top:-50%;left:-50%;width:200%;height:200%
 
 /* Bottom nav */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:8px 0 max(8px,env(safe-area-inset-bottom));z-index:100}
-@media(min-width:768px){.bottom-nav{display:none}body{padding-bottom:0}}
 .nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--text-dim);font-size:0.6rem;font-weight:500;cursor:pointer;padding:6px 12px;border-radius:8px;transition:color .2s;min-width:60px;min-height:44px;justify-content:center}
 .nav-item.active{color:var(--purple)}
-.nav-item svg{width:22px;height:22px}
+.nav-item svg,.nav-item .nav-emoji{width:22px;height:22px;font-size:20px;line-height:22px;text-align:center}
 
 /* Search */
 .search-wrap{max-width:1200px;margin:0 auto;padding:0 16px}
@@ -124,6 +123,56 @@ body::before{content:'';position:fixed;top:-50%;left:-50%;width:200%;height:200%
 .stats{max-width:1200px;margin:8px auto 0;padding:0 20px;display:flex;gap:16px;font-size:0.75rem;color:var(--text-dim)}
 .stats span{display:flex;align-items:center;gap:4px}
 .stats strong{color:var(--text);font-weight:700}
+
+/* View sections */
+.view-section{display:none}
+.view-section.active{display:block}
+
+/* ===== KIT STYLES ===== */
+.kit-card{background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:all .3s cubic-bezier(.4,0,.2,1);animation:fadeUp .4s ease both;padding:16px}
+.kit-card:hover{transform:translateY(-4px);border-color:rgba(124,58,237,0.3);box-shadow:var(--glow)}
+.kit-card-header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.kit-icon{font-size:2rem;width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:var(--surface);border-radius:var(--radius-sm);flex-shrink:0}
+.kit-info{flex:1;min-width:0}
+.kit-name{font-size:1rem;font-weight:700;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kit-desc{font-size:0.8rem;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kit-stats{display:flex;gap:12px;font-size:0.75rem;color:var(--text-dim);margin-bottom:12px}
+.kit-stats span{display:flex;align-items:center;gap:4px}
+.kit-stats .kit-value{color:#10b981;font-weight:600}
+.kit-thumbs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.kit-thumbs::-webkit-scrollbar{display:none}
+.kit-thumb{width:48px;height:48px;border-radius:8px;object-fit:cover;background:var(--surface);flex-shrink:0;border:1px solid var(--border)}
+.kit-thumb-placeholder{width:48px;height:48px;border-radius:8px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;color:var(--text-dim)}
+
+/* Kit detail gear items */
+.kit-gear-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px;animation:fadeUp .3s ease both}
+.kit-gear-img{width:52px;height:52px;border-radius:8px;object-fit:cover;flex-shrink:0;background:var(--surface)}
+.kit-gear-info{flex:1;min-width:0}
+.kit-gear-name{font-size:0.9rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kit-gear-meta{font-size:0.75rem;color:var(--text-dim)}
+.kit-gear-remove{width:36px;height:36px;border-radius:50%;border:1px solid rgba(239,68,68,0.2);background:rgba(239,68,68,0.1);color:#ef4444;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;transition:all .2s;min-width:36px;min-height:36px}
+.kit-gear-remove:hover{background:rgba(239,68,68,0.25)}
+
+/* Gear picker */
+.gear-picker-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius-sm);cursor:pointer;transition:background .2s;min-height:44px}
+.gear-picker-item:hover{background:var(--surface)}
+.gear-picker-item.selected{background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.3)}
+.gear-picker-item img{width:40px;height:40px;border-radius:6px;object-fit:cover;flex-shrink:0}
+.gear-picker-check{width:24px;height:24px;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;font-size:0.8rem}
+.gear-picker-item.selected .gear-picker-check{background:var(--gradient);border-color:transparent;color:#fff}
+
+/* Icon picker */
+.icon-picker{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.icon-option{width:44px;height:44px;border-radius:var(--radius-sm);border:2px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:1.4rem;cursor:pointer;transition:all .2s}
+.icon-option:hover,.icon-option.selected{border-color:var(--purple);background:rgba(124,58,237,0.15)}
+
+/* Preset chips */
+.preset-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.preset-chip{padding:8px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);font-size:0.8rem;cursor:pointer;transition:all .2s;white-space:nowrap}
+.preset-chip:hover{border-color:var(--purple);color:var(--text);background:rgba(124,58,237,0.1)}
+
+/* Stats view full page */
+.stats-view{max-width:1200px;margin:0 auto;padding:20px 16px;position:relative;z-index:1}
 </style>
 </head>
 <body>
@@ -131,25 +180,35 @@ body::before{content:'';position:fixed;top:-50%;left:-50%;width:200%;height:200%
 <header class="header">
   <div class="header-inner">
     <div class="logo">📸 Gear Inventory <span>by Ray</span></div>
-    <button class="btn-add" onclick="openAddModal()">
+    <button class="btn-add" id="headerAddBtn" onclick="handleHeaderAdd()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Add
     </button>
   </div>
 </header>
 
-<div class="search-container search-wrap">
-  <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-  <input class="search" type="text" placeholder="Search gear..." oninput="filterGear()">
+<!-- GEAR VIEW -->
+<div class="view-section active" id="gearView">
+  <div class="search-container search-wrap">
+    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input class="search" type="text" placeholder="Search gear..." oninput="filterGear()">
+  </div>
+  <div class="filters" id="filters"></div>
+  <div class="stats" id="stats"></div>
+  <div class="grid" id="grid"></div>
 </div>
 
-<div class="filters" id="filters"></div>
+<!-- KITS VIEW -->
+<div class="view-section" id="kitsView">
+  <div class="grid" id="kitsGrid" style="padding-top:20px"></div>
+</div>
 
-<div class="stats" id="stats"></div>
+<!-- STATS VIEW -->
+<div class="view-section" id="statsView">
+  <div class="stats-view" id="statsContent"></div>
+</div>
 
-<div class="grid" id="grid"></div>
-
-<!-- Add/Edit Modal -->
+<!-- Add/Edit Gear Modal -->
 <div class="modal-overlay" id="formModal">
   <div class="modal">
     <div class="modal-header">
@@ -228,32 +287,119 @@ body::before{content:'';position:fixed;top:-50%;left:-50%;width:200%;height:200%
 <div class="modal-overlay" id="detailModal">
   <div class="modal">
     <div class="modal-header">
-      <h2>Gear Details</h2>
+      <h2 id="detailModalTitle">Gear Details</h2>
       <button class="modal-close" onclick="closeModal('detailModal')">&times;</button>
     </div>
     <div class="modal-body" id="detailBody"></div>
   </div>
 </div>
 
+<!-- Kit Form Modal -->
+<div class="modal-overlay" id="kitFormModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="kitFormTitle">Create Kit</h2>
+      <button class="modal-close" onclick="closeModal('kitFormModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="preset-chips" id="kitPresets">
+        <div class="preset-chip" onclick="applyPreset('🎬','Studio Setup','Full studio lighting and camera rig')">🎬 Studio Setup</div>
+        <div class="preset-chip" onclick="applyPreset('📹','Vlog Kit','Compact run-and-gun vlogging setup')">📹 Vlog Kit</div>
+        <div class="preset-chip" onclick="applyPreset('🌍','On-Location','Travel-ready field production kit')">🌍 On-Location</div>
+        <div class="preset-chip" onclick="applyPreset('🎥','Review Setup','Product review and unboxing gear')">🎥 Review Setup</div>
+      </div>
+      <form id="kitForm" onsubmit="submitKit(event)">
+        <input type="hidden" id="kitEditId">
+        <div class="form-group">
+          <label>Kit Name *</label>
+          <input type="text" id="kfName" required placeholder="e.g. Studio Setup">
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="kfDesc" placeholder="What's this kit for?"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Icon</label>
+          <div class="icon-picker" id="iconPicker"></div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" onclick="closeModal('kitFormModal')">Cancel</button>
+          <button type="submit" class="btn-submit">Save Kit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Gear Picker Modal -->
+<div class="modal-overlay" id="gearPickerModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Add Gear to Kit</h2>
+      <button class="modal-close" onclick="closeModal('gearPickerModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group" style="margin-bottom:12px">
+        <input type="text" id="gearPickerSearch" placeholder="Search gear..." oninput="filterGearPicker()" style="width:100%;padding:12px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:0.9rem;min-height:44px">
+      </div>
+      <div id="gearPickerList" style="max-height:50vh;overflow-y:auto"></div>
+      <div class="form-actions">
+        <button type="button" class="btn-cancel" onclick="closeModal('gearPickerModal')">Cancel</button>
+        <button type="button" class="btn-submit" onclick="confirmGearPicker()">Add Selected</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <nav class="bottom-nav">
-  <div class="nav-item active">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-    All
+  <div class="nav-item active" onclick="switchView('gear',this)">
+    <span class="nav-emoji">📷</span>
+    Gear
   </div>
-  <div class="nav-item" onclick="openAddModal()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-    Add
+  <div class="nav-item" onclick="switchView('kits',this)">
+    <span class="nav-emoji">📦</span>
+    Kits
   </div>
-  <div class="nav-item" onclick="showStats()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+  <div class="nav-item" onclick="switchView('stats',this)">
+    <span class="nav-emoji">📊</span>
     Stats
   </div>
 </nav>
 
 <script>
-let allGear=[], activeCategory=null, searchTerm='';
+let allGear=[], activeCategory=null, searchTerm='', currentView='gear', currentKitId=null;
 const categoryIcons={Camera:'📷',Lens:'🔍',Audio:'🎙️',Lighting:'💡',Accessory:'🔧',Computer:'💻',Display:'🖥️',Storage:'💾',Drone:'🚁',Gimbal:'🎬',Tripod:'📐',Other:'📦'};
+const kitEmojis=['📦','🎬','📹','🌍','🎥','🎤','💡','📸','🖥️','🎧','🔧','🚁','📐','💼','🎒','⚡','🏠','🌃'];
 
+function handleHeaderAdd(){
+  if(currentView==='kits') openKitFormModal();
+  else openAddModal();
+}
+
+function switchView(view, el){
+  currentView=view;
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.view-section').forEach(s=>s.classList.remove('active'));
+
+  const addBtn=document.getElementById('headerAddBtn');
+  if(view==='gear'){
+    document.getElementById('gearView').classList.add('active');
+    addBtn.style.display='flex';
+    addBtn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add';
+  } else if(view==='kits'){
+    document.getElementById('kitsView').classList.add('active');
+    addBtn.style.display='flex';
+    addBtn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Kit';
+    loadKits();
+  } else if(view==='stats'){
+    document.getElementById('statsView').classList.add('active');
+    addBtn.style.display='none';
+    loadStatsView();
+  }
+}
+
+// ========== GEAR FUNCTIONS ==========
 async function loadGear(){
   const grid=document.getElementById('grid');
   grid.innerHTML='<div class="shimmer"></div><div class="shimmer"></div><div class="shimmer"></div>';
@@ -312,6 +458,7 @@ function renderGear(){
 
 function showDetail(id){
   const g=allGear.find(x=>x.id===id);if(!g)return;
+  document.getElementById('detailModalTitle').textContent='Gear Details';
   const d=document.getElementById('detailBody');
   d.innerHTML=`
     ${g.image_url?`<img class="detail-img" src="${g.image_url}" alt="${g.name}">`:''}
@@ -407,12 +554,216 @@ function resetImageUpload(){
   document.getElementById('fImage').value='';
 }
 
-function openModal(id){document.getElementById(id).classList.add('open');document.body.style.overflow='hidden'}
-function closeModal(id){document.getElementById(id).classList.remove('open');document.body.style.overflow=''}
+// ========== KIT FUNCTIONS ==========
+async function loadKits(){
+  const grid=document.getElementById('kitsGrid');
+  grid.innerHTML='<div class="shimmer"></div><div class="shimmer"></div>';
+  try{
+    const r=await fetch('/api/kits');
+    const kits=await r.json();
+    if(!kits.length){
+      grid.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">📦</div><h3>No kits yet</h3><p>Create your first kit to group gear!</p></div>';
+      return;
+    }
+    grid.innerHTML=kits.map((k,i)=>{
+      const thumbs=(k.items_preview||[]).slice(0,5).map(item=>
+        item.image_url?`<img class="kit-thumb" src="${item.image_url}" alt="${item.name}">`
+        :`<div class="kit-thumb-placeholder">${categoryIcons[item.category]||'📦'}</div>`
+      ).join('');
+      return `<div class="kit-card" onclick="showKitDetail(${k.id})" style="animation-delay:${i*0.05}s">
+        <div class="kit-card-header">
+          <div class="kit-icon">${k.icon||'📦'}</div>
+          <div class="kit-info">
+            <div class="kit-name">${k.name}</div>
+            <div class="kit-desc">${k.description||'No description'}</div>
+          </div>
+        </div>
+        <div class="kit-stats">
+          <span>🔧 ${k.item_count} item${k.item_count!=1?'s':''}</span>
+          <span class="kit-value">$${parseFloat(k.total_value||0).toLocaleString('en-US',{minimumFractionDigits:2})}</span>
+        </div>
+        ${thumbs?`<div class="kit-thumbs">${thumbs}</div>`:''}
+      </div>`;
+    }).join('');
+  }catch(e){grid.innerHTML='<div class="empty"><div class="empty-icon">⚠️</div><h3>Failed to load kits</h3></div>'}
+}
 
-async function showStats(){
-  document.getElementById('detailBody').innerHTML='<div style="text-align:center;padding:40px"><div class="shimmer" style="height:200px;min-height:200px"></div></div>';
+async function showKitDetail(id){
+  currentKitId=id;
+  document.getElementById('detailModalTitle').textContent='Kit Details';
+  const d=document.getElementById('detailBody');
+  d.innerHTML='<div class="shimmer" style="min-height:200px"></div>';
   openModal('detailModal');
+  try{
+    const r=await fetch(`/api/kits/${id}`);
+    const kit=await r.json();
+    const totalValue=kit.items.reduce((s,g)=>s+(parseFloat(g.purchase_price)||0),0);
+    const itemsHtml=kit.items.map(g=>`
+      <div class="kit-gear-item">
+        ${g.image_url?`<img class="kit-gear-img" src="${g.image_url}" alt="${g.name}">`:`<div class="kit-gear-img" style="display:flex;align-items:center;justify-content:center;font-size:1.5rem">${categoryIcons[g.category]||'📦'}</div>`}
+        <div class="kit-gear-info">
+          <div class="kit-gear-name">${g.name}</div>
+          <div class="kit-gear-meta">${g.category}${g.purchase_price?' · $'+parseFloat(g.purchase_price).toLocaleString():''}</div>
+        </div>
+        <button class="kit-gear-remove" onclick="event.stopPropagation();removeFromKit(${id},${g.id})" title="Remove">&times;</button>
+      </div>
+    `).join('');
+
+    d.innerHTML=`
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+        <div class="kit-icon" style="font-size:2.5rem;width:56px;height:56px">${kit.icon||'📦'}</div>
+        <div>
+          <div class="detail-title">${kit.name}</div>
+          <div class="detail-brand">${kit.description||''}</div>
+        </div>
+      </div>
+      <div class="kit-stats" style="margin-bottom:16px;padding:12px;background:var(--surface);border-radius:var(--radius-sm);border:1px solid var(--border)">
+        <span>🔧 ${kit.items.length} item${kit.items.length!=1?'s':''}</span>
+        <span class="kit-value">💰 $${totalValue.toLocaleString('en-US',{minimumFractionDigits:2})}</span>
+      </div>
+      <div style="margin-bottom:12px">
+        <button class="btn-add" onclick="openGearPicker(${id})" style="width:100%;justify-content:center">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:18px;height:18px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Gear
+        </button>
+      </div>
+      ${itemsHtml||'<div class="empty" style="padding:30px"><div class="empty-icon">📦</div><h3>Empty kit</h3><p>Add some gear to get started!</p></div>'}
+      <div class="detail-actions" style="margin-top:16px">
+        <button class="btn-cancel" onclick="editKit(${id})">✏️ Edit</button>
+        <button class="btn-danger" onclick="deleteKit(${id})">🗑️ Delete</button>
+      </div>`;
+  }catch(e){d.innerHTML='<div class="empty"><div class="empty-icon">⚠️</div><h3>Failed to load kit</h3></div>'}
+}
+
+function openKitFormModal(editData){
+  const isEdit=!!editData;
+  document.getElementById('kitFormTitle').textContent=isEdit?'Edit Kit':'Create Kit';
+  document.getElementById('kitEditId').value=isEdit?editData.id:'';
+  document.getElementById('kfName').value=isEdit?editData.name:'';
+  document.getElementById('kfDesc').value=isEdit?(editData.description||''):'';
+  document.getElementById('kitPresets').style.display=isEdit?'none':'flex';
+
+  // Build icon picker
+  const picker=document.getElementById('iconPicker');
+  const selectedIcon=isEdit?(editData.icon||'📦'):'📦';
+  picker.innerHTML=kitEmojis.map(e=>`<div class="icon-option${e===selectedIcon?' selected':''}" onclick="selectKitIcon(this,'${e}')">${e}</div>`).join('');
+
+  openModal('kitFormModal');
+}
+
+function selectKitIcon(el,emoji){
+  document.querySelectorAll('.icon-option').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function applyPreset(icon,name,desc){
+  document.getElementById('kfName').value=name;
+  document.getElementById('kfDesc').value=desc;
+  document.querySelectorAll('.icon-option').forEach(o=>{
+    o.classList.toggle('selected',o.textContent===icon);
+  });
+}
+
+async function submitKit(e){
+  e.preventDefault();
+  const id=document.getElementById('kitEditId').value;
+  const selectedIcon=document.querySelector('.icon-option.selected');
+  const data={
+    name:document.getElementById('kfName').value,
+    description:document.getElementById('kfDesc').value,
+    icon:selectedIcon?selectedIcon.textContent:'📦'
+  };
+  const url=id?`/api/kits/${id}`:'/api/kits';
+  const method=id?'PUT':'POST';
+  await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  closeModal('kitFormModal');
+  loadKits();
+}
+
+async function editKit(id){
+  closeModal('detailModal');
+  const r=await fetch(`/api/kits/${id}`);
+  const kit=await r.json();
+  openKitFormModal(kit);
+}
+
+async function deleteKit(id){
+  if(!confirm('Delete this kit?'))return;
+  await fetch(`/api/kits/${id}`,{method:'DELETE'});
+  closeModal('detailModal');
+  loadKits();
+}
+
+async function removeFromKit(kitId,gearId){
+  await fetch(`/api/kits/${kitId}/items/${gearId}`,{method:'DELETE'});
+  showKitDetail(kitId);
+}
+
+// Gear picker
+let gearPickerKitId=null, gearPickerSelected=new Set(), gearPickerExisting=new Set();
+
+async function openGearPicker(kitId){
+  gearPickerKitId=kitId;
+  gearPickerSelected=new Set();
+  document.getElementById('gearPickerSearch').value='';
+
+  // Load current kit items to know what's already in
+  const r=await fetch(`/api/kits/${kitId}`);
+  const kit=await r.json();
+  gearPickerExisting=new Set(kit.items.map(i=>i.id));
+
+  // Ensure allGear is loaded
+  if(!allGear.length){
+    const gr=await fetch('/api/gear');
+    allGear=await gr.json();
+  }
+  renderGearPicker();
+  openModal('gearPickerModal');
+}
+
+function filterGearPicker(){
+  renderGearPicker();
+}
+
+function renderGearPicker(){
+  const search=document.getElementById('gearPickerSearch').value.toLowerCase();
+  const list=document.getElementById('gearPickerList');
+  let items=allGear.filter(g=>!gearPickerExisting.has(g.id));
+  if(search) items=items.filter(g=>(g.name+' '+g.brand+' '+g.model+' '+g.category).toLowerCase().includes(search));
+
+  if(!items.length){
+    list.innerHTML='<div style="text-align:center;padding:30px;color:var(--text-dim)">No gear available to add</div>';
+    return;
+  }
+  list.innerHTML=items.map(g=>`
+    <div class="gear-picker-item${gearPickerSelected.has(g.id)?' selected':''}" onclick="toggleGearPick(${g.id},this)">
+      <div class="gear-picker-check">${gearPickerSelected.has(g.id)?'✓':''}</div>
+      ${g.image_url?`<img src="${g.image_url}" alt="${g.name}">`:`<div style="width:40px;height:40px;border-radius:6px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:1.2rem">${categoryIcons[g.category]||'📦'}</div>`}
+      <div style="flex:1;min-width:0">
+        <div style="font-size:0.9rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${g.name}</div>
+        <div style="font-size:0.75rem;color:var(--text-dim)">${g.category}${g.purchase_price?' · $'+parseFloat(g.purchase_price).toLocaleString():''}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleGearPick(id,el){
+  if(gearPickerSelected.has(id)){gearPickerSelected.delete(id);el.classList.remove('selected');el.querySelector('.gear-picker-check').textContent=''}
+  else{gearPickerSelected.add(id);el.classList.add('selected');el.querySelector('.gear-picker-check').textContent='✓'}
+}
+
+async function confirmGearPicker(){
+  for(const gearId of gearPickerSelected){
+    await fetch(`/api/kits/${gearPickerKitId}/items`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({gear_id:gearId})});
+  }
+  closeModal('gearPickerModal');
+  showKitDetail(gearPickerKitId);
+}
+
+// ========== STATS VIEW (inline) ==========
+async function loadStatsView(){
+  const container=document.getElementById('statsContent');
+  container.innerHTML='<div class="shimmer" style="height:200px;min-height:200px"></div>';
   try{
     const r=await fetch('/api/gear/stats');
     const s=await r.json();
@@ -458,7 +809,7 @@ async function showStats(){
       </div>`;
     }
 
-    document.getElementById('detailBody').innerHTML=`
+    container.innerHTML=`
       <div style="text-align:center;margin-bottom:24px">
         <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:2px;color:var(--text-dim);margin-bottom:8px">Total Collection Value</div>
         <div id="statsValueNum" style="font-size:2.8rem;font-weight:800;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.1">$0</div>
@@ -469,7 +820,6 @@ async function showStats(){
       ${warrantyHtml}
       ${recentHtml}`;
 
-    // Animated count-up
     const el=document.getElementById('statsValueNum');
     const target=s.total_value;
     const duration=1200;
@@ -482,12 +832,13 @@ async function showStats(){
       else el.textContent='$'+target.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
     }
     requestAnimationFrame(tick);
-  }catch(e){
-    document.getElementById('detailBody').innerHTML='<div class="empty"><div class="empty-icon">⚠️</div><h3>Failed to load stats</h3></div>';
-  }
+  }catch(e){container.innerHTML='<div class="empty"><div class="empty-icon">⚠️</div><h3>Failed to load stats</h3></div>'}
 }
 
-// Close modals on overlay click
+// ========== MODAL HELPERS ==========
+function openModal(id){document.getElementById(id).classList.add('open');document.body.style.overflow='hidden'}
+function closeModal(id){document.getElementById(id).classList.remove('open');document.body.style.overflow=''}
+
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)closeModal(o.id)}));
 
 loadGear();
