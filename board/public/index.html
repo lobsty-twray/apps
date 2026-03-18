@@ -104,6 +104,9 @@
             </button>
             <h1 class="logo">Board</h1>
             <div class="header-actions">
+                <button id="global-search-btn" class="btn btn-glass btn-icon" aria-label="Search" title="Search (Ctrl+K)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </button>
                 <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"><span class="theme-toggle-icon"></span></button>
                 <button id="new-project-btn" class="btn btn-primary">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -459,6 +462,22 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-glass" id="labels-close-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Search Overlay -->
+    <div id="search-overlay" class="search-overlay" style="display:none;">
+        <div class="search-overlay-backdrop"></div>
+        <div class="search-overlay-content">
+            <div class="search-input-wrap">
+                <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="global-search-input" class="global-search-input" placeholder="Search all tasks..." autocomplete="off">
+                <kbd class="search-kbd">ESC</kbd>
+            </div>
+            <div id="search-results-info" class="search-results-info"></div>
+            <div id="search-results" class="search-results">
+                <div class="search-initial-state">Type to search across all projects...</div>
             </div>
         </div>
     </div>

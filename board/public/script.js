@@ -72,6 +72,9 @@ class LobstyBoard {
             if (e.key === 'Escape') this.hideDocInput();
         });
 
+        // Global search
+        this.bindGlobalSearch();
+
         // View toggles
         document.getElementById('view-board-btn').addEventListener('click', () => this.switchView('board'));
         document.getElementById('view-calendar-btn').addEventListener('click', () => this.switchView('calendar'));
@@ -1219,6 +1222,107 @@ class LobstyBoard {
     }
 
     showError(message) { this.showToast(message, true); }
+
+    // ── Global Search ──
+    bindGlobalSearch() {
+        this._searchTimeout = null;
+        const overlay = document.getElementById('search-overlay');
+        const input = document.getElementById('global-search-input');
+        const btn = document.getElementById('global-search-btn');
+
+        btn?.addEventListener('click', () => this.openSearch());
+        overlay.querySelector('.search-overlay-backdrop').addEventListener('click', () => this.closeSearch());
+
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                this.openSearch();
+            }
+            if (e.key === 'Escape' && overlay.style.display !== 'none') {
+                this.closeSearch();
+            }
+        });
+
+        input.addEventListener('input', () => {
+            clearTimeout(this._searchTimeout);
+            this._searchTimeout = setTimeout(() => this.performSearch(input.value.trim()), 300);
+        });
+    }
+
+    openSearch() {
+        const overlay = document.getElementById('search-overlay');
+        const input = document.getElementById('global-search-input');
+        overlay.style.display = '';
+        input.value = '';
+        input.focus();
+        document.getElementById('search-results').innerHTML = '<div class="search-initial-state">Type to search across all projects...</div>';
+        document.getElementById('search-results-info').textContent = '';
+    }
+
+    closeSearch() {
+        document.getElementById('search-overlay').style.display = 'none';
+    }
+
+    async performSearch(query) {
+        const resultsEl = document.getElementById('search-results');
+        const infoEl = document.getElementById('search-results-info');
+        if (query.length < 2) {
+            resultsEl.innerHTML = '<div class="search-initial-state">Type to search across all projects...</div>';
+            infoEl.textContent = '';
+            return;
+        }
+        try {
+            const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+            const tasks = await res.json();
+            infoEl.textContent = tasks.length ? `${tasks.length} result${tasks.length !== 1 ? 's' : ''}` : '';
+            if (!tasks.length) {
+                resultsEl.innerHTML = '<div class="search-no-results">No results found</div>';
+                return;
+            }
+            resultsEl.innerHTML = tasks.map(t => this.renderSearchCard(t)).join('');
+            resultsEl.querySelectorAll('.search-result-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const pid = card.dataset.projectId;
+                    const tid = card.dataset.taskId;
+                    this.closeSearch();
+                    this.selectProject(parseInt(pid));
+                    setTimeout(() => {
+                        const task = this.tasks.find(tk => tk.id == tid);
+                        if (task) this.showTaskModal(task);
+                    }, 300);
+                });
+            });
+        } catch (err) {
+            resultsEl.innerHTML = '<div class="search-no-results">Search error</div>';
+        }
+    }
+
+    renderSearchCard(t) {
+        const statusLabels = { backlog: 'Backlog', todo: 'To Do', 'in-progress': 'In Progress', review: 'Review', done: 'Done' };
+        const labels = (t.labels || []).map((l, i) => {
+            const c = (t.label_colors || [])[i] || '#6366f1';
+            return `<span class="search-result-label" style="background:${c}">${this.escapeHtml(l)}</span>`;
+        }).join('');
+        const due = t.due_date ? `<span class="search-result-due">📅 ${t.due_date}</span>` : '';
+        const assignee = t.assignee ? `<span class="search-result-assignee">👤 ${this.escapeHtml(t.assignee)}</span>` : '';
+        return `<div class="search-result-card" data-project-id="${t.project_id}" data-task-id="${t.id}">
+            <div class="search-result-top">
+                <span class="search-result-title">${this.escapeHtml(t.title)}</span>
+                <span class="search-result-project" style="background:${t.project_color || '#6366f1'}">${this.escapeHtml(t.project_name || '')}</span>
+            </div>
+            <div class="search-result-meta">
+                <span class="search-result-badge status-${t.status}">${statusLabels[t.status] || t.status}</span>
+                <span class="search-result-badge priority-${t.priority}">${t.priority}</span>
+                ${labels ? `<span class="search-result-labels">${labels}</span>` : ''}
+                ${assignee}${due}
+            </div>
+        </div>`;
+    }
+
+    escapeHtml(s) {
+        if (!s) return '';
+        return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
 }
 
 

@@ -99,6 +99,30 @@ app.get('/api/projects/:id/tasks', (req, res) => {
   } catch (error) { res.status(500).json({ error: error.message }); }
 });
 
+// ── Global Search API ──
+app.get('/api/search', (req, res) => {
+  try {
+    const { q, status, priority } = req.query;
+    if (!q || q.length < 2) return res.json([]);
+    const pattern = `%${q}%`;
+    let where = 'WHERE t.archived = 0';
+    const params = [];
+    if (status) { where += ' AND t.status = ?'; params.push(status); }
+    if (priority) { where += ' AND t.priority = ?'; params.push(priority); }
+    where += ` AND (t.title LIKE ? OR t.description LIKE ? OR t.assignee LIKE ?
+      OR EXISTS (SELECT 1 FROM task_labels tl2 JOIN labels l2 ON tl2.label_id = l2.id WHERE tl2.task_id = t.id AND l2.name LIKE ?))`;
+    params.push(pattern, pattern, pattern, pattern);
+    const sql = `${TASK_SELECT} ${where} GROUP BY t.id ORDER BY CASE WHEN t.title LIKE ? THEN 0 ELSE 1 END, t.updated_at DESC LIMIT 50`;
+    params.push(pattern);
+    const tasks = db.prepare(sql).all(...params);
+    tasks.forEach(task => {
+      task.labels = task.labels ? task.labels.split(',') : [];
+      task.label_colors = task.label_colors ? task.label_colors.split(',') : [];
+    });
+    res.json(tasks);
+  } catch (error) { res.status(500).json({ error: error.message }); }
+});
+
 app.post('/api/projects/:id/tasks', (req, res) => {
   try {
     const { title, description, priority = "medium", status = "backlog", labels = [], assignee = null, due_date = null } = req.body;
