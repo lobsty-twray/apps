@@ -591,6 +591,15 @@ services:
     - DEST_EMAIL=rayscriptsjs@gmail.com
     - SMTP_USER=rayscriptsjs@gmail.com
     - SMTP_PASS=dyqo rmqm cluq qolk
+  frida-painting:
+    build: ./frida-painting
+    container_name: lobsty-frida-painting
+    restart: unless-stopped
+    ports:
+      - "8117:3000"
+    environment:
+      - PORT=3000
+
 volumes:
   open-webui-data:
     driver: local

@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Frida Painting NJ — Luxury Interior Painting</title>
+  <meta name="description" content="Father & son luxury interior painting in New Jersey. Fine Paints of Europe specialists. Serving Jersey City, Hoboken, and all of NJ.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ===== CONFIG ===== */
+    :root {
+      /* Change this to S3 URL when ready: e.g. https://frida-painting.s3.amazonaws.com */
+      --media-base: /media;
+
+      /* Colors — luxury artisan palette */
+      --navy: #0a1628;
+      --navy-light: #131f38;
+      --navy-mid: #1a2a4a;
+      --gold: #c9a84c;
+      --gold-light: #e2c97e;
+      --cream: #f5f0e8;
+      --cream-dim: #d4cfc7;
+      --white: #ffffff;
+      --text: #f5f0e8;
+      --text-dim: #9aa3b4;
+      --surface: rgba(255,255,255,0.04);
+      --surface-hover: rgba(255,255,255,0.08);
+
+      /* Typography */
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-body: 'Inter', -apple-system, sans-serif;
+
+      /* Spacing */
+      --section-pad: clamp(3rem, 8vw, 6rem);
+    }
+
+    /* ===== RESET ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-body);
+      background: var(--navy);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    img { max-width: 100%; display: block; }
+    a { color: var(--gold); text-decoration: none; }
+
+    /* ===== NAV ===== */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 1rem 1.5rem;
+      background: rgba(10,22,40,0.9);
+      backdrop-filter: blur(20px);
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid rgba(201,168,76,0.15);
+    }
+    .nav-logo {
+      font-family: var(--font-display);
+      font-size: 1.25rem; font-weight: 700;
+      color: var(--cream);
+    }
+    .nav-logo span { color: var(--gold); }
+    .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+    .nav-links a { color: var(--cream-dim); font-size: 0.85rem; font-weight: 500; letter-spacing: 0.02em; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--gold); }
+    .nav-toggle { display: none; background: none; border: none; color: var(--cream); font-size: 1.5rem; cursor: pointer; }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; background: rgba(10,22,40,0.97); padding: 1.5rem; gap: 1.25rem; border-bottom: 1px solid rgba(201,168,76,0.15); }
+      .nav-links.open { display: flex; }
+      .nav-links a { font-size: 1rem; }
+      .nav-toggle { display: block; }
+    }
+
+    /* ===== HERO ===== */
+    .hero {
+      min-height: 100vh; min-height: 100dvh;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      text-align: center;
+      padding: 6rem 1.5rem 4rem;
+      background: linear-gradient(170deg, var(--navy) 0%, var(--navy-light) 40%, var(--navy-mid) 100%);
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% 30%, rgba(201,168,76,0.08) 0%, transparent 70%);
+    }
+    .hero-content { position: relative; z-index: 1; max-width: 700px; }
+    .hero-badge {
+      display: inline-block;
+      font-size: 0.75rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--gold); border: 1px solid rgba(201,168,76,0.3);
+      padding: 0.4rem 1.2rem; border-radius: 2rem;
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.2rem, 7vw, 4rem);
+      font-weight: 700; line-height: 1.15;
+      color: var(--cream);
+      margin-bottom: 1.25rem;
+    }
+    .hero h1 em { font-style: normal; color: var(--gold); }
+    /* Tagline options — swap the text in the <p> below:
+       1. "Where European Craft Meets Jersey Heart" (CURRENT)
+       2. "Two Generations. One Standard of Excellence."
+       3. "Old-World Craftsmanship. New Jersey Soul."
+       4. "Your Walls Deserve a Master's Touch."
+       5. "Fine Paint. Family Pride. Flawless Finish."
+    */
+    .hero-sub {
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      color: var(--text-dim); font-weight: 300;
+      margin-bottom: 2.5rem;
+      max-width: 520px; margin-left: auto; margin-right: auto;
+    }
+    .hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.9rem 2rem; border-radius: 0.5rem;
+      font-size: 0.95rem; font-weight: 600;
+      transition: all 0.25s; cursor: pointer; border: none;
+      min-height: 48px;
+    }
+    .btn-primary { background: var(--gold); color: var(--navy); }
+    .btn-primary:hover { background: var(--gold-light); transform: translateY(-1px); }
+    .btn-outline { background: transparent; color: var(--cream); border: 1px solid rgba(255,255,255,0.2); }
+    .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+
+    /* ===== SECTIONS ===== */
+    .section { padding: var(--section-pad) 1.5rem; }
+    .section-inner { max-width: 1100px; margin: 0 auto; }
+    .section-label {
+      font-size: 0.7rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 0.75rem;
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.75rem, 5vw, 2.75rem);
+      font-weight: 600; color: var(--cream);
+      margin-bottom: 1.25rem; line-height: 1.2;
+    }
+    .section-text { color: var(--text-dim); max-width: 600px; font-size: 1.05rem; line-height: 1.7; }
+
+    /* ===== ABOUT ===== */
+    .about { background: var(--navy-light); }
+    .about-grid { display: grid; grid-template-columns: 1fr; gap: 2.5rem; margin-top: 2rem; }
+    @media (min-width: 768px) { .about-grid { grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; } }
+    .about-img {
+      aspect-ratio: 4/5; background: var(--navy-mid); border-radius: 1rem;
+      border: 1px solid rgba(201,168,76,0.12);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-dim); font-size: 0.85rem;
+      overflow: hidden;
+    }
+    .about-img img { width: 100%; height: 100%; object-fit: cover; }
+    .about-story { font-size: 1.05rem; color: var(--text-dim); line-height: 1.8; }
+    .about-story strong { color: var(--cream); font-weight: 500; }
+    .about-highlight {
+      margin-top: 1.5rem; padding: 1.25rem 1.5rem;
+      background: rgba(201,168,76,0.06); border-left: 3px solid var(--gold);
+      border-radius: 0 0.5rem 0.5rem 0;
+      font-style: italic; color: var(--cream-dim);
+    }
+
+    /* ===== SERVICES ===== */
+    .services-grid { display: grid; grid-template-columns: 1fr; gap: 1.25rem; margin-top: 2.5rem; }
+    @media (min-width: 600px) { .services-grid { grid-template-columns: repeat(3, 1fr); } }
+    .service-card {
+      background: var(--surface); border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 1rem; padding: 2rem 1.5rem;
+      transition: all 0.3s;
+    }
+    .service-card:hover { background: var(--surface-hover); border-color: rgba(201,168,76,0.2); transform: translateY(-2px); }
+    .service-icon { font-size: 2rem; margin-bottom: 1rem; }
+    .service-card h3 { font-family: var(--font-display); font-size: 1.2rem; color: var(--cream); margin-bottom: 0.75rem; }
+    .service-card p { font-size: 0.9rem; color: var(--text-dim); line-height: 1.6; }
+
+    /* ===== FINE PAINTS SPOTLIGHT ===== */
+    .fpe { background: linear-gradient(180deg, var(--navy) 0%, var(--navy-light) 100%); }
+    .fpe-content { display: grid; grid-template-columns: 1fr; gap: 2.5rem; margin-top: 2rem; }
+    @media (min-width: 768px) { .fpe-content { grid-template-columns: 1fr 1fr; align-items: center; } }
+    .fpe-features { list-style: none; display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem; }
+    .fpe-features li {
+      display: flex; align-items: flex-start; gap: 0.75rem;
+      font-size: 0.95rem; color: var(--text-dim);
+    }
+    .fpe-features li::before {
+      content: '✦'; color: var(--gold); flex-shrink: 0; margin-top: 0.15rem;
+    }
+    .fpe-img {
+      aspect-ratio: 16/10; background: var(--navy-mid); border-radius: 1rem;
+      border: 1px solid rgba(201,168,76,0.12);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-dim); font-size: 0.85rem;
+      position: relative; overflow: hidden;
+    }
+    .fpe-img::after {
+      content: 'Fine Paints of Europe'; position: absolute;
+      font-family: var(--font-display); font-size: 1.1rem; color: rgba(201,168,76,0.3);
+    }
+
+    /* ===== GALLERY ===== */
+    .gallery { background: var(--navy-light); }
+    .gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-top: 2.5rem; }
+    @media (min-width: 600px) { .gallery-grid { grid-template-columns: repeat(3, 1fr); gap: 1rem; } }
+    @media (min-width: 900px) { .gallery-grid { grid-template-columns: repeat(4, 1fr); } }
+    .gallery-item {
+      aspect-ratio: 1; background: var(--navy-mid); border-radius: 0.75rem;
+      border: 1px solid rgba(255,255,255,0.04);
+      overflow: hidden; cursor: pointer; position: relative;
+      transition: transform 0.3s;
+    }
+    .gallery-item:hover { transform: scale(1.03); }
+    .gallery-item img, .gallery-item video { width: 100%; height: 100%; object-fit: cover; }
+    .gallery-item .placeholder {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-dim); font-size: 0.75rem;
+      background: linear-gradient(135deg, var(--navy-mid), var(--navy));
+    }
+    /* Gallery supports: <img>, <video>, or .placeholder spans. Add data-type="video" for video items */
+
+    /* ===== TESTIMONIALS ===== */
+    .testimonials-grid { display: grid; grid-template-columns: 1fr; gap: 1.25rem; margin-top: 2.5rem; }
+    @media (min-width: 600px) { .testimonials-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 900px) { .testimonials-grid { grid-template-columns: repeat(3, 1fr); } }
+    .testimonial-card {
+      background: var(--surface); border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 1rem; padding: 2rem 1.5rem;
+    }
+    .testimonial-stars { color: var(--gold); font-size: 0.85rem; letter-spacing: 0.1em; margin-bottom: 1rem; }
+    .testimonial-text { font-size: 0.95rem; color: var(--cream-dim); line-height: 1.7; font-style: italic; margin-bottom: 1.25rem; }
+    .testimonial-author { font-size: 0.8rem; font-weight: 600; color: var(--cream); }
+    .testimonial-location { font-size: 0.75rem; color: var(--text-dim); }
+
+    /* ===== CONTACT ===== */
+    .contact { background: var(--navy-light); }
+    .contact-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: 2.5rem; }
+    @media (min-width: 768px) { .contact-grid { grid-template-columns: 1fr 1fr; } }
+    .contact-info { display: flex; flex-direction: column; gap: 1.5rem; }
+    .contact-item { display: flex; align-items: flex-start; gap: 1rem; }
+    .contact-icon {
+      width: 48px; height: 48px; min-width: 48px;
+      background: rgba(201,168,76,0.1); border-radius: 0.75rem;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem;
+    }
+    .contact-item h4 { font-size: 0.95rem; color: var(--cream); margin-bottom: 0.25rem; }
+    .contact-item p { font-size: 0.9rem; color: var(--text-dim); }
+    .contact-item a { color: var(--gold); }
+    .contact-form {
+      display: flex; flex-direction: column; gap: 1rem;
+    }
+    .contact-form input, .contact-form textarea {
+      background: var(--surface); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 0.5rem; padding: 0.9rem 1rem;
+      color: var(--cream); font-family: var(--font-body); font-size: 0.95rem;
+      min-height: 48px; transition: border-color 0.2s;
+    }
+    .contact-form input::placeholder, .contact-form textarea::placeholder { color: var(--text-dim); }
+    .contact-form input:focus, .contact-form textarea:focus { outline: none; border-color: var(--gold); }
+    .contact-form textarea { min-height: 120px; resize: vertical; }
+
+    /* ===== FOOTER ===== */
+    .footer {
+      padding: 2.5rem 1.5rem;
+      border-top: 1px solid rgba(201,168,76,0.1);
+      text-align: center;
+    }
+    .footer-logo { font-family: var(--font-display); font-size: 1.1rem; color: var(--cream); margin-bottom: 0.5rem; }
+    .footer-logo span { color: var(--gold); }
+    .footer p { font-size: 0.8rem; color: var(--text-dim); }
+
+    /* ===== GOLD DIVIDER ===== */
+    .divider {
+      width: 60px; height: 2px;
+      background: linear-gradient(90deg, var(--gold), transparent);
+      margin: 1rem 0;
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo"><span>Frida</span> Painting</div>
+  <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">☰</button>
+  <ul class="nav-links">
+    <li><a href="#about" onclick="this.closest('.nav-links').classList.remove('open')">About</a></li>
+    <li><a href="#services" onclick="this.closest('.nav-links').classList.remove('open')">Services</a></li>
+    <li><a href="#gallery" onclick="this.closest('.nav-links').classList.remove('open')">Gallery</a></li>
+    <li><a href="#testimonials" onclick="this.closest('.nav-links').classList.remove('open')">Reviews</a></li>
+    <li><a href="#contact" onclick="this.closest('.nav-links').classList.remove('open')">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">Father & Son · Est. New Jersey</div>
+    <h1>Where <em>European Craft</em> Meets Jersey Heart</h1>
+    <p class="hero-sub">Luxury interior painting by a father-son team who treat every wall like a canvas. Fine Paints of Europe specialists serving all of New Jersey.</p>
+    <div class="hero-actions">
+      <a href="tel:5516973531" class="btn btn-primary">📞 Call Now</a>
+      <a href="#contact" class="btn btn-outline">Get a Quote</a>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="section about" id="about">
+  <div class="section-inner">
+    <div class="section-label">Our Story</div>
+    <div class="section-title">A Family Tradition of Craftsmanship</div>
+    <div class="divider"></div>
+    <div class="about-grid">
+      <div class="about-img">
+        <!-- Replace with: <img src="/media/ray-sergio.jpg" alt="Ray and Sergio Villanueva"> -->
+        <span>Photo: Ray & Sergio</span>
+      </div>
+      <div>
+        <p class="about-story">
+          <strong>Sergio Villanueva</strong> has spent decades mastering the art of painting — not just applying color to walls, but transforming spaces with the precision and care of a true craftsman. As a certified <strong>Fine Paints of Europe specialist</strong>, he brings old-world technique to every project.
+        </p>
+        <p class="about-story" style="margin-top:1rem;">
+          His son <strong>Ray</strong> grew up watching his father work, learning that great painting isn't about speed — it's about respect for the craft. Together, they built <strong>Frida Painting NJ</strong> to bring that same standard of excellence to homeowners across New Jersey.
+        </p>
+        <div class="about-highlight">
+          "We don't just paint walls. We take pride in every brushstroke — because your home deserves nothing less."
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="section" id="services">
+  <div class="section-inner">
+    <div class="section-label">What We Do</div>
+    <div class="section-title">Our Services</div>
+    <div class="divider"></div>
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="service-icon">🎨</div>
+        <h3>Interior Painting</h3>
+        <p>Full-service interior painting for homes and apartments. From single accent walls to complete transformations, finished with meticulous attention to detail.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">🏛️</div>
+        <h3>Fine Paints of Europe</h3>
+        <p>Certified specialists in Fine Paints of Europe — the world's finest paints. Rich pigments, hand-crafted in Holland, applied with master-level technique.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">🪚</div>
+        <h3>Carpentry</h3>
+        <p>Custom trim work, molding repair, and finish carpentry. We handle the prep and detail work that makes a paint job look truly professional.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINE PAINTS OF EUROPE -->
+<section class="section fpe">
+  <div class="section-inner">
+    <div class="section-label">The Gold Standard</div>
+    <div class="section-title">Fine Paints of Europe</div>
+    <div class="divider"></div>
+    <div class="fpe-content">
+      <div>
+        <p class="section-text">Not all paint is created equal. Fine Paints of Europe are hand-crafted in Holland using pigments and resins that deliver unmatched depth, durability, and beauty. Sergio is one of a select group of specialists trained to apply these premium finishes.</p>
+        <ul class="fpe-features">
+          <li>Unparalleled color depth and richness</li>
+          <li>Superior durability — lasts significantly longer than standard paint</li>
+          <li>Hand-crafted in Holland since 1987</li>
+          <li>Eco-conscious, low-VOC formulations available</li>
+          <li>Applied by a certified specialist with decades of experience</li>
+        </ul>
+      </div>
+      <div class="fpe-img">
+        <!-- Replace with: <img src="/media/fpe-showcase.jpg" alt="Fine Paints of Europe"> -->
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section class="section gallery" id="gallery">
+  <div class="section-inner">
+    <div class="section-label">Our Work</div>
+    <div class="section-title">Gallery</div>
+    <div class="divider"></div>
+    <div class="gallery-grid">
+      <!-- Replace placeholders with real images:
+           <div class="gallery-item"><img src="/media/gallery/project-1.jpg" alt="Description"></div>
+           For video:
+           <div class="gallery-item" data-type="video"><video src="/media/gallery/video-1.mp4" muted playsinline></video></div>
+      -->
+      <div class="gallery-item"><span class="placeholder">Project 1</span></div>
+      <div class="gallery-item"><span class="placeholder">Project 2</span></div>
+      <div class="gallery-item"><span class="placeholder">Project 3</span></div>
+      <div class="gallery-item"><span class="placeholder">Project 4</span></div>
+      <div class="gallery-item"><span class="placeholder">Project 5</span></div>
+      <div class="gallery-item"><span class="placeholder">Project 6</span></div>
+      <div class="gallery-item"><span class="placeholder">Project 7</span></div>
+      <div class="gallery-item"><span class="placeholder">Project 8</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="section" id="testimonials">
+  <div class="section-inner">
+    <div class="section-label">What Our Clients Say</div>
+    <div class="section-title">Testimonials</div>
+    <div class="divider"></div>
+    <div class="testimonials-grid">
+      <div class="testimonial-card">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"Sergio and Ray transformed our living room. The Fine Paints of Europe finish is absolutely stunning — you can see and feel the difference. True craftsmen."</p>
+        <div class="testimonial-author">Sarah M.</div>
+        <div class="testimonial-location">Jersey City, NJ</div>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"Professional, meticulous, and genuinely passionate about their work. Our brownstone looks incredible. Highly recommend Frida Painting to anyone."</p>
+        <div class="testimonial-author">David K.</div>
+        <div class="testimonial-location">Hoboken, NJ</div>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"The attention to detail is next level. They treated our home like it was their own. The quality speaks for itself — worth every penny."</p>
+        <div class="testimonial-author">Maria L.</div>
+        <div class="testimonial-location">Montclair, NJ</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="section contact" id="contact">
+  <div class="section-inner">
+    <div class="section-label">Get In Touch</div>
+    <div class="section-title">Ready to Transform Your Space?</div>
+    <div class="divider"></div>
+    <div class="contact-grid">
+      <div class="contact-info">
+        <div class="contact-item">
+          <div class="contact-icon">📞</div>
+          <div>
+            <h4>Call Us</h4>
+            <p><a href="tel:5516973531">(551) 697-3531</a></p>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">✉️</div>
+          <div>
+            <h4>Email</h4>
+            <p><a href="mailto:fridapainting@gmail.com">fridapainting@gmail.com</a></p>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">📍</div>
+          <div>
+            <h4>Service Area</h4>
+            <p>All of New Jersey — Jersey City, Hoboken, Montclair, Summit, and beyond</p>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">🕐</div>
+          <div>
+            <h4>Hours</h4>
+            <p>Monday – Saturday, 7 AM – 6 PM</p>
+          </div>
+        </div>
+      </div>
+      <form class="contact-form" onsubmit="event.preventDefault(); alert('Thanks! We\'ll be in touch soon.'); this.reset();">
+        <input type="text" placeholder="Your Name" required>
+        <input type="email" placeholder="Email Address" required>
+        <input type="tel" placeholder="Phone Number">
+        <textarea placeholder="Tell us about your project..."></textarea>
+        <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">Send Message</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-logo"><span>Frida</span> Painting NJ</div>
+  <p>© 2026 Frida Painting NJ. All rights reserved. Fine Paints of Europe Specialist.</p>
+  <p style="margin-top:0.5rem;"><a href="tel:5516973531">(551) 697-3531</a> · <a href="mailto:fridapainting@gmail.com">fridapainting@gmail.com</a></p>
+</footer>
+
+</body>
+</html>

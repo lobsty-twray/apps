@@ -611,6 +611,60 @@ body {
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+/* --- Recurring --- */
+.recurring-toggle {
+  position: relative;
+}
+.recurring-dropdown {
+  display: none; position: absolute; bottom: 100%; left: 0;
+  background: rgba(15,15,25,0.95); border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  padding: 6px; min-width: 160px; z-index: 50;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  animation: fadeIn 0.15s ease;
+}
+.recurring-dropdown.show { display: block; }
+.recurring-opt {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px; border: none; background: transparent;
+  color: var(--text-secondary); font-size: 0.82rem; font-family: inherit;
+  cursor: pointer; border-radius: var(--radius-sm); width: 100%;
+  transition: var(--transition); text-align: left;
+}
+.recurring-opt:hover { background: rgba(255,255,255,0.06); color: var(--text-primary); }
+.recurring-opt.active { color: var(--accent); background: var(--accent-soft); }
+.recurring-opt .rec-icon { width: 20px; text-align: center; }
+.todo-recurring-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 0.65rem; padding: 1px 7px; border-radius: 8px;
+  background: rgba(124,58,237,0.1); color: rgba(124,58,237,0.8);
+  font-weight: 500; white-space: nowrap;
+}
+.recurring-edit {
+  display: flex; gap: 6px; padding: 8px 16px 10px 54px; flex-wrap: wrap; align-items: center;
+}
+.recurring-edit-label {
+  font-size: 0.78rem; color: var(--text-muted); margin-right: 2px;
+}
+.rec-edit-btn {
+  padding: 4px 10px; border: 1px solid var(--glass-border);
+  border-radius: 16px; background: transparent;
+  color: var(--text-secondary); font-size: 0.75rem; font-family: inherit;
+  cursor: pointer; transition: var(--transition); min-height: 28px;
+  touch-action: manipulation;
+}
+.rec-edit-btn:hover { background: var(--glass-hover); }
+.rec-edit-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.toast {
+  position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: rgba(15,15,25,0.95); border: 1px solid rgba(124,58,237,0.3);
+  border-radius: var(--radius-md); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  padding: 12px 20px; z-index: 2000; color: var(--text-primary);
+  font-size: 0.85rem; box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
@@ -658,6 +712,7 @@ body {
       <button class="opt-btn" onclick="togglePriority()" id="priToggle">⚡ Priority</button>
       <button class="opt-btn" onclick="toggleCategory()" id="catToggle">📂 Category</button>
       <button class="opt-btn" onclick="toggleDueDate()" id="dueToggle">📅 Due Date</button>
+      <div class="recurring-toggle"><button class="opt-btn" onclick="toggleRecurringDropdown()" id="recToggle">🔄 Repeat</button><div class="recurring-dropdown" id="recDropdown"></div></div>
     </div>
     <div class="priority-selector" id="priSelector">
       <button class="pri-btn p-high" onclick="setPriority('high')">🔴 High</button>
@@ -698,6 +753,7 @@ body {
   </div>
   <button class="clear-done" id="clearDone" onclick="clearDone()">🗑 Clear completed tasks</button>
 
+  <div class="toast" id="toast"></div>
   <div class="pomo-widget" id="pomoWidget" style="display:none">
     <div class="pomo-widget-task" id="pomoTask"><span class="pomo-label">FOCUS</span><span id="pomoTaskName"></span></div>
     <div class="pomo-widget-time" id="pomoTime">25:00</div>
@@ -927,7 +983,8 @@ function renderList() {
     const timeAgo = getTimeAgo(t.created_at);
     const subtasks = t.subtasks || [];
     const subProgressHtml = subtaskProgressHtml(subtasks);
-    const metaHtml = '<div class="todo-meta">' + catHtml + dueHtml + subProgressHtml + '<span class="todo-time">' + timeAgo + '</span></div>';
+    const recHtml = t.recurring ? '<span class="todo-recurring-badge">🔄 ' + recurringLabel(t.recurring) + '</span>' : '';
+    const metaHtml = '<div class="todo-meta">' + catHtml + dueHtml + recHtml + subProgressHtml + '<span class="todo-time">' + timeAgo + '</span></div>';
     const expandIcon = '<span class="expand-indicator">▼</span>';
 
     // Subtask section
@@ -945,6 +1002,16 @@ function renderList() {
     subtaskHtml += '<div class="subtask-add"><input type="text" placeholder="Add subtask..." onkeydown="subtaskKeydown(event,'+t.id+')"></div>';
     subtaskHtml += '</div>';
 
+    // Recurring edit in expanded view
+    let recEditHtml = '';
+    if (isExpanded) {
+      recEditHtml = '<div class="recurring-edit"><span class="recurring-edit-label">🔄 Repeat:</span>';
+      for (const o of [{v:'',l:'None'},{v:'daily',l:'Daily'},{v:'weekdays',l:'Weekdays'},{v:'weekly',l:'Weekly'},{v:'monthly',l:'Monthly'}]) {
+        recEditHtml += '<button class="rec-edit-btn'+(t.recurring===o.v?' active':'')+'" onclick="updateRecurring('+t.id+',\''+o.v+'\')">'+o.l+'</button>';
+      }
+      recEditHtml += '</div>';
+    }
+
     li.innerHTML = '<div class="swipe-bg">Delete</div>'
       + '<div class="todo-inner" onclick="toggleExpand('+t.id+', event)">'
       + '<div class="drag-handle" title="Drag to reorder">≡</div>'
@@ -957,7 +1024,7 @@ function renderList() {
       + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
       + '</button>'
       + '</div>'
-      + subtaskHtml;
+      + subtaskHtml + recEditHtml;
 
     setupSwipe(li, t.id);
     list.appendChild(li);
@@ -988,9 +1055,9 @@ async function addTodo() {
   const v = input.value.trim();
   if (!v) return;
   const dueVal = $('dueInput').value || '';
-  await api('/api/todos', { method: 'POST', body: { text: v, priority: currentPriority, category: currentCategory, due: dueVal } });
+  await api('/api/todos', { method: 'POST', body: { text: v, priority: currentPriority, category: currentCategory, due: dueVal, recurring: currentRecurring } });
   input.value = ''; $('dueInput').value = '';
-  currentPriority = 'none'; currentCategory = '';
+  currentPriority = 'none'; currentCategory = ''; currentRecurring = ''; $('recToggle').textContent = '🔄 Repeat'; $('recToggle').classList.remove('active');
   document.querySelectorAll('.pri-btn,.cat-btn').forEach(b => b.classList.remove('active'));
   ['priSelector','catSelector','dueSelector'].forEach(id => $(id).classList.remove('show'));
   ['priToggle','catToggle','dueToggle'].forEach(id => $(id).classList.remove('active'));
@@ -999,7 +1066,13 @@ async function addTodo() {
 }
 
 async function toggleTodo(id, done) {
-  await api('/api/todos/' + id, { method: 'PATCH', body: { done } });
+  const result = await api('/api/todos/' + id, { method: 'PATCH', body: { done } });
+  if (result.spawned) {
+    const d = result.spawned.due;
+    const dd = new Date(d + 'T00:00:00');
+    const label = dd.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    showToast('🔄 Next occurrence created for ' + label);
+  }
   todos = await api('/api/todos');
   render();
 }
@@ -1323,6 +1396,59 @@ function restorePomo() {
   if (pomoState.remaining <= 0) { pomoComplete(); return; }
   showPomoWidget();
   if (!pomoState.paused) runPomoTimer();
+}
+
+
+// Recurring
+let currentRecurring = '';
+
+const RECURRING_OPTIONS = [
+  { value: '', label: 'None', icon: '—' },
+  { value: 'daily', label: 'Daily', icon: '📅' },
+  { value: 'weekdays', label: 'Weekdays', icon: '💼' },
+  { value: 'weekly', label: 'Weekly', icon: '📆' },
+  { value: 'monthly', label: 'Monthly', icon: '🗓' },
+];
+
+function toggleRecurringDropdown() {
+  const dd = $('recDropdown');
+  dd.classList.toggle('show');
+  $('recToggle').classList.toggle('active', dd.classList.contains('show'));
+  if (dd.classList.contains('show')) {
+    dd.innerHTML = RECURRING_OPTIONS.map(o =>
+      '<button class="recurring-opt' + (currentRecurring === o.value ? ' active' : '') + '" onclick="setRecurring(\''+o.value+'\')"><span class="rec-icon">'+o.icon+'</span>'+o.label+'</button>'
+    ).join('');
+  }
+}
+function setRecurring(v) {
+  currentRecurring = v;
+  $('recDropdown').classList.remove('show');
+  $('recToggle').classList.toggle('active', !!v);
+  $('recToggle').textContent = v ? '🔄 ' + RECURRING_OPTIONS.find(o=>o.value===v).label : '🔄 Repeat';
+}
+// Close dropdown on outside click
+document.addEventListener('click', e => {
+  if (!e.target.closest('.recurring-toggle')) {
+    $('recDropdown').classList.remove('show');
+  }
+});
+
+function showToast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function recurringLabel(r) {
+  const map = { daily: 'Daily', weekdays: 'Weekdays', weekly: 'Weekly', monthly: 'Monthly', custom: 'Custom' };
+  return map[r] || r;
+}
+
+async function updateRecurring(todoId, value) {
+  await api('/api/todos/' + todoId, { method: 'PATCH', body: { recurring: value, recurring_interval: '' } });
+  todos = await api('/api/todos');
+  renderList();
 }
 
 restorePomo();

@@ -26,13 +26,50 @@ async function initDB() {
       subtasks JSONB DEFAULT '[]'::jsonb
     )
   `);
-  // Add subtasks column if missing (for existing tables)
-  await pool.query(`
-    ALTER TABLE todos ADD COLUMN IF NOT EXISTS subtasks JSONB DEFAULT '[]'::jsonb
-  `).catch(() => {});
-  await pool.query(`
-    ALTER TABLE todos ADD COLUMN IF NOT EXISTS sort_order INT DEFAULT 0
-  `).catch(() => {});
+  await pool.query(`ALTER TABLE todos ADD COLUMN IF NOT EXISTS subtasks JSONB DEFAULT '[]'::jsonb`).catch(() => {});
+  await pool.query(`ALTER TABLE todos ADD COLUMN IF NOT EXISTS sort_order INT DEFAULT 0`).catch(() => {});
+  await pool.query(`ALTER TABLE todos ADD COLUMN IF NOT EXISTS recurring VARCHAR(20) DEFAULT ''`).catch(() => {});
+  await pool.query(`ALTER TABLE todos ADD COLUMN IF NOT EXISTS recurring_interval VARCHAR(20) DEFAULT ''`).catch(() => {});
+}
+
+// Calculate next due date based on recurring type
+function calcNextDue(currentDue, recurring, recurringInterval) {
+  const base = currentDue ? new Date(currentDue + 'T00:00:00') : new Date();
+  base.setHours(0, 0, 0, 0);
+  // If base is in the past, start from today
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  if (base < today) base.setTime(today.getTime());
+
+  switch (recurring) {
+    case 'daily':
+      base.setDate(base.getDate() + 1);
+      break;
+    case 'weekdays': {
+      base.setDate(base.getDate() + 1);
+      while (base.getDay() === 0 || base.getDay() === 6) {
+        base.setDate(base.getDate() + 1);
+      }
+      break;
+    }
+    case 'weekly':
+      base.setDate(base.getDate() + 7);
+      break;
+    case 'monthly':
+      base.setMonth(base.getMonth() + 1);
+      break;
+    case 'custom': {
+      if (!recurringInterval) { base.setDate(base.getDate() + 1); break; }
+      const num = parseInt(recurringInterval) || 1;
+      const unit = recurringInterval.slice(-1);
+      if (unit === 'w') base.setDate(base.getDate() + num * 7);
+      else if (unit === 'm') base.setMonth(base.getMonth() + num);
+      else base.setDate(base.getDate() + num); // default days
+      break;
+    }
+    default:
+      base.setDate(base.getDate() + 1);
+  }
+  return base.getFullYear() + '-' + String(base.getMonth() + 1).padStart(2, '0') + '-' + String(base.getDate()).padStart(2, '0');
 }
 
 // Serve static
@@ -49,30 +86,59 @@ app.get('/api/todos', async (req, res) => {
 // Create todo
 app.post('/api/todos', async (req, res) => {
   try {
-    const { text, priority = 'none', category = '', due = '' } = req.body;
+    const { text, priority = 'none', category = '', due = '', recurring = '', recurring_interval = '' } = req.body;
     const { rows } = await pool.query(
-      'INSERT INTO todos (text, priority, category, due, subtasks) VALUES ($1,$2,$3,$4,$5) RETURNING *',
-      [text, priority, category, due, '[]']
+      'INSERT INTO todos (text, priority, category, due, subtasks, recurring, recurring_interval) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *',
+      [text, priority, category, due, '[]', recurring, recurring_interval]
     );
     res.json(rows[0]);
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// Toggle todo done
+// Update todo
 app.patch('/api/todos/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { done, sort_order } = req.body;
+    const { done, sort_order, recurring, recurring_interval } = req.body;
+
     if (sort_order !== undefined) {
       const { rows } = await pool.query('UPDATE todos SET sort_order=$1 WHERE id=$2 RETURNING *', [sort_order, id]);
       return res.json(rows[0]);
     }
+
+    // Update recurring settings if provided (without changing done status)
+    if (done === undefined && (recurring !== undefined || recurring_interval !== undefined)) {
+      const current = (await pool.query('SELECT * FROM todos WHERE id=$1', [id])).rows[0];
+      if (!current) return res.status(404).json({ error: 'not found' });
+      const newRecurring = recurring !== undefined ? recurring : current.recurring;
+      const newInterval = recurring_interval !== undefined ? recurring_interval : current.recurring_interval;
+      const { rows } = await pool.query(
+        'UPDATE todos SET recurring=$1, recurring_interval=$2 WHERE id=$3 RETURNING *',
+        [newRecurring, newInterval, id]
+      );
+      return res.json(rows[0]);
+    }
+
+    if (done === undefined) return res.json({ error: 'nothing to update' });
+
     const completedAt = done ? Date.now() : null;
     const { rows } = await pool.query(
       'UPDATE todos SET done=$1, completed_at=$2 WHERE id=$3 RETURNING *',
       [done, completedAt, id]
     );
-    res.json(rows[0]);
+    const todo = rows[0];
+
+    // If completing a recurring todo, spawn the next one
+    if (done && todo.recurring) {
+      const nextDue = calcNextDue(todo.due, todo.recurring, todo.recurring_interval);
+      const { rows: spawnedRows } = await pool.query(
+        'INSERT INTO todos (text, priority, category, due, subtasks, recurring, recurring_interval) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *',
+        [todo.text, todo.priority, todo.category, nextDue, '[]', todo.recurring, todo.recurring_interval]
+      );
+      return res.json({ ...todo, spawned: spawnedRows[0] });
+    }
+
+    res.json(todo);
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -95,7 +161,7 @@ app.delete('/api/todos', async (req, res) => {
 // Bulk reorder
 app.post('/api/todos/reorder', async (req, res) => {
   try {
-    const { orders } = req.body; // [{id, sort_order}]
+    const { orders } = req.body;
     for (const o of orders) {
       await pool.query('UPDATE todos SET sort_order=$1 WHERE id=$2', [o.sort_order, o.id]);
     }
@@ -104,8 +170,6 @@ app.post('/api/todos/reorder', async (req, res) => {
 });
 
 // --- Subtask endpoints ---
-
-// Add subtask
 app.post('/api/todos/:id/subtasks', async (req, res) => {
   try {
     const { id } = req.params;
@@ -119,7 +183,6 @@ app.post('/api/todos/:id/subtasks', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// Toggle/edit subtask
 app.patch('/api/todos/:id/subtasks/:subtaskId', async (req, res) => {
   try {
     const { id, subtaskId } = req.params;
@@ -142,7 +205,6 @@ app.patch('/api/todos/:id/subtasks/:subtaskId', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// Delete subtask
 app.delete('/api/todos/:id/subtasks/:subtaskId', async (req, res) => {
   try {
     const { id, subtaskId } = req.params;
