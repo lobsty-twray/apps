@@ -136,31 +136,31 @@ app.get('/api/logs/:container', (req, res) => {
 
 
 // Dedicated quick capture proxy endpoints
-app.post(/api/quick/todo, async (req, res) => {
+app.post('/api/quick/todo', async (req, res) => {
   const { text, priority } = req.body;
-  if (!text) return res.status(400).json({ error: text is required });
+  if (!text) return res.status(400).json({ error: 'text is required' });
   try {
-    const result = await proxyPost(http://lobsty-todo:3000/api/todos, { text, priority: priority || medium, category: Quick Capture });
+    const result = await proxyPost('http://lobsty-todo:3000/api/todos', { text, priority: priority || 'medium', category: 'Quick Capture' });
     res.json({ ok: true, result });
   } catch (err) { res.status(502).json({ error: err.message }); }
 });
 
-app.post(/api/quick/idea, async (req, res) => {
+app.post('/api/quick/idea', async (req, res) => {
   const { title, text } = req.body;
   const t = title || text;
-  if (!t) return res.status(400).json({ error: title is required });
+  if (!t) return res.status(400).json({ error: 'title is required' });
   try {
-    const result = await proxyPost(http://lobsty-content-ideas:3000/api/ideas, { title: t, description: , category: Quick Capture, status: brainstorm });
+    const result = await proxyPost('http://lobsty-content-ideas:3000/api/ideas', { title: t, description: '', category: 'Quick Capture', status: 'brainstorm' });
     res.json({ ok: true, result });
   } catch (err) { res.status(502).json({ error: err.message }); }
 });
 
-app.post(/api/quick/note, async (req, res) => {
+app.post('/api/quick/note', async (req, res) => {
   const { title, text } = req.body;
   const t = title || text;
-  if (!t) return res.status(400).json({ error: title is required });
+  if (!t) return res.status(400).json({ error: 'title is required' });
   try {
-    const result = await proxyPost(http://lobsty-drafts:3000/api/drafts, { title: t, content: , type: note, status: draft, author: ray });
+    const result = await proxyPost('http://lobsty-drafts:3000/api/drafts', { title: t, content: '', type: 'note', status: 'draft', author: 'ray' });
     res.json({ ok: true, result });
   } catch (err) { res.status(502).json({ error: err.message }); }
 });
@@ -169,20 +169,20 @@ function proxyPost(url, body) {
   const postData = JSON.stringify(body);
   return new Promise((resolve, reject) => {
     const req2 = http.request(url, {
-      method: POST,
-      headers: { Content-Type: application/json, Content-Length: Buffer.byteLength(postData) },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(postData) },
       timeout: 5000
     }, resp => {
-      let data = ;
-      resp.on(data, c => data += c);
-      resp.on(end, () => {
+      let data = '';
+      resp.on('data', c => data += c);
+      resp.on('end', () => {
         if (resp.statusCode >= 200 && resp.statusCode < 300) {
           try { resolve(JSON.parse(data)); } catch { resolve({ ok: true }); }
-        } else { reject(new Error(resp.statusCode + :  + data)); }
+        } else { reject(new Error(resp.statusCode + ': ' + data)); }
       });
     });
-    req2.on(error, reject);
-    req2.on(timeout, () => { req2.destroy(); reject(new Error(Timeout)); });
+    req2.on('error', reject);
+    req2.on('timeout', () => { req2.destroy(); reject(new Error('Timeout')); });
     req2.write(postData);
     req2.end();
   });

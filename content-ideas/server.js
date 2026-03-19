@@ -165,6 +165,20 @@ app.post('/api/ideas/:id/downvote', async (req, res) => {
   }
 });
 
+// Quick status update
+app.patch("/api/ideas/:id/status", async (req, res) => {
+  try {
+    const { status } = req.body;
+    const valid = ["brainstorm", "researching", "scripting", "filming", "published"];
+    if (!valid.includes(status)) return res.status(400).json({ error: "Invalid status" });
+    const result = await pool.query("UPDATE ideas SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *", [status, req.params.id]);
+    if (result.rows.length === 0) return res.status(404).json({ error: "Not found" });
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to update status" });
+  }
+});
+
 // Add comment
 app.post('/api/ideas/:id/comments', async (req, res) => {
   try {
