@@ -1051,8 +1051,9 @@
         <div class="qc-title">⚡ Quick Capture</div>
         <input class="qc-input" id="qc-input" placeholder="Quick thought..." autocomplete="off">
         <div class="qc-targets">
+            <button class="qc-target" data-target="todo">📝 Todo</button>
             <button class="qc-target selected" data-target="content-idea">💡 Idea</button>
-            <button class="qc-target" data-target="board-task">📋 Board</button>
+            <button class="qc-target" data-target="note">📋 Note</button>
         </div>
         <div class="qc-priority-row">
             <span class="qc-priority-label">Priority:</span>
@@ -1116,7 +1117,8 @@
             submitBtn.disabled = true;
             submitBtn.textContent = 'Sending...';
             try {
-                const res = await fetch('/api/quick-capture', {
+                const endpoint = selectedTarget === 'todo' ? '/api/quick/todo' : selectedTarget === 'note' ? '/api/quick/note' : selectedTarget === 'content-idea' ? '/api/quick/idea' : '/api/quick-capture';
+                const res = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ text, target: selectedTarget, priority: selectedPriority })

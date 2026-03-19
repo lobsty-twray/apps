@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frida Painting NJ — Master Craftsman Sergio Villanueva</title>
+<meta name="description" content="Sergio Villanueva — New Jersey's premier Fine Paints of Europe certified specialist. Master craftsman with decades of experience in luxury interior painting.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ===== FRIDA PAINTING V2 — MASTER CRAFTSMAN ===== */
+:root {
+  --navy: #0a1628;
+  --navy-light: #132241;
+  --navy-mid: #1a2d52;
+  --gold: #c8a45e;
+  --gold-light: #dfc07a;
+  --gold-dim: #a08040;
+  --cream: #f5f0e8;
+  --cream-dim: #d4cfc7;
+  --white: #ffffff;
+  --text: #e8e4dc;
+  --text-dim: #9a968e;
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --sans: 'Inter', -apple-system, sans-serif;
+  --max-w: 1200px;
+  --section-py: clamp(3rem, 8vw, 6rem);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--sans);
+  background: var(--navy);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+img { max-width: 100%; display: block; }
+a { color: var(--gold); text-decoration: none; }
+
+.container { width: 90%; max-width: var(--max-w); margin: 0 auto; }
+
+/* ===== NAV ===== */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(10, 22, 40, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(200, 164, 94, 0.15);
+  padding: 1rem 0;
+}
+nav .container {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-logo {
+  font-family: var(--serif); font-size: 1.3rem; font-weight: 700;
+  color: var(--gold); letter-spacing: 0.02em;
+}
+.nav-logo span { color: var(--cream); font-weight: 400; }
+.nav-links { display: flex; gap: 1.5rem; list-style: none; }
+.nav-links a {
+  color: var(--cream-dim); font-size: 0.85rem; font-weight: 400;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  transition: color 0.3s;
+}
+.nav-links a:hover { color: var(--gold); }
+.nav-toggle { display: none; background: none; border: none; cursor: pointer; padding: 0.5rem; }
+.nav-toggle span {
+  display: block; width: 24px; height: 2px; background: var(--gold);
+  margin: 5px 0; transition: 0.3s;
+}
+
+@media (max-width: 768px) {
+  .nav-links {
+    position: fixed; top: 0; right: -100%; width: 70%; height: 100vh;
+    background: var(--navy); flex-direction: column; padding: 5rem 2rem;
+    gap: 2rem; transition: right 0.4s ease;
+  }
+  .nav-links.open { right: 0; }
+  .nav-links a { font-size: 1.1rem; }
+  .nav-toggle { display: block; z-index: 101; }
+}
+
+/* ===== HERO ===== */
+.hero {
+  min-height: 100vh; display: flex; align-items: center;
+  position: relative; overflow: hidden;
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 50%, var(--navy-mid) 100%);
+}
+.hero::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 70% 30%, rgba(200, 164, 94, 0.08) 0%, transparent 60%);
+}
+.hero-content { position: relative; z-index: 2; padding: 6rem 0 4rem; }
+.hero-badge {
+  display: inline-block; font-size: 0.75rem; font-weight: 500;
+  letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold);
+  border: 1px solid rgba(200, 164, 94, 0.4); padding: 0.5rem 1.2rem;
+  margin-bottom: 1.5rem;
+}
+.hero h1 {
+  font-family: var(--serif); font-size: clamp(2.5rem, 7vw, 5rem);
+  font-weight: 700; line-height: 1.1; color: var(--cream);
+  margin-bottom: 1rem;
+}
+.hero h1 em {
+  font-style: italic; color: var(--gold); display: block;
+}
+.hero-tagline {
+  font-size: clamp(1rem, 2.5vw, 1.25rem); color: var(--text-dim);
+  max-width: 540px; margin-bottom: 2.5rem; line-height: 1.7;
+}
+.hero-cta { display: flex; gap: 1rem; flex-wrap: wrap; }
+.btn {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.9rem 2rem; font-size: 0.9rem; font-weight: 500;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  border: none; cursor: pointer; transition: all 0.3s;
+  min-height: 48px;
+}
+.btn-gold {
+  background: var(--gold); color: var(--navy);
+}
+.btn-gold:hover { background: var(--gold-light); }
+.btn-outline {
+  background: transparent; color: var(--gold);
+  border: 1px solid var(--gold);
+}
+.btn-outline:hover { background: rgba(200, 164, 94, 0.1); }
+
+.hero-stats {
+  display: flex; gap: 3rem; margin-top: 4rem; padding-top: 2rem;
+  border-top: 1px solid rgba(200, 164, 94, 0.15);
+}
+.stat-num {
+  font-family: var(--serif); font-size: 2.5rem; font-weight: 700;
+  color: var(--gold); line-height: 1;
+}
+.stat-label {
+  font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase;
+  letter-spacing: 0.08em; margin-top: 0.3rem;
+}
+
+/* ===== SECTIONS ===== */
+section { padding: var(--section-py) 0; }
+
+.section-label {
+  font-size: 0.75rem; font-weight: 500; letter-spacing: 0.15em;
+  text-transform: uppercase; color: var(--gold); margin-bottom: 0.75rem;
+}
+.section-title {
+  font-family: var(--serif); font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 700; color: var(--cream); line-height: 1.2;
+  margin-bottom: 1.5rem;
+}
+.section-desc {
+  font-size: 1rem; color: var(--text-dim); max-width: 600px;
+  line-height: 1.8;
+}
+
+/* ===== ABOUT ===== */
+.about { background: var(--navy-light); }
+.about-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;
+  align-items: center;
+}
+.about-image {
+  aspect-ratio: 3/4; background: var(--navy-mid);
+  border: 1px solid rgba(200, 164, 94, 0.2); position: relative;
+  overflow: hidden;
+}
+.about-image::after {
+  content: 'SERGIO VILLANUEVA'; position: absolute;
+  top: 50%; left: 50%; transform: translate(-50%, -50%);
+  font-family: var(--serif); font-size: 1.2rem; color: rgba(200,164,94,0.3);
+  text-align: center; letter-spacing: 0.1em;
+}
+.about-text .section-desc { max-width: none; }
+.about-highlights {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+  margin-top: 2rem;
+}
+.highlight {
+  padding: 1.2rem; background: rgba(200, 164, 94, 0.05);
+  border: 1px solid rgba(200, 164, 94, 0.1);
+}
+.highlight-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+.highlight-title {
+  font-family: var(--serif); font-size: 1.1rem; font-weight: 600;
+  color: var(--cream); margin-bottom: 0.25rem;
+}
+.highlight-text { font-size: 0.85rem; color: var(--text-dim); }
+
+@media (max-width: 768px) {
+  .about-grid { grid-template-columns: 1fr; gap: 2rem; }
+  .about-image { aspect-ratio: 4/3; max-height: 300px; }
+}
+
+/* ===== SERVICES ===== */
+.services-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem; margin-top: 3rem;
+}
+.service-card {
+  padding: 2rem; background: var(--navy-light);
+  border: 1px solid rgba(200, 164, 94, 0.1);
+  transition: border-color 0.3s, transform 0.3s;
+}
+.service-card:hover {
+  border-color: rgba(200, 164, 94, 0.3);
+  transform: translateY(-4px);
+}
+.service-icon { font-size: 2rem; margin-bottom: 1rem; }
+.service-title {
+  font-family: var(--serif); font-size: 1.3rem; font-weight: 600;
+  color: var(--cream); margin-bottom: 0.75rem;
+}
+.service-text { font-size: 0.9rem; color: var(--text-dim); line-height: 1.7; }
+
+@media (max-width: 768px) {
+  .services-grid { grid-template-columns: 1fr; }
+}
+
+/* ===== FINE PAINTS SPOTLIGHT ===== */
+.fpe {
+  background: linear-gradient(135deg, var(--navy-light) 0%, var(--navy-mid) 100%);
+  position: relative; overflow: hidden;
+}
+.fpe::before {
+  content: ''; position: absolute; top: -50%; right: -20%;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(200, 164, 94, 0.06) 0%, transparent 70%);
+}
+.fpe-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;
+  align-items: center; position: relative; z-index: 1;
+}
+.fpe-badge {
+  display: inline-block; padding: 0.6rem 1.5rem; margin-bottom: 1.5rem;
+  background: rgba(200, 164, 94, 0.1); border: 1px solid rgba(200, 164, 94, 0.3);
+  font-size: 0.8rem; font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--gold);
+}
+.fpe-features { list-style: none; margin-top: 2rem; }
+.fpe-features li {
+  padding: 0.75rem 0; border-bottom: 1px solid rgba(200, 164, 94, 0.08);
+  font-size: 0.95rem; color: var(--text);
+  display: flex; align-items: center; gap: 0.75rem;
+}
+.fpe-features li::before {
+  content: '◆'; color: var(--gold); font-size: 0.6rem;
+}
+.fpe-image {
+  aspect-ratio: 4/3; background: var(--navy);
+  border: 1px solid rgba(200, 164, 94, 0.2);
+  display: flex; align-items: center; justify-content: center;
+}
+.fpe-image-text {
+  font-family: var(--serif); font-size: 1.5rem; color: rgba(200,164,94,0.25);
+  text-align: center; padding: 2rem; letter-spacing: 0.1em;
+}
+
+@media (max-width: 768px) {
+  .fpe-grid { grid-template-columns: 1fr; gap: 2rem; }
+}
+
+/* ===== GALLERY ===== */
+.gallery { background: var(--navy-light); }
+.gallery-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 1rem; margin-top: 3rem;
+}
+.gallery-item {
+  aspect-ratio: 1; background: var(--navy-mid);
+  border: 1px solid rgba(200, 164, 94, 0.1);
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color 0.3s;
+  overflow: hidden;
+}
+.gallery-item:hover { border-color: rgba(200, 164, 94, 0.3); }
+.gallery-placeholder {
+  font-size: 0.8rem; color: var(--text-dim); text-align: center;
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+
+@media (max-width: 768px) {
+  .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ===== TESTIMONIALS ===== */
+.testimonials-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem; margin-top: 3rem;
+}
+.testimonial {
+  padding: 2rem; background: var(--navy-light);
+  border: 1px solid rgba(200, 164, 94, 0.1);
+  border-left: 3px solid var(--gold);
+}
+.testimonial-text {
+  font-family: var(--serif); font-size: 1.1rem; font-style: italic;
+  color: var(--cream); line-height: 1.7; margin-bottom: 1rem;
+}
+.testimonial-author { font-size: 0.85rem; color: var(--gold); }
+.testimonial-location { font-size: 0.8rem; color: var(--text-dim); }
+
+@media (max-width: 768px) {
+  .testimonials-grid { grid-template-columns: 1fr; }
+}
+
+/* ===== CONTACT ===== */
+.contact { background: var(--navy-light); }
+.contact-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;
+  margin-top: 3rem;
+}
+.contact-item { margin-bottom: 2rem; }
+.contact-label {
+  font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--gold); margin-bottom: 0.5rem;
+}
+.contact-value {
+  font-family: var(--serif); font-size: 1.3rem; color: var(--cream);
+}
+.contact-value a { color: var(--cream); }
+.contact-value a:hover { color: var(--gold); }
+.contact-areas {
+  display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem;
+}
+.area-tag {
+  padding: 0.4rem 0.8rem; font-size: 0.8rem;
+  background: rgba(200, 164, 94, 0.08);
+  border: 1px solid rgba(200, 164, 94, 0.15);
+  color: var(--text-dim);
+}
+.contact-cta {
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(200, 164, 94, 0.05);
+  border: 1px solid rgba(200, 164, 94, 0.15);
+  padding: 3rem; text-align: center;
+}
+.contact-cta-title {
+  font-family: var(--serif); font-size: 1.8rem; font-weight: 700;
+  color: var(--cream); margin-bottom: 0.75rem;
+}
+.contact-cta-text {
+  font-size: 0.95rem; color: var(--text-dim); margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .contact-grid { grid-template-columns: 1fr; gap: 2rem; }
+}
+
+/* ===== FOOTER ===== */
+footer {
+  padding: 2rem 0; border-top: 1px solid rgba(200, 164, 94, 0.1);
+  text-align: center;
+}
+footer p { font-size: 0.8rem; color: var(--text-dim); }
+footer a { color: var(--gold-dim); }
+
+/* ===== DECORATIVE ===== */
+.gold-line {
+  width: 60px; height: 2px; background: var(--gold); margin-bottom: 1.5rem;
+}
+
+/* ===== ANIMATIONS ===== */
+.fade-in {
+  opacity: 0; transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.fade-in.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="container">
+    <a href="#" class="nav-logo">FRIDA <span>PAINTING</span></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#about">About</a></li>
+      <li><a href="#services">Services</a></li>
+      <li><a href="#fpe">Fine Paints</a></li>
+      <li><a href="#gallery">Gallery</a></li>
+      <li><a href="#testimonials">Reviews</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <button class="nav-toggle" id="navToggle" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container hero-content">
+    <div class="hero-badge">Certified Fine Paints of Europe Specialist</div>
+    <h1>Where Mastery<br>Meets <em>Every Brushstroke</em></h1>
+    <p class="hero-tagline">
+      Sergio Villanueva brings decades of artisan expertise to every project.
+      New Jersey's most trusted name in luxury interior painting and
+      Fine Paints of Europe application.
+    </p>
+    <div class="hero-cta">
+      <a href="tel:5516973531" class="btn btn-gold">☎ 551-697-3531</a>
+      <a href="#contact" class="btn btn-outline">Request a Consultation</a>
+    </div>
+    <div class="hero-stats">
+      <div>
+        <div class="stat-num">20+</div>
+        <div class="stat-label">Years Experience</div>
+      </div>
+      <div>
+        <div class="stat-num">500+</div>
+        <div class="stat-label">Projects Completed</div>
+      </div>
+      <div>
+        <div class="stat-num">NJ</div>
+        <div class="stat-label">Statewide Service</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about" id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-image"></div>
+      <div class="about-text">
+        <div class="section-label">The Craftsman</div>
+        <h2 class="section-title">Sergio Villanueva</h2>
+        <div class="gold-line"></div>
+        <p class="section-desc">
+          With over two decades of hands-on experience, Sergio Villanueva has built
+          a reputation as one of New Jersey's finest interior painters. His journey
+          began with a deep respect for the craft — learning traditional techniques,
+          studying color theory, and mastering the art of surface preparation that
+          separates exceptional work from ordinary.
+        </p>
+        <br>
+        <p class="section-desc">
+          Today, Sergio is a certified Fine Paints of Europe application specialist —
+          one of a select few artisans in the state entrusted with these world-renowned
+          luxury paints. Every project reflects his commitment to perfection: meticulous
+          preparation, expert color consultation, and flawless execution.
+        </p>
+        <div class="about-highlights">
+          <div class="highlight">
+            <div class="highlight-icon">🎨</div>
+            <div class="highlight-title">Master Painter</div>
+            <div class="highlight-text">20+ years perfecting the craft</div>
+          </div>
+          <div class="highlight">
+            <div class="highlight-icon">🏆</div>
+            <div class="highlight-title">Certified Specialist</div>
+            <div class="highlight-text">Fine Paints of Europe certified</div>
+          </div>
+          <div class="highlight">
+            <div class="highlight-icon">🔧</div>
+            <div class="highlight-title">Skilled Carpenter</div>
+            <div class="highlight-text">Trim, molding & custom woodwork</div>
+          </div>
+          <div class="highlight">
+            <div class="highlight-icon">✦</div>
+            <div class="highlight-title">Luxury Finish</div>
+            <div class="highlight-text">Uncompromising attention to detail</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="services" id="services">
+  <div class="container">
+    <div class="section-label">What We Do</div>
+    <h2 class="section-title">Craftsmanship in Every Detail</h2>
+    <p class="section-desc">
+      From meticulous surface preparation to flawless finish coats,
+      every service is delivered with the precision of a master artisan.
+    </p>
+    <div class="services-grid">
+      <div class="service-card fade-in">
+        <div class="service-icon">🖌️</div>
+        <h3 class="service-title">Interior Painting</h3>
+        <p class="service-text">
+          Premium interior painting for homes and residences across New Jersey.
+          Expert color matching, thorough prep work, and immaculate finish —
+          transforming spaces with precision and care.
+        </p>
+      </div>
+      <div class="service-card fade-in">
+        <div class="service-icon">✨</div>
+        <h3 class="service-title">Fine Paints of Europe</h3>
+        <p class="service-text">
+          Certified application of the world's finest paints. These luxury
+          European paints demand expert hands — Sergio's technique ensures
+          the rich depth and durability these paints are renowned for.
+        </p>
+      </div>
+      <div class="service-card fade-in">
+        <div class="service-icon">🪚</div>
+        <h3 class="service-title">Carpentry</h3>
+        <p class="service-text">
+          Custom trim work, crown molding, wainscoting, and repair carpentry.
+          Sergio's carpentry skills complement his painting expertise for
+          a seamless, polished final result.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINE PAINTS OF EUROPE -->
+<section class="fpe" id="fpe">
+  <div class="container">
+    <div class="fpe-grid">
+      <div>
+        <div class="fpe-badge">★ Certified Specialist</div>
+        <h2 class="section-title">Fine Paints of Europe</h2>
+        <div class="gold-line"></div>
+        <p class="section-desc">
+          Fine Paints of Europe represent the pinnacle of paint craftsmanship —
+          hand-made in Holland with the highest pigment concentrations in the world.
+          Sergio Villanueva is one of New Jersey's certified application specialists,
+          trained to deliver the extraordinary depth, durability, and luminous finish
+          these paints are celebrated for.
+        </p>
+        <ul class="fpe-features">
+          <li>Highest pigment concentration of any paint in the world</li>
+          <li>Hand-crafted in Holland since 1987</li>
+          <li>Exceptional durability — lasts decades</li>
+          <li>Rich, luminous depth of color unmatched by domestic brands</li>
+          <li>Certified application ensures warranty and optimal results</li>
+          <li>Eco-friendly, low-VOC formulations available</li>
+        </ul>
+      </div>
+      <div class="fpe-image">
+        <div class="fpe-image-text">FINE PAINTS<br>OF EUROPE</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section class="gallery" id="gallery">
+  <div class="container">
+    <div class="section-label">Portfolio</div>
+    <h2 class="section-title">Our Work Speaks</h2>
+    <p class="section-desc">A selection of recent projects showcasing Sergio's craftsmanship.</p>
+    <div class="gallery-grid">
+      <div class="gallery-item"><span class="gallery-placeholder">Project 1</span></div>
+      <div class="gallery-item"><span class="gallery-placeholder">Project 2</span></div>
+      <div class="gallery-item"><span class="gallery-placeholder">Project 3</span></div>
+      <div class="gallery-item"><span class="gallery-placeholder">Project 4</span></div>
+      <div class="gallery-item"><span class="gallery-placeholder">Project 5</span></div>
+      <div class="gallery-item"><span class="gallery-placeholder">Project 6</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials" id="testimonials">
+  <div class="container">
+    <div class="section-label">Client Reviews</div>
+    <h2 class="section-title">Trusted by Homeowners Across NJ</h2>
+    <div class="testimonials-grid">
+      <div class="testimonial fade-in">
+        <p class="testimonial-text">
+          "Sergio's attention to detail is extraordinary. He transformed our living room
+          with Fine Paints of Europe and the result is absolutely stunning. The depth of
+          color is unlike anything we've seen."
+        </p>
+        <div class="testimonial-author">— Sarah M.</div>
+        <div class="testimonial-location">Hoboken, NJ</div>
+      </div>
+      <div class="testimonial fade-in">
+        <p class="testimonial-text">
+          "We've hired many painters over the years, but Sergio is in a different league.
+          His preparation work alone shows how much he cares about quality. Truly a master
+          of his craft."
+        </p>
+        <div class="testimonial-author">— David & Karen R.</div>
+        <div class="testimonial-location">Jersey City, NJ</div>
+      </div>
+      <div class="testimonial fade-in">
+        <p class="testimonial-text">
+          "From the initial consultation to the final walkthrough, Sergio was professional,
+          punctual, and meticulous. Our home looks incredible. Can't recommend him enough."
+        </p>
+        <div class="testimonial-author">— Michael T.</div>
+        <div class="testimonial-location">Montclair, NJ</div>
+      </div>
+      <div class="testimonial fade-in">
+        <p class="testimonial-text">
+          "Sergio repaired our crown molding and repainted our entire first floor. The
+          carpentry work was flawless and the paint finish is perfect. A true artisan."
+        </p>
+        <div class="testimonial-author">— Jennifer L.</div>
+        <div class="testimonial-location">Summit, NJ</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+  <div class="container">
+    <div class="section-label">Get in Touch</div>
+    <h2 class="section-title">Start Your Project</h2>
+    <div class="contact-grid">
+      <div>
+        <div class="contact-item">
+          <div class="contact-label">Phone</div>
+          <div class="contact-value"><a href="tel:5516973531">551-697-3531</a></div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-label">Email</div>
+          <div class="contact-value"><a href="mailto:fridapainting@gmail.com">fridapainting@gmail.com</a></div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-label">Service Area</div>
+          <div class="contact-value">All of New Jersey</div>
+          <div class="contact-areas">
+            <span class="area-tag">Jersey City</span>
+            <span class="area-tag">Hoboken</span>
+            <span class="area-tag">Montclair</span>
+            <span class="area-tag">Summit</span>
+            <span class="area-tag">Morristown</span>
+            <span class="area-tag">Princeton</span>
+            <span class="area-tag">Westfield</span>
+            <span class="area-tag">Short Hills</span>
+          </div>
+        </div>
+      </div>
+      <div class="contact-cta">
+        <div>
+          <div class="contact-cta-title">Ready to Transform<br>Your Space?</div>
+          <p class="contact-cta-text">
+            Call or email for a free consultation.<br>
+            Sergio personally oversees every project.
+          </p>
+          <a href="tel:5516973531" class="btn btn-gold">☎ Call Now</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <p style="font-family: var(--serif); font-size: 1.1rem; color: var(--gold); margin-bottom: 0.5rem;">
+      FRIDA PAINTING NJ
+    </p>
+    <p>Master Craftsmanship by Sergio Villanueva</p>
+    <p style="margin-top: 0.5rem;">
+      &copy; 2026 Frida Painting NJ. All rights reserved. |
+      <a href="tel:5516973531">551-697-3531</a> |
+      <a href="mailto:fridapainting@gmail.com">fridapainting@gmail.com</a>
+    </p>
+  </div>
+</footer>
+
+<script>
+// Mobile nav toggle
+const toggle = document.getElementById('navToggle');
+const links = document.getElementById('navLinks');
+toggle.addEventListener('click', () => links.classList.toggle('open'));
+links.querySelectorAll('a').forEach(a => a.addEventListener('click', () => links.classList.remove('open')));
+
+// Fade in on scroll
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+}, { threshold: 0.1 });
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

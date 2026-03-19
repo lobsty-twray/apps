@@ -600,6 +600,15 @@ services:
     environment:
       - PORT=3000
 
+  frida-painting-v2:
+    build: ./frida-painting-v2
+    container_name: lobsty-frida-painting-v2
+    restart: unless-stopped
+    ports:
+      - "8118:3000"
+    environment:
+      - PORT=3000
+
 volumes:
   open-webui-data:
     driver: local
