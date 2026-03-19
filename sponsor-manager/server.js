@@ -12,7 +12,7 @@ const pool = new Pool({
   port: process.env.DB_PORT || 5432,
   database: process.env.DB_NAME || 'sponsor_manager',
   user: process.env.DB_USER || 'lobsty',
-  password: process.env.DB_PASSWORD || '***REMOVED***'
+  password: process.env.DB_PASSWORD || 'lobsty2026'
 });
 
 async function initDB() {
@@ -30,7 +30,6 @@ async function initDB() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    
     await pool.query(`
       CREATE TABLE IF NOT EXISTS deals (
         id SERIAL PRIMARY KEY,
@@ -46,7 +45,6 @@ async function initDB() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    
     await pool.query(`
       CREATE TABLE IF NOT EXISTS deliverables (
         id SERIAL PRIMARY KEY,
@@ -61,7 +59,6 @@ async function initDB() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    
     await pool.query(`
       CREATE TABLE IF NOT EXISTS payments (
         id SERIAL PRIMARY KEY,
@@ -75,7 +72,6 @@ async function initDB() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    
     console.log('Database initialized');
   } catch (err) {
     console.error('Database error:', err);
@@ -115,7 +111,9 @@ app.post('/api/sponsors', async (req, res) => {
 app.get('/api/deals', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT d.*, s.company_name FROM deals d
+      SELECT d.*, s.company_name,
+        (SELECT COUNT(*) FROM deliverables WHERE deal_id = d.id) as deliverables_count
+      FROM deals d
       JOIN sponsors s ON d.sponsor_id = s.id
       ORDER BY d.start_date DESC
     `);
@@ -153,6 +151,55 @@ app.put('/api/deals/:id', async (req, res) => {
   }
 });
 
+// PATCH deal status (for pipeline drag-and-drop)
+app.patch('/api/deals/:id/status', async (req, res) => {
+  try {
+    const { status } = req.body;
+    const valid = ['pending', 'active', 'delivered', 'completed', 'cancelled'];
+    if (!valid.includes(status)) return res.status(400).json({ error: 'Invalid status' });
+    const result = await pool.query(
+      `UPDATE deals SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *`,
+      [status, req.params.id]
+    );
+    if (!result.rows.length) return res.status(404).json({ error: 'Deal not found' });
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update deal status' });
+  }
+});
+
+// Timeline endpoint
+app.get('/api/timeline', async (req, res) => {
+  try {
+    const deliverables = await pool.query(`
+      SELECT del.id, del.title, del.deadline as date, del.status, del.description,
+        'deliverable' as type,
+        d.title as deal_title, d.id as deal_id,
+        s.company_name
+      FROM deliverables del
+      JOIN deals d ON del.deal_id = d.id
+      JOIN sponsors s ON d.sponsor_id = s.id
+      WHERE del.deadline IS NOT NULL
+      ORDER BY del.deadline
+    `);
+    const payments = await pool.query(`
+      SELECT p.id, p.notes as title, p.due_date as date, p.status, p.amount,
+        'payment' as type,
+        d.title as deal_title, d.id as deal_id,
+        s.company_name
+      FROM payments p
+      JOIN deals d ON p.deal_id = d.id
+      JOIN sponsors s ON d.sponsor_id = s.id
+      WHERE p.due_date IS NOT NULL
+      ORDER BY p.due_date
+    `);
+    const items = [...deliverables.rows, ...payments.rows].sort((a, b) => new Date(a.date) - new Date(b.date));
+    res.json(items);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch timeline' });
+  }
+});
+
 // Deliverables
 app.get('/api/deals/:id/deliverables', async (req, res) => {
   try {
@@ -169,7 +216,7 @@ app.post('/api/deliverables', async (req, res) => {
     const result = await pool.query(
       `INSERT INTO deliverables (deal_id, title, description, deadline, delivery_type, notes)
        VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [deal_id, title, description, deadline, delivery_type, notes]
+      [deal_id, title || req.body.deliverable_type, description, deadline || req.body.due_date, delivery_type, notes]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -207,7 +254,7 @@ app.post('/api/payments', async (req, res) => {
     const result = await pool.query(
       `INSERT INTO payments (deal_id, amount, due_date, payment_method, notes)
        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [deal_id, amount, due_date, payment_method, notes]
+      [deal_id, amount, due_date || req.body.payment_date, payment_method, notes]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -222,7 +269,6 @@ app.get('/api/stats', async (req, res) => {
     const pendingDeliverables = await pool.query("SELECT COUNT(*) FROM deliverables WHERE status = 'pending'");
     const totalRevenue = await pool.query("SELECT SUM(amount) as total FROM deals WHERE status IN ('active', 'completed')");
     const sponsors = await pool.query("SELECT COUNT(*) FROM sponsors");
-    
     res.json({
       active_deals: parseInt(activeDeals.rows[0].count),
       pending_deliverables: parseInt(pendingDeliverables.rows[0].count),

@@ -12,19 +12,16 @@
         body{font-family:'Inter',sans-serif;background:#0a0a0f;color:#e8e8f0;min-height:100vh;overflow-x:hidden;padding-bottom:80px}
         @media(min-width:769px){body{padding-bottom:20px}}
 
-        .container{max-width:1200px;margin:0 auto;padding:16px}
+        .container{max-width:1400px;margin:0 auto;padding:16px}
         @media(min-width:769px){.container{padding:24px 32px}}
 
-        /* Header */
         .app-header{text-align:center;padding:24px 0 16px}
         .app-header h1{font-size:1.6em;font-weight:800;background:linear-gradient(135deg,#7c3aed,#2563eb);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
         .app-header p{color:#888899;font-size:.85em;margin-top:4px}
         @media(min-width:769px){.app-header h1{font-size:2.2em}}
 
-        /* Glass card base */
         .glass{background:rgba(255,255,255,0.03);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.08);border-radius:16px;box-shadow:0 0 30px rgba(124,58,237,0.1)}
 
-        /* Stats */
         .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:24px}
         @media(min-width:769px){.stats-grid{grid-template-columns:repeat(4,1fr);gap:16px}}
         .stat-card{padding:20px 16px;text-align:center;transition:transform .3s ease,box-shadow .3s ease}
@@ -34,26 +31,22 @@
 
         /* Tabs */
         .tabs{display:flex;gap:4px;margin-bottom:20px;background:rgba(255,255,255,0.02);border-radius:12px;padding:4px;overflow-x:auto;-webkit-overflow-scrolling:touch}
-        .tab{flex:1;min-width:0;padding:12px 8px;text-align:center;border-radius:10px;cursor:pointer;font-size:.85em;font-weight:600;color:#888899;transition:all .3s ease;min-height:44px;display:flex;align-items:center;justify-content:center;white-space:nowrap;user-select:none;-webkit-tap-highlight-color:transparent}
+        .tab{flex:1;min-width:0;padding:12px 8px;text-align:center;border-radius:10px;cursor:pointer;font-size:.8em;font-weight:600;color:#888899;transition:all .3s ease;min-height:44px;display:flex;align-items:center;justify-content:center;white-space:nowrap;user-select:none;-webkit-tap-highlight-color:transparent}
         .tab.active{background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;box-shadow:0 0 20px rgba(124,58,237,0.3)}
         .tab:not(.active):hover{color:#e8e8f0;background:rgba(255,255,255,0.05)}
-        @media(min-width:769px){.tab{padding:12px 24px;font-size:.9em}}
+        @media(min-width:769px){.tab{padding:12px 20px;font-size:.85em}}
 
-        /* Tab content */
         .tab-content{display:none;animation:fadeUp .4s ease}
         .tab-content.active{display:block}
         @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 
-        /* Section header */
         .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px}
         .section-title{font-size:1.2em;font-weight:700}
 
-        /* Cards grid */
         .cards-grid{display:grid;grid-template-columns:1fr;gap:14px}
         @media(min-width:600px){.cards-grid{grid-template-columns:repeat(2,1fr)}}
         @media(min-width:1000px){.cards-grid{grid-template-columns:repeat(3,1fr)}}
 
-        /* Deal card */
         .deal-card{padding:20px;transition:transform .3s ease,box-shadow .3s ease;cursor:pointer;position:relative;overflow:hidden}
         .deal-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0}
         .deal-card:hover{transform:translateY(-3px)}
@@ -61,11 +54,13 @@
         .deal-card[data-status="pending"]::before{background:linear-gradient(90deg,#f59e0b,#d97706)}
         .deal-card[data-status="active"]{box-shadow:0 0 25px rgba(16,185,129,0.08)}
         .deal-card[data-status="active"]::before{background:linear-gradient(90deg,#10b981,#059669)}
+        .deal-card[data-status="delivered"]::before{background:linear-gradient(90deg,#8b5cf6,#6d28d9)}
+        .deal-card[data-status="delivered"]{box-shadow:0 0 25px rgba(139,92,246,0.08)}
         .deal-card[data-status="completed"]{box-shadow:0 0 25px rgba(37,99,235,0.08)}
         .deal-card[data-status="completed"]::before{background:linear-gradient(90deg,#2563eb,#1d4ed8)}
-        .deal-card:hover[data-status="pending"]{box-shadow:0 0 40px rgba(245,158,11,0.15)}
-        .deal-card:hover[data-status="active"]{box-shadow:0 0 40px rgba(16,185,129,0.15)}
-        .deal-card:hover[data-status="completed"]{box-shadow:0 0 40px rgba(37,99,235,0.15)}
+        .deal-card[data-status="cancelled"]::before{background:linear-gradient(90deg,#ef4444,#dc2626)}
+        .deal-card[data-status="cancelled"]{box-shadow:0 0 25px rgba(239,68,68,0.08);opacity:.7}
+        .deal-card:hover{box-shadow:0 0 40px rgba(124,58,237,0.15)}
         .deal-card-header{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:12px}
         .deal-card-title{font-weight:700;font-size:1em;line-height:1.3}
         .deal-card-company{color:#a78bfa;font-size:.8em;margin-top:2px}
@@ -73,41 +68,36 @@
         .deal-card-dates{color:#666;font-size:.78em}
         .deal-card-desc{color:#777;font-size:.82em;margin-top:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 
-        /* Status badge */
         .badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:20px;font-size:.72em;font-weight:600;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
         .badge-pending{background:rgba(245,158,11,0.15);color:#fbbf24;box-shadow:0 0 10px rgba(245,158,11,0.1)}
         .badge-active{background:rgba(16,185,129,0.15);color:#34d399;box-shadow:0 0 10px rgba(16,185,129,0.1)}
+        .badge-delivered{background:rgba(139,92,246,0.15);color:#a78bfa;box-shadow:0 0 10px rgba(139,92,246,0.1)}
         .badge-completed{background:rgba(37,99,235,0.15);color:#60a5fa;box-shadow:0 0 10px rgba(37,99,235,0.1)}
+        .badge-cancelled{background:rgba(239,68,68,0.15);color:#f87171;box-shadow:0 0 10px rgba(239,68,68,0.1)}
+        .badge-paid{background:rgba(16,185,129,0.15);color:#34d399}
 
-        /* Sponsor card */
         .sponsor-card{padding:20px;transition:transform .3s ease,box-shadow .3s ease}
         .sponsor-card:hover{transform:translateY(-3px);box-shadow:0 0 40px rgba(124,58,237,0.2)}
         .sponsor-name{font-weight:700;font-size:1.05em;margin-bottom:4px}
         .sponsor-contact{color:#888899;font-size:.82em}
-        .sponsor-deals-count{margin-top:10px;font-size:.8em;color:#a78bfa}
 
-        /* Buttons */
         .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 20px;border-radius:10px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:.85em;font-weight:600;min-height:44px;min-width:44px;transition:all .3s ease;-webkit-tap-highlight-color:transparent}
         .btn-primary{background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;box-shadow:0 4px 15px rgba(124,58,237,0.3)}
         .btn-primary:hover{box-shadow:0 4px 25px rgba(124,58,237,0.5);transform:translateY(-1px)}
         .btn-secondary{background:rgba(255,255,255,0.05);color:#e8e8f0;border:1px solid rgba(255,255,255,0.1)}
         .btn-secondary:hover{background:rgba(255,255,255,0.1)}
         .btn-sm{padding:6px 14px;font-size:.78em;min-height:36px;border-radius:8px}
-        .btn-danger{background:rgba(239,68,68,0.15);color:#f87171}
 
-        /* FAB */
         .fab{position:fixed;bottom:90px;right:20px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;border:none;font-size:1.5em;cursor:pointer;box-shadow:0 4px 20px rgba(124,58,237,0.4);z-index:90;display:flex;align-items:center;justify-content:center;transition:transform .3s ease}
         .fab:hover{transform:scale(1.1)}
         @media(min-width:769px){.fab{display:none}}
 
-        /* Bottom nav */
         .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,15,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,0.06);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom)}
-        .bottom-nav .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;cursor:pointer;color:#666;font-size:.65em;font-weight:600;gap:4px;min-height:56px;transition:color .3s ease;-webkit-tap-highlight-color:transparent}
+        .bottom-nav .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 0;cursor:pointer;color:#666;font-size:.6em;font-weight:600;gap:3px;min-height:56px;transition:color .3s ease;-webkit-tap-highlight-color:transparent}
         .bottom-nav .nav-item.active{color:#7c3aed}
-        .bottom-nav .nav-item svg{width:22px;height:22px}
+        .bottom-nav .nav-item svg{width:20px;height:20px}
         @media(min-width:769px){.bottom-nav{display:none}}
 
-        /* Modal */
         .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:200;align-items:flex-end;justify-content:center}
         .modal-overlay.active{display:flex}
         @media(min-width:769px){.modal-overlay.active{align-items:center}}
@@ -119,7 +109,6 @@
         .modal-header h2{font-size:1.1em;font-weight:700}
         .modal-close{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.05);border:none;color:#888899;font-size:1.2em;cursor:pointer;display:flex;align-items:center;justify-content:center;min-height:44px;min-width:44px}
 
-        /* Form */
         .form-group{margin-bottom:16px}
         .form-group label{display:block;font-size:.8em;font-weight:600;color:#999;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
         .form-group input,.form-group select,.form-group textarea{width:100%;padding:12px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#e8e8f0;font-family:'Inter',sans-serif;font-size:.9em;min-height:44px;transition:border-color .3s ease}
@@ -128,7 +117,6 @@
         .form-group select option{background:#1a1a2e;color:#e8e8f0}
         .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 
-        /* Detail view */
         .detail-back{display:inline-flex;align-items:center;gap:6px;color:#a78bfa;font-size:.85em;cursor:pointer;margin-bottom:16px;min-height:44px;-webkit-tap-highlight-color:transparent}
         .detail-header{margin-bottom:24px}
         .detail-title{font-size:1.4em;font-weight:800;margin-bottom:4px}
@@ -138,7 +126,6 @@
         .detail-section{margin-bottom:24px}
         .detail-section-title{font-size:1em;font-weight:700;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
 
-        /* Deliverable / Payment cards */
         .item-card{padding:14px 16px;margin-bottom:10px;border-left:3px solid #7c3aed;transition:background .3s ease}
         .item-card:hover{background:rgba(255,255,255,0.05)}
         .item-card-header{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
@@ -146,17 +133,13 @@
         .item-card-meta{color:#888899;font-size:.78em}
         .item-card select{padding:4px 8px;font-size:.78em;min-height:36px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#e8e8f0}
 
-        /* Pipeline filter */
         .pipeline-filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
         .filter-chip{padding:8px 16px;border-radius:20px;font-size:.78em;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.03);color:#888899;transition:all .3s;min-height:36px;display:flex;align-items:center}
         .filter-chip.active{background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;border-color:transparent}
 
-        /* Empty state */
         .empty-state{text-align:center;padding:48px 20px;color:#555}
-        .empty-state svg{width:48px;height:48px;margin-bottom:12px;opacity:.3}
         .empty-state p{font-size:.9em}
 
-        /* Stagger animation */
         .stagger{opacity:0;animation:fadeUp .4s ease forwards}
         .stagger:nth-child(1){animation-delay:.05s}
         .stagger:nth-child(2){animation-delay:.1s}
@@ -164,14 +147,60 @@
         .stagger:nth-child(4){animation-delay:.2s}
         .stagger:nth-child(5){animation-delay:.25s}
         .stagger:nth-child(6){animation-delay:.3s}
-        .stagger:nth-child(7){animation-delay:.35s}
-        .stagger:nth-child(8){animation-delay:.4s}
-        .stagger:nth-child(9){animation-delay:.45s}
 
-        /* Scrollbar */
         ::-webkit-scrollbar{width:6px}
         ::-webkit-scrollbar-track{background:transparent}
         ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px}
+
+        .desktop-only{display:none}
+        @media(min-width:769px){.desktop-only{display:inline-flex}}
+
+        /* ========== TIMELINE ========== */
+        .timeline-group{margin-bottom:32px}
+        .timeline-group-header{font-size:.85em;font-weight:700;color:#a78bfa;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;padding-left:4px}
+        .timeline-item{display:flex;gap:16px;padding:14px 16px;margin-bottom:8px;cursor:pointer;transition:all .3s ease;position:relative}
+        .timeline-item:hover{background:rgba(255,255,255,0.05)}
+        .timeline-item.expanded .timeline-details{display:block}
+        .timeline-dot{width:12px;height:12px;border-radius:50%;margin-top:4px;flex-shrink:0;box-shadow:0 0 8px currentColor}
+        .timeline-dot.overdue{background:#ef4444;color:#ef4444}
+        .timeline-dot.due-soon{background:#f59e0b;color:#f59e0b}
+        .timeline-dot.upcoming{background:#10b981;color:#10b981}
+        .timeline-dot.completed{background:#60a5fa;color:#60a5fa}
+        .timeline-body{flex:1;min-width:0}
+        .timeline-title{font-weight:600;font-size:.9em;margin-bottom:2px}
+        .timeline-meta{font-size:.78em;color:#888899;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+        .timeline-type-badge{font-size:.68em;padding:2px 8px;border-radius:10px;font-weight:600;text-transform:uppercase}
+        .timeline-type-badge.deliverable{background:rgba(124,58,237,0.15);color:#a78bfa}
+        .timeline-type-badge.payment{background:rgba(16,185,129,0.15);color:#34d399}
+        .timeline-details{display:none;margin-top:10px;padding:12px;background:rgba(255,255,255,0.02);border-radius:10px;font-size:.82em;color:#999;line-height:1.6}
+        .timeline-date-col{font-size:.78em;color:#666;min-width:70px;text-align:right;white-space:nowrap;padding-top:2px}
+
+        /* ========== PIPELINE (KANBAN) ========== */
+        .pipeline-board{display:flex;gap:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:16px;min-height:400px}
+        .pipeline-column{min-width:280px;flex:1;display:flex;flex-direction:column}
+        .pipeline-col-header{font-size:.82em;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:12px 16px;border-radius:12px 12px 0 0;margin-bottom:0;display:flex;align-items:center;justify-content:space-between}
+        .pipeline-col-header .col-count{font-size:.85em;font-weight:400;opacity:.7}
+        .pipeline-col-body{flex:1;padding:8px;background:rgba(255,255,255,0.015);border:1px solid rgba(255,255,255,0.04);border-top:none;border-radius:0 0 12px 12px;min-height:100px;transition:background .2s}
+        .pipeline-col-body.drag-over{background:rgba(124,58,237,0.08);border-color:rgba(124,58,237,0.2)}
+        .pipeline-card{padding:14px;margin-bottom:8px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);cursor:grab;transition:all .2s;touch-action:none}
+        .pipeline-card:active{cursor:grabbing;transform:scale(1.02);box-shadow:0 8px 30px rgba(0,0,0,0.3)}
+        .pipeline-card:hover{border-color:rgba(124,58,237,0.3)}
+        .pipeline-card-title{font-weight:700;font-size:.88em;margin-bottom:4px}
+        .pipeline-card-company{color:#a78bfa;font-size:.75em;margin-bottom:8px}
+        .pipeline-card-amount{font-size:1.2em;font-weight:800;background:linear-gradient(135deg,#7c3aed,#2563eb);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px}
+        .pipeline-card-meta{font-size:.72em;color:#666;display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px}
+        .pipeline-card.dragging{opacity:.4}
+
+        .col-pending .pipeline-col-header{background:rgba(245,158,11,0.1);color:#fbbf24;border-bottom:2px solid #f59e0b}
+        .col-active .pipeline-col-header{background:rgba(16,185,129,0.1);color:#34d399;border-bottom:2px solid #10b981}
+        .col-delivered .pipeline-col-header{background:rgba(139,92,246,0.1);color:#a78bfa;border-bottom:2px solid #8b5cf6}
+        .col-completed .pipeline-col-header{background:rgba(37,99,235,0.1);color:#60a5fa;border-bottom:2px solid #2563eb}
+        .col-cancelled .pipeline-col-header{background:rgba(239,68,68,0.1);color:#f87171;border-bottom:2px solid #ef4444}
+
+        @media(max-width:768px){
+            .pipeline-board{flex-direction:column}
+            .pipeline-column{min-width:unset}
+        }
     </style>
 </head>
 <body>
@@ -184,12 +213,15 @@
         <div class="stats-grid" id="stats"></div>
 
         <div class="tabs" id="mainTabs">
-            <div class="tab active" data-tab="deals" onclick="switchTab('deals')">Deals</div>
-            <div class="tab" data-tab="sponsors" onclick="switchTab('sponsors')">Sponsors</div>
+            <div class="tab active" data-tab="dashboard" onclick="switchTab('dashboard')">📊 Dashboard</div>
+            <div class="tab" data-tab="timeline" onclick="switchTab('timeline')">📅 Timeline</div>
+            <div class="tab" data-tab="pipeline" onclick="switchTab('pipeline')">🔄 Pipeline</div>
+            <div class="tab" data-tab="sponsors" onclick="switchTab('sponsors')">🏢 Sponsors</div>
+            <div class="tab" data-tab="deals" onclick="switchTab('deals')">🤝 Deals</div>
         </div>
 
-        <!-- DEALS TAB -->
-        <div class="tab-content active" id="tab-deals">
+        <!-- DASHBOARD TAB (was deals) -->
+        <div class="tab-content active" id="tab-dashboard">
             <div class="section-header">
                 <div class="section-title">Deal Pipeline</div>
                 <button class="btn btn-primary btn-sm desktop-only" onclick="openModal('deal')">+ New Deal</button>
@@ -198,9 +230,48 @@
                 <div class="filter-chip active" data-filter="all" onclick="filterDeals('all')">All</div>
                 <div class="filter-chip" data-filter="pending" onclick="filterDeals('pending')">Pending</div>
                 <div class="filter-chip" data-filter="active" onclick="filterDeals('active')">Active</div>
+                <div class="filter-chip" data-filter="delivered" onclick="filterDeals('delivered')">Delivered</div>
                 <div class="filter-chip" data-filter="completed" onclick="filterDeals('completed')">Completed</div>
             </div>
             <div class="cards-grid" id="dealsList"></div>
+        </div>
+
+        <!-- TIMELINE TAB -->
+        <div class="tab-content" id="tab-timeline">
+            <div class="section-header">
+                <div class="section-title">📅 Upcoming Deadlines & Payments</div>
+            </div>
+            <div id="timelineList"></div>
+        </div>
+
+        <!-- PIPELINE TAB -->
+        <div class="tab-content" id="tab-pipeline">
+            <div class="section-header">
+                <div class="section-title">🔄 Deal Pipeline</div>
+                <button class="btn btn-primary btn-sm desktop-only" onclick="openModal('deal')">+ New Deal</button>
+            </div>
+            <div class="pipeline-board" id="pipelineBoard">
+                <div class="pipeline-column col-pending">
+                    <div class="pipeline-col-header">Pending <span class="col-count" id="count-pending">0</span></div>
+                    <div class="pipeline-col-body" data-status="pending" id="col-pending"></div>
+                </div>
+                <div class="pipeline-column col-active">
+                    <div class="pipeline-col-header">Active <span class="col-count" id="count-active">0</span></div>
+                    <div class="pipeline-col-body" data-status="active" id="col-active"></div>
+                </div>
+                <div class="pipeline-column col-delivered">
+                    <div class="pipeline-col-header">Delivered <span class="col-count" id="count-delivered">0</span></div>
+                    <div class="pipeline-col-body" data-status="delivered" id="col-delivered"></div>
+                </div>
+                <div class="pipeline-column col-completed">
+                    <div class="pipeline-col-header">Completed <span class="col-count" id="count-completed">0</span></div>
+                    <div class="pipeline-col-body" data-status="completed" id="col-completed"></div>
+                </div>
+                <div class="pipeline-column col-cancelled">
+                    <div class="pipeline-col-header">Cancelled <span class="col-count" id="count-cancelled">0</span></div>
+                    <div class="pipeline-col-body" data-status="cancelled" id="col-cancelled"></div>
+                </div>
+            </div>
         </div>
 
         <!-- SPONSORS TAB -->
@@ -212,25 +283,40 @@
             <div class="cards-grid" id="sponsorsList"></div>
         </div>
 
+        <!-- DEALS TAB -->
+        <div class="tab-content" id="tab-deals">
+            <div class="section-header">
+                <div class="section-title">All Deals</div>
+                <button class="btn btn-primary btn-sm desktop-only" onclick="openModal('deal')">+ New Deal</button>
+            </div>
+            <div class="cards-grid" id="allDealsList"></div>
+        </div>
+
         <!-- DEAL DETAIL VIEW -->
         <div class="tab-content" id="tab-detail">
-            <div class="detail-back" onclick="backToDeals()">← Back to Deals</div>
+            <div class="detail-back" onclick="backToDeals()">← Back</div>
             <div id="dealDetail"></div>
         </div>
     </div>
 
-    <!-- FAB -->
     <button class="fab" id="fab" onclick="openFAB()">+</button>
 
-    <!-- Bottom Nav -->
     <nav class="bottom-nav">
-        <div class="nav-item active" data-nav="deals" onclick="navTo('deals')">
+        <div class="nav-item active" data-nav="dashboard" onclick="navTo('dashboard')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            <span>Dashboard</span>
+        </div>
+        <div class="nav-item" data-nav="timeline" onclick="navTo('timeline')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            <span>Timeline</span>
+        </div>
+        <div class="nav-item" data-nav="pipeline" onclick="navTo('pipeline')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            <span>Pipeline</span>
+        </div>
+        <div class="nav-item" data-nav="deals" onclick="navTo('deals')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
             <span>Deals</span>
-        </div>
-        <div class="nav-item" data-nav="sponsors" onclick="navTo('sponsors')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-            <span>Sponsors</span>
         </div>
         <div class="nav-item" data-nav="add" onclick="openFAB()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
@@ -241,42 +327,16 @@
     <!-- DEAL MODAL -->
     <div class="modal-overlay" id="dealModal">
         <div class="modal-box">
-            <div class="modal-header">
-                <h2>New Deal</h2>
-                <button class="modal-close" onclick="closeModal('dealModal')">✕</button>
-            </div>
+            <div class="modal-header"><h2>New Deal</h2><button class="modal-close" onclick="closeModal('dealModal')">✕</button></div>
             <form id="dealForm">
-                <div class="form-group">
-                    <label>Sponsor</label>
-                    <select id="sponsorId" required>
-                        <option value="">Select sponsor...</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Or create new sponsor</label>
-                    <input type="text" id="newCompanyName" placeholder="Company name">
-                </div>
-                <div class="form-group">
-                    <label>Deal Title</label>
-                    <input type="text" id="dealTitle" required placeholder="e.g. Q1 Video Sponsorship">
-                </div>
-                <div class="form-group">
-                    <label>Type</label>
-                    <input type="text" id="dealType" placeholder="e.g. Sponsorship, Partnership">
-                </div>
-                <div class="form-group">
-                    <label>Amount ($)</label>
-                    <input type="number" id="dealAmount" step="0.01" placeholder="0.00">
-                </div>
+                <div class="form-group"><label>Sponsor</label><select id="sponsorId" required><option value="">Select sponsor...</option></select></div>
+                <div class="form-group"><label>Or create new sponsor</label><input type="text" id="newCompanyName" placeholder="Company name"></div>
+                <div class="form-group"><label>Deal Title</label><input type="text" id="dealTitle" required placeholder="e.g. Q1 Video Sponsorship"></div>
+                <div class="form-group"><label>Type</label><input type="text" id="dealType" placeholder="e.g. Sponsorship, Partnership"></div>
+                <div class="form-group"><label>Amount ($)</label><input type="number" id="dealAmount" step="0.01" placeholder="0.00"></div>
                 <div class="form-row">
-                    <div class="form-group">
-                        <label>Start Date</label>
-                        <input type="date" id="startDate">
-                    </div>
-                    <div class="form-group">
-                        <label>End Date</label>
-                        <input type="date" id="endDate">
-                    </div>
+                    <div class="form-group"><label>Start Date</label><input type="date" id="startDate"></div>
+                    <div class="form-group"><label>End Date</label><input type="date" id="endDate"></div>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width:100%">Save Deal</button>
             </form>
@@ -286,27 +346,12 @@
     <!-- SPONSOR MODAL -->
     <div class="modal-overlay" id="sponsorModal">
         <div class="modal-box">
-            <div class="modal-header">
-                <h2>Add Sponsor</h2>
-                <button class="modal-close" onclick="closeModal('sponsorModal')">✕</button>
-            </div>
+            <div class="modal-header"><h2>Add Sponsor</h2><button class="modal-close" onclick="closeModal('sponsorModal')">✕</button></div>
             <form id="sponsorForm">
-                <div class="form-group">
-                    <label>Company Name</label>
-                    <input type="text" id="sCompanyName" required placeholder="Company name">
-                </div>
-                <div class="form-group">
-                    <label>Contact Name</label>
-                    <input type="text" id="sContactName" placeholder="Contact person">
-                </div>
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="sEmail" placeholder="email@company.com">
-                </div>
-                <div class="form-group">
-                    <label>Notes</label>
-                    <textarea id="sNotes" rows="3" placeholder="Additional notes..."></textarea>
-                </div>
+                <div class="form-group"><label>Company Name</label><input type="text" id="sCompanyName" required placeholder="Company name"></div>
+                <div class="form-group"><label>Contact Name</label><input type="text" id="sContactName" placeholder="Contact person"></div>
+                <div class="form-group"><label>Email</label><input type="email" id="sEmail" placeholder="email@company.com"></div>
+                <div class="form-group"><label>Notes</label><textarea id="sNotes" rows="3" placeholder="Additional notes..."></textarea></div>
                 <button type="submit" class="btn btn-primary" style="width:100%">Save Sponsor</button>
             </form>
         </div>
@@ -315,24 +360,12 @@
     <!-- DELIVERABLE MODAL -->
     <div class="modal-overlay" id="deliverableModal">
         <div class="modal-box">
-            <div class="modal-header">
-                <h2>Add Deliverable</h2>
-                <button class="modal-close" onclick="closeModal('deliverableModal')">✕</button>
-            </div>
+            <div class="modal-header"><h2>Add Deliverable</h2><button class="modal-close" onclick="closeModal('deliverableModal')">✕</button></div>
             <form id="deliverableForm">
                 <input type="hidden" id="delDealId">
-                <div class="form-group">
-                    <label>Type</label>
-                    <input type="text" id="delType" required placeholder="e.g. Dedicated Video, Integration">
-                </div>
-                <div class="form-group">
-                    <label>Description</label>
-                    <textarea id="delDesc" rows="2" placeholder="Details..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Due Date</label>
-                    <input type="date" id="delDue">
-                </div>
+                <div class="form-group"><label>Title</label><input type="text" id="delType" required placeholder="e.g. Dedicated Video, Integration"></div>
+                <div class="form-group"><label>Description</label><textarea id="delDesc" rows="2" placeholder="Details..."></textarea></div>
+                <div class="form-group"><label>Deadline</label><input type="date" id="delDue"></div>
                 <button type="submit" class="btn btn-primary" style="width:100%">Save Deliverable</button>
             </form>
         </div>
@@ -341,30 +374,18 @@
     <!-- PAYMENT MODAL -->
     <div class="modal-overlay" id="paymentModal">
         <div class="modal-box">
-            <div class="modal-header">
-                <h2>Record Payment</h2>
-                <button class="modal-close" onclick="closeModal('paymentModal')">✕</button>
-            </div>
+            <div class="modal-header"><h2>Record Payment</h2><button class="modal-close" onclick="closeModal('paymentModal')">✕</button></div>
             <form id="paymentForm">
                 <input type="hidden" id="payDealId">
-                <div class="form-group">
-                    <label>Amount ($)</label>
-                    <input type="number" id="payAmount" step="0.01" required placeholder="0.00">
-                </div>
-                <div class="form-group">
-                    <label>Date</label>
-                    <input type="date" id="payDate">
-                </div>
-                <div class="form-group">
-                    <label>Notes</label>
-                    <input type="text" id="payNotes" placeholder="e.g. First installment">
-                </div>
+                <div class="form-group"><label>Amount ($)</label><input type="number" id="payAmount" step="0.01" required placeholder="0.00"></div>
+                <div class="form-group"><label>Due Date</label><input type="date" id="payDate"></div>
+                <div class="form-group"><label>Notes</label><input type="text" id="payNotes" placeholder="e.g. First installment"></div>
                 <button type="submit" class="btn btn-primary" style="width:100%">Save Payment</button>
             </form>
         </div>
     </div>
 
-    <!-- FAB MENU MODAL -->
+    <!-- FAB MENU -->
     <div class="modal-overlay" id="fabModal">
         <div class="modal-box" style="padding:16px">
             <div class="modal-header"><h2>Create New</h2><button class="modal-close" onclick="closeModal('fabModal')">✕</button></div>
@@ -375,14 +396,15 @@
         </div>
     </div>
 
-    <style>.desktop-only{display:none}@media(min-width:769px){.desktop-only{display:inline-flex}}</style>
-
     <script>
         const API = '';
         let allDeals = [];
         let allSponsors = [];
+        let timelineData = [];
         let currentFilter = 'all';
         let currentDealId = null;
+        let previousTab = 'dashboard';
+        let draggedDealId = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             loadStats();
@@ -392,11 +414,15 @@
 
         // TABS & NAV
         function switchTab(tab) {
+            previousTab = document.querySelector('.tab.active')?.dataset.tab || 'dashboard';
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.nav === tab));
             const el = document.getElementById('tab-' + tab);
             if (el) el.classList.add('active');
+            if (tab === 'timeline') loadTimeline();
+            if (tab === 'pipeline') renderPipeline();
+            if (tab === 'deals') renderAllDeals();
         }
 
         function navTo(tab) {
@@ -404,7 +430,7 @@
             switchTab(tab);
         }
 
-        function backToDeals() { switchTab('deals'); }
+        function backToDeals() { switchTab(previousTab); }
 
         // STATS
         async function loadStats() {
@@ -429,26 +455,25 @@
             } catch (e) { console.error('Deals error:', e); }
         }
 
+        function dealCardHTML(d, cls='') {
+            return `<div class="deal-card glass stagger ${cls}" data-status="${d.status}" onclick="viewDeal(${d.id})">
+                <div class="deal-card-header">
+                    <div><div class="deal-card-title">${esc(d.title)}</div><div class="deal-card-company">${esc(d.company_name||'')}</div></div>
+                    <span class="badge badge-${d.status}">${d.status}</span>
+                </div>
+                <div class="deal-card-amount">$${Number(d.amount||0).toLocaleString()}</div>
+                <div class="deal-card-dates">${fmtDate(d.start_date)} — ${fmtDate(d.end_date)}</div>
+                ${d.description?`<div class="deal-card-desc">${esc(d.description)}</div>`:''}
+            </div>`;
+        }
+
         function renderDeals() {
             const filtered = currentFilter === 'all' ? allDeals : allDeals.filter(d => d.status === currentFilter);
-            if (!filtered.length) {
-                document.getElementById('dealsList').innerHTML = '<div class="empty-state" style="grid-column:1/-1"><p>No deals found</p></div>';
-                return;
-            }
-            document.getElementById('dealsList').innerHTML = filtered.map((d, i) => `
-                <div class="deal-card glass stagger" data-status="${d.status}" onclick="viewDeal(${d.id})">
-                    <div class="deal-card-header">
-                        <div>
-                            <div class="deal-card-title">${esc(d.title)}</div>
-                            <div class="deal-card-company">${esc(d.company_name || '')}</div>
-                        </div>
-                        <span class="badge badge-${d.status}">${d.status}</span>
-                    </div>
-                    <div class="deal-card-amount">$${Number(d.amount || 0).toLocaleString()}</div>
-                    <div class="deal-card-dates">${fmtDate(d.start_date)} — ${fmtDate(d.end_date)}</div>
-                    ${d.description ? `<div class="deal-card-desc">${esc(d.description)}</div>` : ''}
-                </div>
-            `).join('');
+            document.getElementById('dealsList').innerHTML = filtered.length ? filtered.map(d => dealCardHTML(d)).join('') : '<div class="empty-state" style="grid-column:1/-1"><p>No deals found</p></div>';
+        }
+
+        function renderAllDeals() {
+            document.getElementById('allDealsList').innerHTML = allDeals.length ? allDeals.map(d => dealCardHTML(d)).join('') : '<div class="empty-state" style="grid-column:1/-1"><p>No deals yet</p></div>';
         }
 
         function filterDeals(f) {
@@ -457,12 +482,190 @@
             renderDeals();
         }
 
+        // ========== TIMELINE ==========
+        async function loadTimeline() {
+            try {
+                const res = await fetch(`${API}/api/timeline`);
+                timelineData = await res.json();
+                renderTimeline();
+            } catch (e) { console.error('Timeline error:', e); }
+        }
+
+        function getTimelineStatus(item) {
+            if (item.status === 'completed' || item.status === 'paid') return 'completed';
+            const now = new Date(); now.setHours(0,0,0,0);
+            const d = new Date(item.date); d.setHours(0,0,0,0);
+            const diff = (d - now) / (1000*60*60*24);
+            if (diff < 0) return 'overdue';
+            if (diff <= 7) return 'due-soon';
+            return 'upcoming';
+        }
+
+        function getMonthKey(dateStr) {
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        }
+
+        function renderTimeline() {
+            if (!timelineData.length) {
+                document.getElementById('timelineList').innerHTML = '<div class="empty-state"><p>No upcoming deadlines or payments</p></div>';
+                return;
+            }
+            // Group by month
+            const groups = {};
+            timelineData.forEach(item => {
+                const key = getMonthKey(item.date);
+                if (!groups[key]) groups[key] = [];
+                groups[key].push(item);
+            });
+
+            let html = '';
+            for (const [month, items] of Object.entries(groups)) {
+                html += `<div class="timeline-group"><div class="timeline-group-header">${month}</div>`;
+                items.forEach(item => {
+                    const ts = getTimelineStatus(item);
+                    const title = item.type === 'payment' ? `💳 Payment: $${Number(item.amount||0).toLocaleString()}` : (item.title || 'Deliverable');
+                    const statusEmoji = ts === 'overdue' ? '🔴' : ts === 'due-soon' ? '🟡' : ts === 'upcoming' ? '🟢' : '✅';
+                    html += `<div class="timeline-item glass" onclick="this.classList.toggle('expanded')">
+                        <div class="timeline-date-col">${fmtDateShort(item.date)}</div>
+                        <div class="timeline-dot ${ts}"></div>
+                        <div class="timeline-body">
+                            <div class="timeline-title">${statusEmoji} ${esc(title)}</div>
+                            <div class="timeline-meta">
+                                <span class="timeline-type-badge ${item.type}">${item.type}</span>
+                                <span>${esc(item.company_name)}</span>
+                                <span>• ${esc(item.deal_title)}</span>
+                            </div>
+                            <div class="timeline-details">
+                                ${item.description ? `<div>${esc(item.description)}</div>` : ''}
+                                <div>Status: <span class="badge badge-${item.status}">${item.status}</span></div>
+                                ${item.amount ? `<div>Amount: $${Number(item.amount).toLocaleString()}</div>` : ''}
+                            </div>
+                        </div>
+                    </div>`;
+                });
+                html += '</div>';
+            }
+            document.getElementById('timelineList').innerHTML = html;
+        }
+
+        // ========== PIPELINE (KANBAN) ==========
+        function renderPipeline() {
+            const statuses = ['pending', 'active', 'delivered', 'completed', 'cancelled'];
+            statuses.forEach(status => {
+                const deals = allDeals.filter(d => d.status === status).sort((a,b) => new Date(a.end_date||'9999') - new Date(b.end_date||'9999'));
+                const col = document.getElementById('col-' + status);
+                document.getElementById('count-' + status).textContent = deals.length;
+                col.innerHTML = deals.length ? deals.map(d => `
+                    <div class="pipeline-card" draggable="true" data-deal-id="${d.id}"
+                         ondragstart="onDragStart(event,${d.id})" ondragend="onDragEnd(event)">
+                        <div class="pipeline-card-title">${esc(d.title)}</div>
+                        <div class="pipeline-card-company">${esc(d.company_name||'')}</div>
+                        <div class="pipeline-card-amount">$${Number(d.amount||0).toLocaleString()}</div>
+                        <div class="pipeline-card-meta">
+                            <span>📦 ${d.deliverables_count||0} deliverables</span>
+                            <span>${fmtDateShort(d.end_date)}</span>
+                        </div>
+                    </div>
+                `).join('') : '<div style="text-align:center;padding:24px;color:#444;font-size:.8em">No deals</div>';
+            });
+        }
+
+        // Drag and drop
+        function onDragStart(e, dealId) {
+            draggedDealId = dealId;
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', dealId);
+        }
+
+        function onDragEnd(e) {
+            e.target.classList.remove('dragging');
+            document.querySelectorAll('.pipeline-col-body').forEach(c => c.classList.remove('drag-over'));
+        }
+
+        document.querySelectorAll('.pipeline-col-body').forEach(col => {
+            col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('drag-over'); });
+            col.addEventListener('dragleave', () => col.classList.remove('drag-over'));
+            col.addEventListener('drop', async e => {
+                e.preventDefault();
+                col.classList.remove('drag-over');
+                const newStatus = col.dataset.status;
+                if (!draggedDealId) return;
+                try {
+                    await fetch(`${API}/api/deals/${draggedDealId}/status`, {
+                        method: 'PATCH',
+                        headers: {'Content-Type':'application/json'},
+                        body: JSON.stringify({ status: newStatus })
+                    });
+                    // Update local data
+                    const deal = allDeals.find(d => d.id === draggedDealId);
+                    if (deal) deal.status = newStatus;
+                    renderPipeline();
+                    loadStats();
+                } catch (err) { console.error('Failed to update status:', err); }
+                draggedDealId = null;
+            });
+        });
+
+        // Touch drag support for mobile
+        let touchDragEl = null, touchDealId = null, touchClone = null;
+        document.addEventListener('touchstart', e => {
+            const card = e.target.closest('.pipeline-card');
+            if (!card) return;
+            touchDragEl = card;
+            touchDealId = parseInt(card.dataset.dealId);
+        }, { passive: true });
+
+        document.addEventListener('touchmove', e => {
+            if (!touchDragEl) return;
+            e.preventDefault();
+            if (!touchClone) {
+                touchClone = touchDragEl.cloneNode(true);
+                touchClone.style.position = 'fixed';
+                touchClone.style.zIndex = 1000;
+                touchClone.style.opacity = 0.8;
+                touchClone.style.pointerEvents = 'none';
+                touchClone.style.width = touchDragEl.offsetWidth + 'px';
+                document.body.appendChild(touchClone);
+                touchDragEl.classList.add('dragging');
+            }
+            const t = e.touches[0];
+            touchClone.style.left = (t.clientX - 60) + 'px';
+            touchClone.style.top = (t.clientY - 30) + 'px';
+            // Highlight drop target
+            document.querySelectorAll('.pipeline-col-body').forEach(c => {
+                const r = c.getBoundingClientRect();
+                c.classList.toggle('drag-over', t.clientX >= r.left && t.clientX <= r.right && t.clientY >= r.top && t.clientY <= r.bottom);
+            });
+        }, { passive: false });
+
+        document.addEventListener('touchend', async () => {
+            if (!touchDragEl) return;
+            if (touchClone) { touchClone.remove(); touchClone = null; }
+            touchDragEl.classList.remove('dragging');
+            const target = document.querySelector('.pipeline-col-body.drag-over');
+            if (target && touchDealId) {
+                const newStatus = target.dataset.status;
+                try {
+                    await fetch(`${API}/api/deals/${touchDealId}/status`, {
+                        method: 'PATCH', headers: {'Content-Type':'application/json'},
+                        body: JSON.stringify({ status: newStatus })
+                    });
+                    const deal = allDeals.find(d => d.id === touchDealId);
+                    if (deal) deal.status = newStatus;
+                    renderPipeline(); loadStats();
+                } catch (err) { console.error(err); }
+            }
+            document.querySelectorAll('.pipeline-col-body').forEach(c => c.classList.remove('drag-over'));
+            touchDragEl = null; touchDealId = null;
+        });
+
         // DEAL DETAIL
         async function viewDeal(id) {
             currentDealId = id;
             const deal = allDeals.find(d => d.id === id);
             if (!deal) return;
-
             let deliverables = [], payments = [];
             try {
                 const [dRes, pRes] = await Promise.all([
@@ -479,66 +682,55 @@
                         <div class="detail-title">${esc(deal.title)}</div>
                         <span class="badge badge-${deal.status}">${deal.status}</span>
                     </div>
-                    <div class="detail-company">${esc(deal.company_name || '')}</div>
-                    <div class="detail-amount">$${Number(deal.amount || 0).toLocaleString()}</div>
+                    <div class="detail-company">${esc(deal.company_name||'')}</div>
+                    <div class="detail-amount">$${Number(deal.amount||0).toLocaleString()}</div>
                     <div class="detail-meta">
                         <span>📅 ${fmtDate(deal.start_date)} — ${fmtDate(deal.end_date)}</span>
-                        ${deal.deal_type ? `<span>📋 ${esc(deal.deal_type)}</span>` : ''}
+                        ${deal.deal_type?`<span>📋 ${esc(deal.deal_type)}</span>`:''}
                     </div>
                     <div style="display:flex;gap:8px;flex-wrap:wrap">
                         <select class="btn btn-secondary btn-sm" onchange="updateDealStatus(${deal.id}, this.value)">
-                            <option value="pending" ${deal.status==='pending'?'selected':''}>Pending</option>
-                            <option value="active" ${deal.status==='active'?'selected':''}>Active</option>
-                            <option value="completed" ${deal.status==='completed'?'selected':''}>Completed</option>
+                            ${['pending','active','delivered','completed','cancelled'].map(s=>`<option value="${s}" ${deal.status===s?'selected':''}>${s}</option>`).join('')}
                         </select>
                     </div>
                 </div>
-
                 <div class="detail-section">
-                    <div class="detail-section-title">
-                        <span>📦 Deliverables (${deliverables.length})</span>
-                        <button class="btn btn-primary btn-sm" onclick="openDeliverableModal(${id})">+ Add</button>
-                    </div>
+                    <div class="detail-section-title"><span>📦 Deliverables (${deliverables.length})</span><button class="btn btn-primary btn-sm" onclick="openDeliverableModal(${id})">+ Add</button></div>
                     ${deliverables.length ? deliverables.map(d => `
                         <div class="item-card glass">
                             <div class="item-card-header">
-                                <div class="item-card-title">${esc(d.deliverable_type || d.type || 'Deliverable')}</div>
+                                <div class="item-card-title">${esc(d.title||d.delivery_type||'Deliverable')}</div>
                                 <select class="badge" onchange="updateDeliverable(${d.id}, this.value)" style="cursor:pointer">
                                     <option value="pending" ${d.status==='pending'?'selected':''}>Pending</option>
                                     <option value="in_progress" ${d.status==='in_progress'?'selected':''}>In Progress</option>
                                     <option value="completed" ${d.status==='completed'?'selected':''}>Completed</option>
                                 </select>
                             </div>
-                            ${d.description ? `<div class="item-card-meta">${esc(d.description)}</div>` : ''}
-                            ${d.due_date ? `<div class="item-card-meta">Due: ${fmtDate(d.due_date)}</div>` : ''}
+                            ${d.description?`<div class="item-card-meta">${esc(d.description)}</div>`:''}
+                            ${d.deadline?`<div class="item-card-meta">Due: ${fmtDate(d.deadline)}</div>`:''}
                         </div>
                     `).join('') : '<div class="empty-state"><p>No deliverables yet</p></div>'}
                 </div>
-
                 <div class="detail-section">
-                    <div class="detail-section-title">
-                        <span>💳 Payments (${payments.length})</span>
-                        <button class="btn btn-primary btn-sm" onclick="openPaymentModal(${id})">+ Add</button>
-                    </div>
+                    <div class="detail-section-title"><span>💳 Payments (${payments.length})</span><button class="btn btn-primary btn-sm" onclick="openPaymentModal(${id})">+ Add</button></div>
                     ${payments.length ? payments.map(p => `
                         <div class="item-card glass" style="border-left-color:#10b981">
                             <div class="item-card-header">
-                                <div class="item-card-title">$${Number(p.amount || 0).toLocaleString()}</div>
-                                <span class="item-card-meta">${fmtDate(p.payment_date || p.date)}</span>
+                                <div class="item-card-title">$${Number(p.amount||0).toLocaleString()}</div>
+                                <span class="item-card-meta">${fmtDate(p.due_date||p.paid_date)}</span>
                             </div>
-                            ${p.notes ? `<div class="item-card-meta">${esc(p.notes)}</div>` : ''}
+                            ${p.notes?`<div class="item-card-meta">${esc(p.notes)}</div>`:''}
                         </div>
                     `).join('') : '<div class="empty-state"><p>No payments recorded</p></div>'}
                 </div>
             `;
-
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.getElementById('tab-detail').classList.add('active');
         }
 
         async function updateDealStatus(id, status) {
             try {
-                await fetch(`${API}/api/deals/${id}`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({status}) });
+                await fetch(`${API}/api/deals/${id}/status`, { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify({status}) });
                 await loadDeals(); loadStats(); viewDeal(id);
             } catch (e) { console.error(e); }
         }
@@ -561,28 +753,20 @@
         }
 
         function renderSponsors() {
-            if (!allSponsors.length) {
-                document.getElementById('sponsorsList').innerHTML = '<div class="empty-state" style="grid-column:1/-1"><p>No sponsors yet</p></div>';
-                return;
-            }
-            document.getElementById('sponsorsList').innerHTML = allSponsors.map(s => `
+            document.getElementById('sponsorsList').innerHTML = allSponsors.length ? allSponsors.map(s => `
                 <div class="sponsor-card glass stagger">
                     <div class="sponsor-name">${esc(s.company_name)}</div>
-                    ${s.contact_name ? `<div class="sponsor-contact">👤 ${esc(s.contact_name)}</div>` : ''}
-                    ${s.email ? `<div class="sponsor-contact">📧 ${esc(s.email)}</div>` : ''}
-                    ${s.notes ? `<div class="sponsor-contact" style="margin-top:8px;color:#666">${esc(s.notes)}</div>` : ''}
+                    ${s.contact_name?`<div class="sponsor-contact">👤 ${esc(s.contact_name)}</div>`:''}
+                    ${s.email?`<div class="sponsor-contact">📧 ${esc(s.email)}</div>`:''}
+                    ${s.notes?`<div class="sponsor-contact" style="margin-top:8px;color:#666">${esc(s.notes)}</div>`:''}
                 </div>
-            `).join('');
+            `).join('') : '<div class="empty-state" style="grid-column:1/-1"><p>No sponsors yet</p></div>';
         }
 
         function populateSponsorSelect() {
             const sel = document.getElementById('sponsorId');
             sel.innerHTML = '<option value="">Select sponsor...</option>';
-            allSponsors.forEach(s => {
-                const o = document.createElement('option');
-                o.value = s.id; o.textContent = s.company_name;
-                sel.appendChild(o);
-            });
+            allSponsors.forEach(s => { const o = document.createElement('option'); o.value = s.id; o.textContent = s.company_name; sel.appendChild(o); });
         }
 
         // MODALS
@@ -595,7 +779,6 @@
         function openDeliverableModal(dealId) { document.getElementById('deliverableForm').reset(); document.getElementById('delDealId').value = dealId; document.getElementById('deliverableModal').classList.add('active'); }
         function openPaymentModal(dealId) { document.getElementById('paymentForm').reset(); document.getElementById('payDealId').value = dealId; document.getElementById('paymentModal').classList.add('active'); }
 
-        // Close modals on overlay click
         document.querySelectorAll('.modal-overlay').forEach(m => {
             m.addEventListener('click', e => { if (e.target === m) m.classList.remove('active'); });
         });
@@ -606,10 +789,7 @@
             let sponsorId = document.getElementById('sponsorId').value;
             const newCompany = document.getElementById('newCompanyName').value;
             if (!sponsorId && newCompany) {
-                try {
-                    const res = await fetch(`${API}/api/sponsors`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({company_name:newCompany}) });
-                    const sp = await res.json(); sponsorId = sp.id;
-                } catch (e) { alert('Failed to create sponsor'); return; }
+                try { const res = await fetch(`${API}/api/sponsors`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({company_name:newCompany}) }); const sp = await res.json(); sponsorId = sp.id; } catch (e) { alert('Failed to create sponsor'); return; }
             }
             try {
                 await fetch(`${API}/api/deals`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({
@@ -625,10 +805,8 @@
             e.preventDefault();
             try {
                 await fetch(`${API}/api/sponsors`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({
-                    company_name: document.getElementById('sCompanyName').value,
-                    contact_name: document.getElementById('sContactName').value,
-                    email: document.getElementById('sEmail').value,
-                    notes: document.getElementById('sNotes').value
+                    company_name: document.getElementById('sCompanyName').value, contact_name: document.getElementById('sContactName').value,
+                    email: document.getElementById('sEmail').value, notes: document.getElementById('sNotes').value
                 })});
                 closeModal('sponsorModal'); loadSponsorsData();
             } catch (e) { alert('Failed to save sponsor'); }
@@ -638,11 +816,8 @@
             e.preventDefault();
             try {
                 await fetch(`${API}/api/deliverables`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({
-                    deal_id: document.getElementById('delDealId').value,
-                    deliverable_type: document.getElementById('delType').value,
-                    description: document.getElementById('delDesc').value,
-                    due_date: document.getElementById('delDue').value,
-                    status: 'pending'
+                    deal_id: document.getElementById('delDealId').value, title: document.getElementById('delType').value,
+                    description: document.getElementById('delDesc').value, deadline: document.getElementById('delDue').value, status: 'pending'
                 })});
                 closeModal('deliverableModal'); if (currentDealId) viewDeal(currentDealId); loadStats();
             } catch (e) { alert('Failed to save deliverable'); }
@@ -652,10 +827,8 @@
             e.preventDefault();
             try {
                 await fetch(`${API}/api/payments`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({
-                    deal_id: document.getElementById('payDealId').value,
-                    amount: document.getElementById('payAmount').value,
-                    payment_date: document.getElementById('payDate').value,
-                    notes: document.getElementById('payNotes').value
+                    deal_id: document.getElementById('payDealId').value, amount: document.getElementById('payAmount').value,
+                    due_date: document.getElementById('payDate').value, notes: document.getElementById('payNotes').value
                 })});
                 closeModal('paymentModal'); if (currentDealId) viewDeal(currentDealId); loadStats();
             } catch (e) { alert('Failed to save payment'); }
@@ -664,6 +837,7 @@
         // UTILS
         function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
         function fmtDate(d) { if (!d) return 'TBD'; return new Date(d).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}); }
+        function fmtDateShort(d) { if (!d) return 'TBD'; return new Date(d).toLocaleDateString('en-US', {month:'short', day:'numeric'}); }
     </script>
 </body>
 </html>
