@@ -573,9 +573,9 @@ services:
     - nas:192.100.2.1
     restart: unless-stopped
     ports:
-    - 8114:8114
+    - 8119:8119
     environment:
-    - PORT=8114
+    - PORT=8119
     - DATABASE_URL=postgresql://lobsty:lobsty2026@postgres:5432/chat
     - GATEWAY_WS=ws://192.100.2.1:18789
     depends_on:
@@ -609,6 +609,15 @@ services:
     environment:
       - PORT=3000
 
+
+  status-page:
+    build: ./status-page
+    container_name: lobsty-status-page
+    restart: unless-stopped
+    ports:
+      - "8119:8119"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 volumes:
   open-webui-data:
     driver: local

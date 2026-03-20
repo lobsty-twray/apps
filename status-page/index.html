@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tech with Ray — System Status</title>
+<link rel="stylesheet" href="http://shared-assets:3000/design-tokens.css">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0a0a0f;
+    --card: rgba(255,255,255,0.05);
+    --card-border: rgba(255,255,255,0.08);
+    --green: #22c55e;
+    --yellow: #eab308;
+    --red: #ef4444;
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --font: 'Inter', -apple-system, sans-serif;
+  }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 1.5rem;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  header {
+    text-align: center;
+    padding: 2rem 0 1rem;
+  }
+  header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: .25rem;
+  }
+  header .subtitle { color: var(--text-dim); font-size: .9rem; }
+
+  .summary {
+    text-align: center;
+    padding: 1.25rem;
+    border-radius: 12px;
+    margin: 1.5rem 0;
+    font-weight: 600;
+    font-size: 1.1rem;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .75rem;
+  }
+  .summary .dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  @media (min-width: 600px) { .grid { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 1000px) { .grid { grid-template-columns: 1fr 1fr 1fr; } }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    backdrop-filter: blur(12px);
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    opacity: 0;
+    transform: translateY(8px);
+    animation: fadeIn .4s ease forwards;
+  }
+  @keyframes fadeIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .card .top { display: flex; justify-content: space-between; align-items: center; }
+  .card .name {
+    font-weight: 600;
+    font-size: .95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .card .badge {
+    display: flex; align-items: center; gap: 6px;
+    font-size: .75rem; font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 20px;
+    flex-shrink: 0;
+  }
+  .badge.operational { background: rgba(34,197,94,.12); color: var(--green); }
+  .badge.degraded { background: rgba(234,179,8,.12); color: var(--yellow); }
+  .badge.down { background: rgba(239,68,68,.12); color: var(--red); }
+  .badge .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .badge.operational .dot { background: var(--green); }
+  .badge.degraded .dot { background: var(--yellow); }
+  .badge.down .dot { background: var(--red); }
+
+  .card .meta {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: .8rem; color: var(--text-dim);
+  }
+  .card .meta a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: .75rem;
+  }
+  .card .meta a:hover { color: var(--text); text-decoration: underline; }
+
+  footer {
+    text-align: center;
+    padding: 1rem 0 2rem;
+    color: var(--text-dim);
+    font-size: .8rem;
+  }
+  .loading { text-align: center; padding: 3rem; color: var(--text-dim); }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Tech with Ray — System Status</h1>
+    <p class="subtitle">Real-time service health monitoring</p>
+  </header>
+  <div class="summary" id="summary"><span class="dot"></span> Loading...</div>
+  <div class="grid" id="grid"><div class="loading">Checking services...</div></div>
+  <footer id="footer"></footer>
+</div>
+<script>
+async function load() {
+  try {
+    const res = await fetch('/api/status');
+    const data = await res.json();
+    const { services, summary } = data;
+
+    const sumEl = document.getElementById('summary');
+    let color, label;
+    if (summary.down > 0) { color = 'var(--red)'; label = `${summary.down} service${summary.down>1?'s':''} down`; }
+    else if (summary.degraded > 0) { color = 'var(--yellow)'; label = `${summary.degraded} service${summary.degraded>1?'s':''} degraded`; }
+    else { color = 'var(--green)'; label = 'All Systems Operational'; }
+    sumEl.innerHTML = `<span class="dot" style="background:${color}"></span> ${label}`;
+
+    const grid = document.getElementById('grid');
+    grid.innerHTML = services.map((s, i) => `
+      <div class="card" style="animation-delay:${i*30}ms">
+        <div class="top">
+          <span class="name">${s.name}</span>
+          <span class="badge ${s.status}"><span class="dot"></span>${s.status}</span>
+        </div>
+        <div class="meta">
+          <span>${s.responseMs !== null ? s.responseMs + 'ms' : '—'}</span>
+          <a href="${s.url}" target="_blank" rel="noopener">${s.url.replace('https://','')}</a>
+        </div>
+      </div>
+    `).join('');
+
+    document.getElementById('footer').textContent =
+      `Last checked: ${new Date(services[0].checkedAt).toLocaleString()} · Auto-refreshes every 60s`;
+  } catch(e) {
+    document.getElementById('summary').innerHTML = '<span class="dot" style="background:var(--red)"></span> Error loading status';
+  }
+}
+load();
+setInterval(load, 60000);
+</script>
+</body>
+</html>
