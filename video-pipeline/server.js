@@ -172,6 +172,37 @@ async function initDatabase() {
       )
     `);
 
+    
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS video_templates (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL UNIQUE,
+        icon TEXT DEFAULT '🎬',
+        description TEXT,
+        checklist_items JSONB NOT NULL DEFAULT '[]',
+        default_tags JSONB DEFAULT '[]',
+        default_priority TEXT DEFAULT 'medium',
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `);
+
+    // Seed default templates
+    const defaultTemplates = [
+      { name: "Review", icon: "📱", description: "Product review video", checklist_items: ["Script outline","B-roll list","Product shots","Benchmarks/tests","Pros & cons list","Script written","Footage captured","Edited","Color graded","Thumbnail created","SEO optimized","Scheduled"], default_tags: ["review"], default_priority: "medium" },
+      { name: "Tutorial", icon: "📚", description: "Tutorial/how-to video", checklist_items: ["Outline steps","Screen recording setup","Demo prep","Script written","Screen recorded","Face cam recorded","Edited","Graphics/overlays added","Thumbnail created","SEO optimized","Scheduled"], default_tags: ["tutorial"], default_priority: "medium" },
+      { name: "Unboxing", icon: "📦", description: "Unboxing video", checklist_items: ["Product received","Set arrangement","Camera angles planned","Unboxing filmed","First impressions noted","Edited","Thumbnail created","SEO optimized","Scheduled"], default_tags: ["unboxing"], default_priority: "medium" },
+      { name: "Vlog", icon: "🎥", description: "Vlog-style video", checklist_items: ["Plan scenes","Charge batteries","Film throughout day","Voiceover script","Edited","Music selected","Thumbnail created","SEO optimized","Scheduled"], default_tags: ["vlog"], default_priority: "low" },
+      { name: "Short", icon: "⚡", description: "Short-form content", checklist_items: ["Hook written","Script (60s max)","Vertical filming","Edited for mobile","Captions added","Thumbnail created","Scheduled"], default_tags: ["short"], default_priority: "medium" },
+      { name: "Comparison", icon: "⚔️", description: "Product comparison", checklist_items: ["Products gathered","Test criteria defined","Side-by-side shots planned","Benchmarks run","Winner decided","Script written","Footage captured","Edited","Thumbnail created","SEO optimized","Scheduled"], default_tags: ["comparison"], default_priority: "high" }
+    ];
+    for (const t of defaultTemplates) {
+      await client.query(
+        `INSERT INTO video_templates (name, icon, description, checklist_items, default_tags, default_priority)
+         VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (name) DO NOTHING`,
+        [t.name, t.icon, t.description, JSON.stringify(t.checklist_items), JSON.stringify(t.default_tags), t.default_priority]
+      );
+    }
+
     // Seed default admin user
     const existing = await client.query('SELECT id FROM users WHERE email = $1', ['ray@twray.dev']);
     if (existing.rows.length === 0) {
@@ -321,8 +352,16 @@ app.get('/api/videos/:id', authRequired, async (req, res) => {
 
 app.post('/api/videos', authRequired, async (req, res) => {
   try {
-    const { title, description, stage, priority, due_date } = req.body;
+    const { title, description, stage, priority, due_date, template_id } = req.body;
     if (!title) return res.status(400).json({ error: 'Title is required' });
+
+    // If template_id provided, fetch template
+    let template = null;
+    if (template_id) {
+      const tpl = await pool.query('SELECT * FROM video_templates WHERE id = $1', [template_id]);
+      if (tpl.rows.length > 0) template = tpl.rows[0];
+    }
+    const effectivePriority = template ? (priority || template.default_priority || 'medium') : (priority || 'medium');
 
     const maxPos = await pool.query(
       'SELECT COALESCE(MAX(position), -1) + 1 as next_pos FROM videos WHERE stage = $1',
@@ -332,7 +371,7 @@ app.post('/api/videos', authRequired, async (req, res) => {
     const result = await pool.query(
       `INSERT INTO videos (title, description, stage, priority, due_date, position, created_by)
        VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-      [title, description || '', stage || 'ideas', priority || 'medium', due_date || null, maxPos.rows[0].next_pos, req.userId]
+      [title, description || '', stage || 'ideas', effectivePriority, due_date || null, maxPos.rows[0].next_pos, req.userId]
     );
 
     await pool.query(
@@ -340,16 +379,26 @@ app.post('/api/videos', authRequired, async (req, res) => {
       [result.rows[0].id, req.userId, 'created', `Created video "${title}"`]
     );
 
-    // Add default checklist items
-    const defaultChecklist = [
-      'Script written', 'Sponsor brief reviewed', 'Footage captured',
-      'Edited', 'Thumbnail created', 'SEO optimized', 'Scheduled'
-    ];
-    for (let i = 0; i < defaultChecklist.length; i++) {
+    // Add checklist items from template or defaults
+    const checklist = template
+      ? (Array.isArray(template.checklist_items) ? template.checklist_items : JSON.parse(template.checklist_items || '[]'))
+      : ['Script written', 'Sponsor brief reviewed', 'Footage captured', 'Edited', 'Thumbnail created', 'SEO optimized', 'Scheduled'];
+    for (let i = 0; i < checklist.length; i++) {
       await pool.query(
         'INSERT INTO video_checklist (video_id, item, position) VALUES ($1, $2, $3)',
-        [result.rows[0].id, defaultChecklist[i], i]
+        [result.rows[0].id, checklist[i], i]
       );
+    }
+
+    // Auto-add template default tags
+    if (template) {
+      const tags = Array.isArray(template.default_tags) ? template.default_tags : JSON.parse(template.default_tags || '[]');
+      for (const tag of tags) {
+        await pool.query(
+          'INSERT INTO video_tags (video_id, tag) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+          [result.rows[0].id, tag.toLowerCase()]
+        );
+      }
     }
 
     res.status(201).json(result.rows[0]);
@@ -880,6 +929,125 @@ app.post('/api/videos/:id/time/manual', authRequired, async (req, res) => {
   } catch (err) {
     console.error('Error adding manual time:', err);
     res.status(500).json({ error: 'Server error' });
+  }
+});
+
+
+// ==================== CALENDAR ENDPOINT ====================
+app.get('/api/videos/calendar', authRequired, async (req, res) => {
+  try {
+    const { month } = req.query;
+    if (!month || !/^\d{4}-\d{2}$/.test(month)) {
+      return res.status(400).json({ error: 'month parameter required (YYYY-MM)' });
+    }
+    const [year, mon] = month.split('-').map(Number);
+    const startDate = new Date(year, mon - 1, 1).toISOString().split('T')[0];
+    const endDate = new Date(year, mon, 0).toISOString().split('T')[0];
+    
+    const result = await pool.query(
+      `SELECT id, title, stage, priority, thumbnail_url, due_date
+       FROM videos
+       WHERE due_date >= $1 AND due_date <= $2
+       ORDER BY due_date ASC, position ASC`,
+      [startDate, endDate]
+    );
+    
+    // Group by date
+    const grouped = {};
+    result.rows.forEach(v => {
+      const d = v.due_date ? v.due_date.toISOString().split('T')[0] : null;
+      if (d) {
+        if (!grouped[d]) grouped[d] = [];
+        grouped[d].push(v);
+      }
+    });
+    
+    res.json({ month, days: grouped, total: result.rows.length });
+  } catch (err) {
+    console.error('Error fetching calendar:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+
+// PATCH due_date (for calendar drag & drop)
+app.patch('/api/videos/:id/due_date', authRequired, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { due_date } = req.body;
+    const result = await pool.query(
+      'UPDATE videos SET due_date = $1, updated_at = NOW() WHERE id = $2 RETURNING *',
+      [due_date || null, id]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Video not found' });
+    await pool.query(
+      'INSERT INTO activity_log (video_id, user_id, action, details) VALUES ($1, $2, $3, $4)',
+      [id, req.userId, 'due_date_changed', `Due date changed to ${due_date || 'none'}`]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Error updating due date:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+
+// ==================== TEMPLATE ROUTES ====================
+app.get("/api/templates", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM video_templates ORDER BY id");
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching templates:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.post("/api/templates", authRequired, async (req, res) => {
+  try {
+    const { name, icon, description, checklist_items, default_tags, default_priority } = req.body;
+    if (!name) return res.status(400).json({ error: "Name is required" });
+    const result = await pool.query(
+      `INSERT INTO video_templates (name, icon, description, checklist_items, default_tags, default_priority)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [name, icon || "🎬", description || "", JSON.stringify(checklist_items || []), JSON.stringify(default_tags || []), default_priority || "medium"]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error("Error creating template:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.put("/api/templates/:id", authRequired, async (req, res) => {
+  try {
+    const { name, icon, description, checklist_items, default_tags, default_priority } = req.body;
+    const result = await pool.query(
+      `UPDATE video_templates SET
+        name = COALESCE($1, name),
+        icon = COALESCE($2, icon),
+        description = COALESCE($3, description),
+        checklist_items = COALESCE($4, checklist_items),
+        default_tags = COALESCE($5, default_tags),
+        default_priority = COALESCE($6, default_priority)
+      WHERE id = $7 RETURNING *`,
+      [name, icon, description, checklist_items ? JSON.stringify(checklist_items) : null, default_tags ? JSON.stringify(default_tags) : null, default_priority, req.params.id]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ error: "Template not found" });
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Error updating template:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.delete("/api/templates/:id", authRequired, async (req, res) => {
+  try {
+    await pool.query("DELETE FROM video_templates WHERE id = $1", [req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Error deleting template:", err);
+    res.status(500).json({ error: "Server error" });
   }
 });
 

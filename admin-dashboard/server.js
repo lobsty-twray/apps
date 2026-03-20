@@ -396,6 +396,7 @@ main{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:1rem;pad
     <a href="/containers" class="logout">🐳 Containers</a>
     <a href="/status" class="logout">Status</a>
     <a href="/storage" class="logout">Storage</a>
+    <a href="/health" class="logout">🏥 Health</a>
     <a href="/logout" class="logout">Logout</a>
   </div>
 </header>

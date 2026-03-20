@@ -300,6 +300,18 @@
       .app-main{flex:1;display:flex;flex-direction:column;overflow:hidden}
     }
 
+    
+    /* ===== TEMPLATE SELECTOR ===== */
+    .tpl-row{display:flex;gap:8px;overflow-x:auto;padding:4px 0 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+    .tpl-row::-webkit-scrollbar{display:none}
+    .tpl-card{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 14px;min-width:80px;border-radius:var(--radius-sm);background:var(--glass);border:2px solid transparent;cursor:pointer;transition:all .15s;flex-shrink:0}
+    .tpl-card:hover{background:var(--glass-hover);border-color:var(--glass-border)}
+    .tpl-card.selected{border-color:var(--accent);background:rgba(124,58,237,0.1);box-shadow:0 0 12px var(--accent-glow)}
+    .tpl-icon{font-size:24px;line-height:1}
+    .tpl-name{font-size:10px;font-weight:600;color:var(--text2);white-space:nowrap}
+    .tpl-card.selected .tpl-name{color:var(--accent)}
+    .tpl-desc{font-size:11px;color:var(--text3);margin-bottom:8px;min-height:16px}
+
     /* ===== LOADING ===== */
     .spinner{width:20px;height:20px;border:2px solid var(--glass-border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
     @keyframes spin{to{transform:rotate(360deg)}}
@@ -504,6 +516,7 @@
   <div class="nv-modal">
     <div class="nv-title">New Video</div>
     <form id="nv-form">
+      <div class="field"><label>Template</label><div class="tpl-row" id="nv-tpl-row"><div class="tpl-card selected" data-tpl=""><div class="tpl-icon">📋</div><div class="tpl-name">Blank</div></div></div><div class="tpl-desc" id="nv-tpl-desc">No template — default checklist</div></div>
       <div class="field"><label>Title</label><input type="text" class="input" id="nv-title" placeholder="Video title" required></div>
       <div class="field"><label>Stage</label><select class="mselect" id="nv-stage"></select></div>
       <div class="mrow">
@@ -571,7 +584,7 @@ function nextStage(id){const i=STAGES.findIndex(s=>s.id===id);return i<STAGES.le
 // Auth
 async function checkAuth(){
   if(!token){showLogin();return}
-  try{currentUser=await api('/api/auth/me');showApp();loadVideos()}catch{showLogin()}
+  try{currentUser=await api('/api/auth/me');showApp();loadVideos();loadTemplates()}catch{showLogin()}
 }
 function showLogin(){document.getElementById('login-screen').style.display='flex';document.getElementById('app').style.display='none'}
 function showApp(){
@@ -587,7 +600,7 @@ document.getElementById('login-form').addEventListener('submit',async e=>{
   try{
     const d=await fetch(API+'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:document.getElementById('login-email').value,password:document.getElementById('login-password').value})}).then(r=>r.json());
     if(d.error){errEl.textContent=d.error;return}
-    token=d.token;localStorage.setItem('vp_token',token);currentUser=d.user;showApp();loadVideos();
+    token=d.token;localStorage.setItem('vp_token',token);currentUser=d.user;showApp();loadVideos();loadTemplates();
   }catch{errEl.textContent='Connection error'}
 });
 document.getElementById('sb-logout').addEventListener('click',logout);
@@ -798,7 +811,7 @@ document.getElementById('m-tag-input').addEventListener('keydown',async e=>{
 });
 
 // New video
-function openNV(stage='ideas'){document.getElementById('nv-modal').classList.add('active');document.getElementById('nv-title').value='';document.getElementById('nv-stage').value=stage;document.getElementById('nv-priority').value='medium';document.getElementById('nv-due').value='';setTimeout(()=>document.getElementById('nv-title').focus(),100)}
+function openNV(stage='ideas'){selectedTemplateId=null;document.getElementById('nv-modal').classList.add('active');renderTemplateSelector();document.getElementById('nv-title').value='';document.getElementById('nv-stage').value=stage;document.getElementById('nv-priority').value='medium';document.getElementById('nv-due').value='';setTimeout(()=>document.getElementById('nv-title').focus(),100)}
 function closeNV(){document.getElementById('nv-modal').classList.remove('active')}
 
 document.getElementById('fab-new').addEventListener('click',()=>openNV());
@@ -806,7 +819,7 @@ document.getElementById('nv-cancel').addEventListener('click',closeNV);
 document.getElementById('nv-modal').addEventListener('click',e=>{if(e.target===document.getElementById('nv-modal'))closeNV()});
 document.getElementById('nv-form').addEventListener('submit',async e=>{
   e.preventDefault();const t=document.getElementById('nv-title').value.trim();if(!t)return;
-  try{await api('/api/videos',{method:'POST',body:JSON.stringify({title:t,stage:document.getElementById('nv-stage').value,priority:document.getElementById('nv-priority').value,due_date:document.getElementById('nv-due').value||null})});await loadVideos();closeNV();toast('Created','success')}catch{toast('Failed','error')}
+  try{await api('/api/videos',{method:'POST',body:JSON.stringify({title:t,stage:document.getElementById('nv-stage').value,priority:document.getElementById('nv-priority').value,due_date:document.getElementById('nv-due').value||null,template_id:selectedTemplateId||undefined})});await loadVideos();closeNV();toast('Created','success')}catch{toast('Failed','error')}
 });
 
 // Dashboard
@@ -1019,6 +1032,57 @@ document.getElementById('m-manual-add').addEventListener('click',async()=>{
 // Clean up timer interval on modal close
 const origCloseModal=closeModal;
 closeModal=function(){if(timerInterval){clearInterval(timerInterval);timerInterval=null}origCloseModal()};
+
+
+// ==================== TEMPLATES ====================
+let allTemplates = [];
+let selectedTemplateId = null;
+
+async function loadTemplates() {
+  try {
+    allTemplates = await api('/api/templates');
+    renderTemplateSelector();
+  } catch(e) {
+    // Templates endpoint may not need auth
+    try {
+      const r = await fetch(API + '/api/templates');
+      allTemplates = await r.json();
+      renderTemplateSelector();
+    } catch(e2) { console.error('Failed to load templates:', e2); }
+  }
+}
+
+function renderTemplateSelector() {
+  const row = document.getElementById('nv-tpl-row');
+  if (!row) return;
+  row.innerHTML = '<div class="tpl-card selected" data-tpl=""><div class="tpl-icon">\u{1f4cb}</div><div class="tpl-name">Blank</div></div>' +
+    allTemplates.map(t => {
+      const icon = t.icon || '\u{1f3ac}';
+      return '<div class="tpl-card" data-tpl="' + t.id + '"><div class="tpl-icon">' + icon + '</div><div class="tpl-name">' + esc(t.name) + '</div></div>';
+    }).join('');
+  
+  selectedTemplateId = null;
+  document.getElementById('nv-tpl-desc').textContent = 'No template \u2014 default checklist';
+  
+  row.querySelectorAll('.tpl-card').forEach(card => {
+    card.addEventListener('click', () => {
+      row.querySelectorAll('.tpl-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      const tid = card.dataset.tpl;
+      selectedTemplateId = tid ? +tid : null;
+      const tpl = allTemplates.find(t => t.id === selectedTemplateId);
+      const descEl = document.getElementById('nv-tpl-desc');
+      if (tpl) {
+        const items = Array.isArray(tpl.checklist_items) ? tpl.checklist_items : JSON.parse(tpl.checklist_items || '[]');
+        descEl.textContent = (tpl.description || tpl.name) + ' \u2014 ' + items.length + ' checklist items';
+        // Auto-set priority from template
+        if (tpl.default_priority) document.getElementById('nv-priority').value = tpl.default_priority;
+      } else {
+        descEl.textContent = 'No template \u2014 default checklist';
+      }
+    });
+  });
+}
 
 // Init
 checkAuth();
